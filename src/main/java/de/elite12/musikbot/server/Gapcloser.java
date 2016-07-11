@@ -191,13 +191,25 @@ public class Gapcloser extends HttpServlet {
                 Song s = new Song(0, null, null, rs.getString(1), rs.getString(2), false, false, null, 0, rs.getInt(3));
                 if (s.gettype().equals("youtube")) {
                     try {
-                        List<Video> list = this.getControl().getYouTube().videos().list("status").setKey(Controller.key)
-                                .setId(Util.getVID(s.getLink()))
-                                .setFields("items/status/uploadStatus,items/status/privacyStatus").execute().getItems();
+                        List<Video> list = this.getControl().getYouTube().videos().list("status,contentDetails")
+                                .setKey(Controller.key).setId(Util.getVID(s.getLink()))
+                                .setFields(
+                                        "items/status/uploadStatus,items/status/privacyStatus,items/contentDetails/regionRestriction")
+                                .execute().getItems();
                         if (list != null) {
                             if (!list.get(0).getStatus().getUploadStatus().equals("processed")
                                     || list.get(0).getStatus().getUploadStatus().equals("private")) {
                                 throw new IOException("Video not available");
+                            }
+                            if (list.get(0).getContentDetails() != null) {
+                                if (list.get(0).getContentDetails().getRegionRestriction() != null) {
+                                    if (list.get(0).getContentDetails().getRegionRestriction().getBlocked() != null) {
+                                        if (list.get(0).getContentDetails().getRegionRestriction().getBlocked()
+                                                .contains("DE")) {
+                                            throw new IOException("Video not available");
+                                        }
+                                    }
+                                }
                             }
                         } else {
                             throw new IOException("Video not available");
@@ -228,13 +240,25 @@ public class Gapcloser extends HttpServlet {
                 Song s = new Song(rs);
                 if (s.gettype().equals("youtube")) {
                     try {
-                        List<Video> list = this.getControl().getYouTube().videos().list("status").setKey(Controller.key)
-                                .setId(Util.getVID(s.getLink()))
-                                .setFields("items/status/uploadStatus,items/status/privacyStatus").execute().getItems();
+                        List<Video> list = this.getControl().getYouTube().videos().list("status,contentDetails")
+                                .setKey(Controller.key).setId(Util.getVID(s.getLink()))
+                                .setFields(
+                                        "items/status/uploadStatus,items/status/privacyStatus,items/contentDetails/regionRestriction")
+                                .execute().getItems();
                         if (list != null) {
                             if (!list.get(0).getStatus().getUploadStatus().equals("processed")
                                     || list.get(0).getStatus().getUploadStatus().equals("private")) {
                                 throw new IOException("Video not available");
+                            }
+                            if (list.get(0).getContentDetails() != null) {
+                                if (list.get(0).getContentDetails().getRegionRestriction() != null) {
+                                    if (list.get(0).getContentDetails().getRegionRestriction().getBlocked() != null) {
+                                        if (list.get(0).getContentDetails().getRegionRestriction().getBlocked()
+                                                .contains("DE")) {
+                                            throw new IOException("Video not available");
+                                        }
+                                    }
+                                }
                             }
                         } else {
                             throw new IOException("Video not available");
