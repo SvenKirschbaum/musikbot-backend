@@ -216,7 +216,7 @@ public class Gapcloser extends HttpServlet {
                         }
                     } catch (IndexOutOfBoundsException | IOException e) {
                         Logger.getLogger(this.getClass()).warn("Song seems to got deleted, skipping", e);
-                        return this.getnextSong();
+                        return this.findnextSong();
                     }
                 }
                 return s;
@@ -265,7 +265,7 @@ public class Gapcloser extends HttpServlet {
                         }
                     } catch (IndexOutOfBoundsException | IOException e) {
                         Logger.getLogger(this.getClass()).warn("Song seems to got deleted, skipping", e);
-                        return this.getnextSong();
+                        return this.findnextSong();
                     }
                 }
                 return s;
