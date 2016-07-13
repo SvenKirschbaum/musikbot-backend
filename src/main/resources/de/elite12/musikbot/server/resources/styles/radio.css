@@ -1145,7 +1145,7 @@ body.error {
 .version {
 	position: fixed;
     top: 0px;
-    left: 0px;
+    right: 0px;
     margin: 5px;
     color: #BDBDBD;    font-weight: normal;
     opacity: 0.2;
