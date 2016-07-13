@@ -34,6 +34,7 @@
 					<tbody>
 						<tr>
 							<td colspan="2"></td>
+
 							<td onclick="hide(loginbox);" onmouseover="pointer();"
 								onmouseout="returncursor();">x</td>
 						</tr>
