@@ -51,14 +51,11 @@
 
 						</tr>
 						<tr>
-
 							<td></td>
 							<td><input class="button" type="submit" value="Einloggen" />
 
 							</td>
 							<td></td>
-
-
 						</tr>
 					</tbody>
 				</table>
