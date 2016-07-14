@@ -8,37 +8,36 @@ import de.elite12.musikbot.server.User;
 
 public class SecurityContextImpl implements SecurityContext {
 
-	private final User u;
-	
-	public SecurityContextImpl(User user) {
-		u = user;
-	}
+    private final User u;
 
-	@Override
-	public String getAuthenticationScheme() {
-		System.out.println("scheme");
-		return u==null?null:SecurityContext.BASIC_AUTH;
-	}
+    public SecurityContextImpl(User user) {
+        u = user;
+    }
 
-	@Override
-	public Principal getUserPrincipal() {
-		return u;
-	}
+    @Override
+    public String getAuthenticationScheme() {
+        return u == null ? null : SecurityContext.BASIC_AUTH;
+    }
 
-	@Override
-	public boolean isSecure() {
-		return true;
-	}
+    @Override
+    public Principal getUserPrincipal() {
+        return u;
+    }
 
-	@Override
-	public boolean isUserInRole(String role) {
-		if(u == null) {
-			return false;
-		}
-		if(role.equalsIgnoreCase("admin")) {
-			return u.isAdmin();
-		}
-		return false;
-	}
+    @Override
+    public boolean isSecure() {
+        return true;
+    }
+
+    @Override
+    public boolean isUserInRole(String role) {
+        if (u == null) {
+            return false;
+        }
+        if (role.equalsIgnoreCase("admin")) {
+            return u.isAdmin();
+        }
+        return false;
+    }
 
 }
