@@ -1154,3 +1154,6 @@ body.error {
     -ms-user-select: none;
     user-select: none;
 }
+#playlist tr td:nth-child(3) img {
+    vertical-align: middle;
+}

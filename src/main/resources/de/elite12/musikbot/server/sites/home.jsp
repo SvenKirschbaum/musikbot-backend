@@ -1,3 +1,4 @@
+
 <% 
 	if(request.getAttribute("worked") == null) {
 		response.sendError(404);
@@ -58,34 +59,30 @@
 				</div>
 			</div>
 
-			
+
 			<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) { %>
 			<div id="control">
 				<table>
 					<tbody>
 						<tr>
-							<td>
-								<input type="button" name="action" value="Start"
-									onclick='$.ajax({url: "/api/control/start",	method: "POST",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
+							<td><input type="button" name="action" value="Start"
+								onclick='$.ajax({url: "/api/control/start",	method: "POST",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
 							</td>
-							<td>
-								<input type="button" name="action" value="Pause"
-									onclick='$.ajax({url: "/api/control/pause",	method: "POST",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
+							<td><input type="button" name="action" value="Pause"
+								onclick='$.ajax({url: "/api/control/pause",	method: "POST",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
 							</td>
-							<td>
-								<input type="button" name="action" value="Stop"
-									onclick='$.ajax({url: "/api/control/stop",	method: "POST",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
+							<td><input type="button" name="action" value="Stop"
+								onclick='$.ajax({url: "/api/control/stop",	method: "POST",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
 							</td>
-							<td>
-								<input type="button" name="action" value="Skip"
-									onclick='$.ajax({url: "/api/control/skip",	method: "POST",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
+							<td><input type="button" name="action" value="Skip"
+								onclick='$.ajax({url: "/api/control/skip",	method: "POST",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
 							</td>
 						</tr>
 					</tbody>
 				</table>
 			</div>
 			<% } %>
-			
+
 
 			<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) { %>
 			<form>
@@ -117,8 +114,13 @@
 								class="draghandle" <% } %>><%= rs.getInt("SONG_ID") %></td>
 							<td><%= timeformat.format(rs.getObject("SONG_INSERT_AT")) %></td>
 							<td
+								<%
+							     User user = ((Controller)request.getAttribute("control")).getUserservice().getUserbyName(rs.getString("AUTOR"));
+							     String gravatarid = user==null?"platzhalter":Util.md5Hex(user.getEmail().toLowerCase(Locale.GERMAN));
+								%>
 								<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) {%>
 								title="<%= rs.getString("AUTOR") %>" <% } %>>
+								<img alt="pb_playlist" src="https://www.gravatar.com/avatar/<%= gravatarid %>?s=20" />
 								<% 
 								try {
 									UUID id = UUID.fromString(rs.getString("AUTOR")); 
@@ -153,7 +155,8 @@
 					<a href="/archiv/">Zum Archiv</a>
 				</div>
 				<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) { %><input
-					id="deletebutton" type="button" value="Löschen" onclick='var a = "";$("input[type=checkbox]:checked").each(function (data){a=a+"/"+$(this).val()});$.ajax({url: "/api/songs"+a,	method: "DELETE",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
+					id="deletebutton" type="button" value="Löschen"
+					onclick='var a = "";$("input[type=checkbox]:checked").each(function (data){a=a+"/"+$(this).val()});$.ajax({url: "/api/songs"+a,	method: "DELETE",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
 			</form>
 			<% } %>
 		</div>
@@ -164,14 +167,17 @@
 			<table>
 				<tbody>
 					<tr>
-						<td><input type="text" name="link" onKeyPress='if(event.keyCode == 13){$("#submit").trigger("click");}return event.keyCode != 13;' autocomplete="off" /></td>
-						<td>
-							<input id="submit" type="button" name="Button" value="Abschicken" onclick='$.ajax({url: "/api/songs",	data:$("input[name=link]").val(),	method: "POST",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});$("input[name=link]").val("");' />
+						<td><input type="text" name="link"
+							onKeyPress='if(event.keyCode == 13){$("#submit").trigger("click");}return event.keyCode != 13;'
+							autocomplete="off" /></td>
+						<td><input id="submit" type="button" name="Button"
+							value="Abschicken"
+							onclick='$.ajax({url: "/api/songs",	data:$("input[name=link]").val(),	method: "POST",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});$("input[name=link]").val("");' />
 						</td>
 					</tr>
 				</tbody>
 			</table>
-			
+
 		</form>
 	</div>
 	<%@ include file="footer.jsp"%>
