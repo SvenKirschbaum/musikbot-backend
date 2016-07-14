@@ -389,12 +389,16 @@ table.bordered th:last-child {
 	text-shadow: 0 -1px 0 #111;
 }
 
-#deletebutton {
+#deletebutton,#deleteandlockbutton {
 	width: 150px;
 	float: right;
+}
+#deletebutton {
 	margin: 9px 15.5% 0 0;
 }
-
+#deleteandlockbutton {
+	margin: 9px 20px 0 0;
+}
 #form {
 	width: 340px;
 	margin: 60px auto 0 auto;

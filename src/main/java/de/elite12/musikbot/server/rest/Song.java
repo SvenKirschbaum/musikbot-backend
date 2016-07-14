@@ -19,6 +19,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -61,19 +62,32 @@ public class Song {
     @RolesAllowed("admin")
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{ids : .+}")
-    public List<Integer> deleteSong(@PathParam("ids") String sid) {
+    public List<Integer> deleteSong(@PathParam("ids") String sid, @QueryParam("lock") boolean lock) {
         String[] a = sid.split("/");
         PreparedStatement stmnt = null;
+        PreparedStatement stmnt2 = null;
         try {
             stmnt = Controller.getInstance().getDB()
                     .prepareStatement("DELETE FROM PLAYLIST WHERE SONG_ID = ? AND SONG_PLAYED = FALSE");
+            stmnt2 = Controller.getInstance().getDB()
+                    .prepareStatement("INSERT INTO LOCKED_SONGS (YTID, SONG_NAME) VALUES (?, ?)");
             for (String b : a) {
                 int id = Integer.parseInt(b);
                 stmnt.setInt(1, id);
                 stmnt.addBatch();
+                if (lock) {
+                    de.elite12.musikbot.shared.Song song = getSongbyID(id);
+                    stmnt2.setString(1, song.getLink().contains("spotify") ? Util.getSID(song.getLink())
+                            : Util.getVID(song.getLink()));
+                    stmnt2.setString(2, song.getTitle());
+                    stmnt2.addBatch();
+                }
             }
-            Logger.getLogger(this.getClass())
-                    .info("Songs (" + Arrays.toString(a) + ") deleted by User: " + sc.getUserPrincipal());
+            Logger.getLogger(this.getClass()).info("Songs (" + Arrays.toString(a) + ") deleted"
+                    + (lock ? " and locked " : " ") + "by User: " + sc.getUserPrincipal());
+            if (lock) {
+                stmnt2.executeBatch();
+            }
             return Arrays.asList(ArrayUtils.toObject(stmnt.executeBatch()));
         } catch (NumberFormatException e) {
             throw new WebApplicationException(400);
@@ -82,51 +96,13 @@ public class Song {
         } finally {
             try {
                 stmnt.close();
+                stmnt2.close();
             } catch (NullPointerException | SQLException e) {
                 Logger.getLogger(this.getClass()).error("Error closing Statement", e);
             }
         }
         throw new WebApplicationException(500);
     }
-
-    // @DELETE
-    // @RolesAllowed("admin")
-    // @Produces( MediaType.APPLICATION_JSON )
-    // @Path("lock/{ids : .+}")
-    // public List<Integer> lockSong(@PathParam("ids") String sid) {
-    // String[] a = sid.split("/");
-    // PreparedStatement stmnt = null;
-    // try {
-    // String query = "SELECT * FROM PLAYLIST WHERE SONG_ID IN (%s) AND SONG_PLAYED = FALSE";
-    //
-    // stmnt = Controller.getInstance().getDB().prepareStatement(String.format(query, preparePlaceHolders(a.length)));
-    //
-    // for (int i = 0; i < a.length; i++) {
-    // stmnt.setInt(i + 1, Integer.parseInt(a[i]));
-    // }
-    //
-    // ResultSet resultSet = stmnt.executeQuery();
-    //
-    // Logger.getLogger(this.getClass()).info("Songs ("+ Arrays.toString(a)+ ") deleted and locked by User: "+
-    // sc.getUserPrincipal());
-    // return Arrays.asList(ArrayUtils.toObject(stmnt.executeBatch()));
-    // }
-    // catch(NumberFormatException e){
-    // throw new WebApplicationException(400);
-    // }
-    // catch (SQLException e) {
-    // Logger.getLogger(this.getClass()).error(
-    // "SQL Exception", e);
-    // } finally {
-    // try {
-    // stmnt.close();
-    // } catch (NullPointerException | SQLException e) {
-    // Logger.getLogger(this.getClass()).error(
-    // "Error closing Statement", e);
-    // }
-    // }
-    // throw new WebApplicationException(500);
-    // }
 
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
