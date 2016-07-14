@@ -5,11 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.Duration;
 import java.util.List;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,12 +17,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
-import com.google.api.services.youtube.model.PlaylistItem;
-import com.google.api.services.youtube.model.PlaylistItemListResponse;
 import com.google.api.services.youtube.model.Video;
 
+import de.elite12.musikbot.server.PlaylistImporter.Playlist;
+import de.elite12.musikbot.server.PlaylistImporter.Playlist.Entry;
 import de.elite12.musikbot.shared.Song;
 import de.elite12.musikbot.shared.Util;
+import de.elite12.musikbot.shared.Util.SpotifyPlaylistHelper;
 
 public class Gapcloser extends HttpServlet {
 
@@ -42,7 +42,6 @@ public class Gapcloser extends HttpServlet {
     private Mode mode;
     private Controller control;
     private String playlist;
-    private int delay = 5;
 
     public Gapcloser(Controller ctr) {
         this.control = ctr;
@@ -111,8 +110,14 @@ public class Gapcloser extends HttpServlet {
                 break;
             }
             }
-            if (Util.getPID(req.getParameter("playlist")) != null) {
-                this.setPlaylist("http://www.youtube.com/playlist?list=" + Util.getPID(req.getParameter("playlist")));
+            if (Util.getPID(req.getParameter("playlist")) != null || Util.getSPID(req.getParameter("playlist")) != null
+                    || Util.getSAID(req.getParameter("playlist")) != null) {
+                String link = Util.getSPID(req.getParameter("playlist")) == null
+                        ? Util.getSAID(req.getParameter("playlist")) == null
+                                ? "https://www.youtube.com/playlist?list=" + Util.getPID(req.getParameter("playlist"))
+                                : "https://open.spotify.com/album/" + Util.getSAID(req.getParameter("playlist"))
+                        : Util.getSPID(req.getParameter("playlist")).toString();
+                this.setPlaylist(link);
             }
             Logger.getLogger(this.getClass())
                     .info("Gapcloser zu " + this.getMode() + " geändert (Playlist: " + this.getPlaylist() + ")");
@@ -281,78 +286,68 @@ public class Gapcloser extends HttpServlet {
             break;
         }
         case PLAYLIST: {
-            try {
-                PlaylistItemListResponse r = this.getControl().getYouTube().playlistItems().list("snippet,status")
-                        .setKey(Controller.key).setPlaylistId(Util.getPID(this.getPlaylist())).setMaxResults(50L)
-                        .setFields(
-                                "items/snippet/title,items/snippet/resourceId/videoId,items/status/privacyStatus,pageInfo,nextPageToken")
-                        .execute();
-                if (r == null || r.getItems() == null) {
-                    throw new IOException("Playlist not available");
-                }
-                int i = new Random().nextInt(r.getPageInfo().getTotalResults());
-                int page = i / 50 + 1;
-                int item = i % 50;
+            String pid = Util.getPID(this.getPlaylist());
+            SpotifyPlaylistHelper spid = Util.getSPID(this.getPlaylist());
+            String said = Util.getSAID(this.getPlaylist());
+            Playlist p = spid == null
+                    ? said == null ? PlaylistImporter.getyoutubePlaylist(pid) : PlaylistImporter.getspotifyAlbum(said)
+                    : PlaylistImporter.getspotifyPlaylist(spid.user, spid.pid);
+            Entry e = p.entrys[ThreadLocalRandom.current().nextInt(p.entrys.length)];
+            Song s = new Song(0, null, null, e.name, e.link, false, false, null, 0, 0);
+            if (s.gettype().equalsIgnoreCase("youtube")) {
 
-                for (int j = 1; j < page; j++) {
-                    r = this.getControl().getYouTube().playlistItems().list("snippet,status").setKey(Controller.key)
-                            .setPlaylistId(Util.getPID(this.getPlaylist())).setMaxResults(50L)
+                try {
+                    Video v;
+                    List<Video> vlist = this.getControl().getYouTube().videos().list("status,snippet,contentDetails")
+                            .setKey(Controller.key).setId(Util.getVID(s.getLink()))
                             .setFields(
-                                    "items/snippet/title,items/snippet/resourceId/videoId,items/status/privacyStatus,nextPageToken")
-                            .setPageToken(r.getNextPageToken()).execute();
-                }
-
-                PlaylistItem pitem = r.getItems().get(item);
-
-                Video v;
-                List<Video> vlist = this.getControl().getYouTube().videos().list("status,snippet,contentDetails")
-                        .setKey(Controller.key).setId(pitem.getSnippet().getResourceId().getVideoId())
-                        .setFields(
-                                "items/status/uploadStatus,items/status/privacyStatus,items/contentDetails/duration,items/snippet/categoryId,items/snippet/title,items/contentDetails/regionRestriction")
-                        .execute().getItems();
-                if (vlist != null) {
-                    v = vlist.get(0);
-                    if (!v.getStatus().getUploadStatus().equals("processed")
-                            || v.getStatus().getUploadStatus().equals("private")) {
-                        return this.findnextSong();
-                    }
-                    if (v.getContentDetails() != null) {
-                        if (v.getContentDetails().getRegionRestriction() != null) {
-                            if (v.getContentDetails().getRegionRestriction().getBlocked() != null) {
-                                if (v.getContentDetails().getRegionRestriction().getBlocked().contains("DE")) {
-                                    Logger.getLogger(Gapcloser.class)
-                                            .error("Video (" + pitem.getSnippet().getResourceId().getVideoId()
-                                                    + ") is blocked in Germany");
-                                    return this.findnextSong();
+                                    "items/status/uploadStatus,items/status/privacyStatus,items/contentDetails/duration,items/snippet/categoryId,items/snippet/title,items/contentDetails/regionRestriction")
+                            .execute().getItems();
+                    if (vlist != null) {
+                        v = vlist.get(0);
+                        if (!v.getStatus().getUploadStatus().equals("processed")
+                                || v.getStatus().getUploadStatus().equals("private")) {
+                            return this.findnextSong();
+                        }
+                        if (v.getContentDetails() != null) {
+                            if (v.getContentDetails().getRegionRestriction() != null) {
+                                if (v.getContentDetails().getRegionRestriction().getBlocked() != null) {
+                                    if (v.getContentDetails().getRegionRestriction().getBlocked().contains("DE")) {
+                                        Logger.getLogger(Gapcloser.class)
+                                                .error("Video (" + e.name + ") is blocked in Germany");
+                                        return this.findnextSong();
+                                    }
                                 }
                             }
                         }
+                    } else {
+                        throw new IOException("Video not available");
                     }
-                } else {
-                    throw new IOException("Video not available");
+
+                    return s;
+                } catch (IndexOutOfBoundsException | IllegalArgumentException | IOException | StackOverflowError e1) {
+                    Logger.getLogger(Gapcloser.class).error("Error loading Playlist, trying again in 5 Minutes", e1);
+                    this.setMode(Mode.OFF);
+                    Timer timer = new Timer();
+                    timer.schedule(new TimerTask() {
+
+                        @Override
+                        public void run() {
+                            if (getMode() == Mode.OFF) {
+                                setMode(Mode.PLAYLIST);
+                            }
+                            if (Controller.getInstance().getSongtitle() == null) {
+                                Controller.getInstance().getConnectionListener().getHandle().stop();
+                                Controller.getInstance().getConnectionListener().getHandle().start();
+                            }
+                        }
+                    }, 300000L);
                 }
 
-                return new Song(0, null, null, pitem.getSnippet().getTitle(),
-                        "https://www.youtube.com/watch?v=" + pitem.getSnippet().getResourceId().getVideoId(), false,
-                        false, null, 0, (int) Duration.parse(v.getContentDetails().getDuration()).getSeconds());
-            } catch (IndexOutOfBoundsException | IllegalArgumentException | IOException | StackOverflowError e) {
-                Logger.getLogger(Gapcloser.class).error("Error loading Playlist, trying again in 5 Minutes", e);
-                this.setMode(Mode.OFF);
-                Timer timer = new Timer();
-                timer.schedule(new TimerTask() {
-
-                    @Override
-                    public void run() {
-                        setMode(Mode.PLAYLIST);
-                        if (Controller.getInstance().getSongtitle() == null) {
-                            Controller.getInstance().getConnectionListener().getHandle().stop();
-                            Controller.getInstance().getConnectionListener().getHandle().start();
-                        }
-                    }
-                }, 300000L);
+                break;
+            } else {
+                return s;
             }
-
-            break;
         }
         default: {
             return null;

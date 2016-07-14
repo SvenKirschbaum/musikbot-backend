@@ -5,8 +5,8 @@
 	}
 %>
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
-<%@page import="com.google.api.services.youtube.model.Playlist"%>
-<%@page import="com.google.api.services.youtube.model.PlaylistItem"%>
+<%@page import="de.elite12.musikbot.server.PlaylistImporter.Playlist"%>
+<%@page import="de.elite12.musikbot.server.PlaylistImporter.Playlist.Entry"%>
 <%@ include file="header.jsp"%>
 <title>Elite12 - Musikbot</title>
 </head>
@@ -21,15 +21,12 @@
 				<div id="import_list" class="bordered">
 					<div id="headline">
 						Import der Playlist: <a
-							href="http://www.youtube.com/playlist?list=<%=((Playlist) request.getAttribute("playlistmeta"))
-					.getId()%>"><%=((Playlist) request.getAttribute("playlistmeta"))
-					.getSnippet().getTitle()%></a>
+							href="<%=((Playlist) request.getAttribute("playlist")).link %>"><%=((Playlist) request.getAttribute("playlist")).name %></a>
 					</div>
 
 					<input type="hidden" name="import" value="finish" /> <input
 						type="hidden" name="playlist"
-						value="http://www.youtube.com/playlist?list=<%=((Playlist) request.getAttribute("playlistmeta"))
-					.getId()%>" />
+						value="<%=((Playlist) request.getAttribute("playlist")).link%>" />
 					<table id="import_table">
 						<thead>
 							<tr>
@@ -43,15 +40,15 @@
 						</thead>
 						<tbody>
 							<%
-								List<PlaylistItem> list = (List<PlaylistItem>) request.getAttribute("playlist");
-								for (PlaylistItem entry : list) {
+								Entry[] entrys = ((Playlist)request.getAttribute("playlist")).entrys;
+								for (int j = 0;j<entrys.length;j++) {
 							%>
 							<tr>
 								<td><input type="checkbox" name="pimport"
-									value="<%=entry.getSnippet().getPosition()%>" checked /></td>
-								<td><%=entry.getSnippet().getPosition()+1%></td>
-								<td><%=entry.getSnippet().getTitle()%></td>
-								<td><a href="https://www.youtube.com/watch?v=<%=entry.getSnippet().getResourceId().getVideoId()%>">https://www.youtube.com/watch?v=<%=entry.getSnippet().getResourceId().getVideoId()%></a></td>
+									value="<%=j%>" checked /></td>
+								<td><%=j+1%></td>
+								<td><%=entrys[j].name%></td>
+								<td><a href="<%=entrys[j].link%>"><%=entrys[j].link%></a></td>
 							</tr>
 							<%
 								}

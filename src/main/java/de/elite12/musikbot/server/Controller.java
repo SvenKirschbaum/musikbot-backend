@@ -142,7 +142,7 @@ public class Controller {
             sites.setSessionHandler(new SessionHandler(sm));
             sites.setErrorHandler(new MBErrorHandler(this));
             sites.addServlet(new ServletHolder(new Weblet(this)), "/");
-            sites.addServlet(new ServletHolder(new PlaylistImporter(this)), "/import/");
+            sites.addServlet(new ServletHolder(new PlaylistServlet(this)), "/import/");
             this.g = new Gapcloser(this);
             sites.addServlet(new ServletHolder(this.g), "/gapcloser/");
             sites.addServlet(new ServletHolder(new FeedGenerator(this)), "/feed/");

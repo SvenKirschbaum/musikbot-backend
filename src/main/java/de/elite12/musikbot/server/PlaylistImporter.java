@@ -1,122 +1,105 @@
 package de.elite12.musikbot.server;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
-import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.PlaylistItem;
+import com.wrapper.spotify.models.Album;
+import com.wrapper.spotify.models.PlaylistTrack;
+import com.wrapper.spotify.models.SimpleTrack;
 
+import de.elite12.musikbot.server.PlaylistImporter.Playlist.Entry;
 import de.elite12.musikbot.shared.Util;
 
-public class PlaylistImporter extends HttpServlet {
+public class PlaylistImporter {
+    public static class Playlist {
+        public static class Entry {
+            public String name;
+            public String link;
+        }
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 64953031560116883L;
-	private Controller control;
+        public String id;
+        public String link;
+        public String typ;
+        public String name;
+        public Entry[] entrys;
+    }
 
-	public PlaylistImporter(Controller ctr) {
-		this.control = ctr;
-	}
+    public static Playlist getyoutubePlaylist(String id) {
+        try {
+            Logger.getLogger(PlaylistImporter.class).debug("Querying Youtube...");
+            List<PlaylistItem> list = Controller.getInstance().getYouTube().playlistItems().list("snippet,status")
+                    .setKey(Controller.key).setPlaylistId(id).setMaxResults(50L)
+                    .setFields("items/snippet/title,items/snippet/resourceId/videoId,items/snippet/position").execute()
+                    .getItems();
+            if (list == null) {
+                throw new IOException("Playlist not available");
+            }
+            Playlist p = new Playlist();
+            com.google.api.services.youtube.model.Playlist meta = Controller.getInstance().getYouTube().playlists()
+                    .list("snippet").setKey(Controller.key).setId(id).setFields("items/snippet/title,items/id")
+                    .execute().getItems().get(0);
+            p.id = id;
+            p.typ = "youtube";
+            p.name = meta.getSnippet().getTitle();
+            p.link = "http://www.youtube.com/playlist?list=" + p.id;
+            p.entrys = new Entry[list.size()];
 
-	private Controller getControl() {
-		return control;
-	}
+            for (int i = 0; i < list.size(); i++) {
+                PlaylistItem item = list.get(i);
+                Entry e = new Entry();
+                e.link = "https://www.youtube.com/watch?v=" + item.getSnippet().getResourceId().getVideoId();
+                e.name = item.getSnippet().getTitle();
+                p.entrys[i] = e;
+            }
+            return p;
+        } catch (IOException e) {
+            Logger.getLogger(PlaylistImporter.class).error("Error loading Playlist", e);
+            return null;
+        }
+    }
 
-	@Override
-	public void doGet(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		if (req.getSession().getAttribute("user") != null
-				&& ((User) req.getSession().getAttribute("user")).isAdmin()) {
-			req.setAttribute("worked", Boolean.valueOf(true));
-			this.getControl()
-					.addmessage(
-							req,
-							"Hinweis: Es werden nur die ersten 50 Videos einer Playlist angezeigt!",
-							UserMessage.TYPE_NOTIFY);
-			req.setAttribute("control", this.getControl());
-			req.getRequestDispatcher("/importer.jsp").forward(req, resp);
-			return;
-		}
-		resp.sendRedirect("/");
-	}
+    public static Playlist getspotifyPlaylist(String uid, String pid) {
+        com.wrapper.spotify.models.Playlist sp = Util.getPlaylist(uid, pid);
+        if (sp == null) {
+            return null;
+        }
+        Playlist p = new Playlist();
+        p.id = pid;
+        p.typ = "spotifyplaylist";
+        p.name = sp.getName();
+        p.link = "https://open.spotify.com/user/" + uid + "/playlist/" + pid;
+        p.entrys = new Entry[sp.getTracks().getItems().size()];
+        for (int i = 0; i < sp.getTracks().getItems().size(); i++) {
+            PlaylistTrack t = sp.getTracks().getItems().get(i);
+            Entry e = new Entry();
+            e.link = "https://open.spotify.com/track/" + t.getTrack().getId();
+            e.name = t.getTrack().getName();
+            p.entrys[i] = e;
+        }
+        return p;
+    }
 
-	@Override
-	public void doPost(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		if (req.getSession().getAttribute("user") != null
-				&& ((User) req.getSession().getAttribute("user")).isAdmin()
-				&& req.getParameter("playlist") != null) {
-			req.setAttribute("worked", Boolean.valueOf(true));
-			req.setAttribute("control", this.getControl());
-			String pid = Util.getPID(req.getParameter("playlist"));
-			String said = Util.getSAID(req.getParameter("playlist"));
-			if (pid != null) {
-				try {
-					Logger.getLogger(PlaylistImporter.class).debug(
-							"Querying Youtube...");
-					List<PlaylistItem> list = this.getControl().getYouTube().playlistItems().list("snippet,status").setKey(Controller.key).setPlaylistId(pid).setMaxResults(50L).setFields("items/snippet/title,items/snippet/resourceId/videoId,items/snippet/position").execute().getItems();
-					if(list == null) {
-						throw new IOException("Playlist not available");
-					}
-					Playlist playlistmeta = this.getControl().getYouTube().playlists().list("snippet").setKey(Controller.key).setId(pid).setFields("items/snippet/title,items/id").execute().getItems().get(0);
-					req.setAttribute("playlist", list);
-					req.setAttribute("playlistmeta", playlistmeta);
-					if (req.getParameter("pimport") == null) {
-						req.getRequestDispatcher("/importer-list.jsp").forward(
-								req, resp);
-					} else {
-						String[] val = req.getParameterValues("pimport");
-						HashMap<Integer, PlaylistItem> map = new HashMap<>();
-						for (PlaylistItem e : list) {
-							map.put(e.getSnippet().getPosition().intValue(), e);
-						}
-						for (String v : val) {
-							this.getControl().addSong(
-									"https://www.youtube.com/watch?v="+map.get(Integer.parseInt(v)).getSnippet().getResourceId().getVideoId(),
-									(User) req.getSession().getAttribute(
-											"user"),null);
-						}
-						Logger.getLogger(PlaylistImporter.class).info(
-								"Playlist Importiert: "
-										+ req.getParameter("playlist")
-										+ " by User: "
-										+ req.getSession().getAttribute(
-												"playlist"));
-						resp.sendRedirect("/");
-					}
-					return;
-				} catch (IOException e) {
-					Logger.getLogger(PlaylistImporter.class).error(
-							"Error loading Playlist", e);
-				}
-			} else if (said != null) {
-
-			} else {
-				Logger.getLogger(PlaylistImporter.class).warn(
-						"Error importing Playlist, wrong Link");
-			}
-		}
-		resp.sendRedirect("/import/");
-	}
-
-	private void writeObject(java.io.ObjectOutputStream stream)
-			throws java.io.IOException {
-		throw new java.io.NotSerializableException(getClass().getName());
-	}
-
-	private void readObject(java.io.ObjectInputStream stream)
-			throws java.io.IOException, ClassNotFoundException {
-		throw new java.io.NotSerializableException(getClass().getName());
-	}
+    public static Playlist getspotifyAlbum(String said) {
+        Album a = Util.getAlbum(said);
+        if (a == null) {
+            return null;
+        }
+        Playlist p = new Playlist();
+        p.id = said;
+        p.typ = "spotifyalbum";
+        p.name = a.getName();
+        p.link = "https://open.spotify.com/album/" + said;
+        p.entrys = new Entry[a.getTracks().getItems().size()];
+        for (int i = 0; i < a.getTracks().getItems().size(); i++) {
+            SimpleTrack t = a.getTracks().getItems().get(i);
+            Entry e = new Entry();
+            e.link = "https://open.spotify.com/track/" + t.getId();
+            e.name = t.getName();
+            p.entrys[i] = e;
+        }
+        return p;
+    }
 }
