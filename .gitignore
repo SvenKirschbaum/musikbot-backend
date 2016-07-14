@@ -2,3 +2,9 @@
 .settings
 .project
 .classpath
+/client-log.txt
+/log.txt
+/musikbotdb.lck
+/musikbotdb.log
+/musikbotdb.properties
+/musikbotdb.script
