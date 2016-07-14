@@ -15,6 +15,7 @@
 <%@ page import="java.util.UUID"%>
 <%@ page import="org.springframework.web.util.HtmlUtils"%>
 <%@ page import="java.net.URL"%>
+<%@ page import="java.net.URLEncoder"%>
 <%
 	Cookie[] co = request.getCookies();
 	String style = "radio";

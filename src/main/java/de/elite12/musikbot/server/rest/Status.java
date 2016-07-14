@@ -58,7 +58,8 @@ public class Status {
                     }
                 }
                 User user = Controller.getInstance().getUserservice().getUserbyName(s.getAutor());
-                s.setGravatarid(user == null ? "platzhalter" : Util.md5Hex(user.getEmail().toLowerCase(Locale.GERMAN)));
+                s.setGravatarid(
+                        user == null ? Util.md5Hex("null") : Util.md5Hex(user.getEmail().toLowerCase(Locale.GERMAN)));
                 st.playlist.add(s);
             }
         } catch (SQLException e) {

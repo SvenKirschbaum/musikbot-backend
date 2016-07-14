@@ -185,7 +185,8 @@ public class Song {
             if (rs.next()) {
                 de.elite12.musikbot.shared.Song s = new de.elite12.musikbot.shared.Song(rs);
                 User user = Controller.getInstance().getUserservice().getUserbyName(s.getAutor());
-                s.setGravatarid(user == null ? "platzhalter" : Util.md5Hex(user.getEmail().toLowerCase(Locale.GERMAN)));
+                s.setGravatarid(
+                        user == null ? Util.md5Hex("null") : Util.md5Hex(user.getEmail().toLowerCase(Locale.GERMAN)));
                 return s;
             } else {
                 throw new javax.ws.rs.NotFoundException();

@@ -116,11 +116,11 @@
 							<td
 								<%
 							     User user = ((Controller)request.getAttribute("control")).getUserservice().getUserbyName(rs.getString("AUTOR"));
-							     String gravatarid = user==null?"platzhalter":Util.md5Hex(user.getEmail().toLowerCase(Locale.GERMAN));
+							     String gravatarid = user==null?Util.md5Hex("null"):Util.md5Hex(user.getEmail().toLowerCase(Locale.GERMAN));
 								%>
 								<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) {%>
 								title="<%= rs.getString("AUTOR") %>" <% } %>>
-								<img alt="pb_playlist" src="https://www.gravatar.com/avatar/<%= gravatarid %>?s=20" />
+								<img alt="pb_playlist" src="https://www.gravatar.com/avatar/<%= gravatarid %>?s=20&d=<%=URLEncoder.encode("https://musikbot.elite12.de/res/favicon_small.png","UTF-8") %>" />
 								<% 
 								try {
 									UUID id = UUID.fromString(rs.getString("AUTOR")); 
