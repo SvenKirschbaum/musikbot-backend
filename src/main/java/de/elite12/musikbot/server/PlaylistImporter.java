@@ -76,7 +76,7 @@ public class PlaylistImporter {
             PlaylistTrack t = sp.getTracks().getItems().get(i);
             Entry e = new Entry();
             e.link = "https://open.spotify.com/track/" + t.getTrack().getId();
-            e.name = t.getTrack().getName();
+            e.name = "[" + t.getTrack().getArtists().get(0).getName() + "] " + t.getTrack().getName();
             p.entrys[i] = e;
         }
         return p;
@@ -97,7 +97,7 @@ public class PlaylistImporter {
             SimpleTrack t = a.getTracks().getItems().get(i);
             Entry e = new Entry();
             e.link = "https://open.spotify.com/track/" + t.getId();
-            e.name = t.getName();
+            e.name = "[" + t.getArtists().get(0).getName() + "] " + t.getName();
             p.entrys[i] = e;
         }
         return p;
