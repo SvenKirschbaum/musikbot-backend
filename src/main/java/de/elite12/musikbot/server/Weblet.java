@@ -42,6 +42,9 @@ public class Weblet extends HttpServlet {
         if (req.getParameter("sh") != null
                 ? req.getParameter("sh").equals("68c1d83dec2e27c86b23cc501d800225ed689ab36b9ff0983e269b6310") : false) {
             this.control.getConnectionListener().getHandle().sendShutdown();
+            resp.setContentType("text/plain");
+            resp.setStatus(200);
+            return;
         }
         if (req.getRequestURI().startsWith("/setstyle/")) {
             try {
