@@ -127,10 +127,10 @@
 	</div>
 
 	<div id="spotify">
-		<img alt="spotify Logo" src="res/images/spotify.svg">
+		<img alt="spotify Logo" src="/res/images/spotify.svg">
 	</div>
 	<div id="html5">
-		<img alt="HTML5 Logo" src="res/images/html5.svg">
+		<img alt="HTML5 Logo" src="/res/images/html5.svg">
 	</div>
 	<div class="version">v<%= ((Controller)request.getAttribute("control")).version %></div>
 </div>
