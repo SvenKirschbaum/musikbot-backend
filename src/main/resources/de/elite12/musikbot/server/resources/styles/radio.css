@@ -483,6 +483,11 @@ table.bordered th:last-child {
 	bottom: 45px;
 	right: 3px;
 }
+#html5 img,#spotify img {
+	width: 100%;
+    height: 100%;
+    z-index: -10;
+}
 
 .userbar {
 	margin-left: 20px;
@@ -1112,12 +1117,6 @@ input.listing {
 	display: block;
 	width: 90%;
 	border-image: url('images/current song bg.png') 20 20 20 20 round;
-}
-
-svg {
-	width: 100%;
-	height: 100%;
-	z-index: -10;
 }
 
 table.dataTable td {
