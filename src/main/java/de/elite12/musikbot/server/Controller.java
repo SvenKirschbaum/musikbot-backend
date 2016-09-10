@@ -235,26 +235,26 @@ public class Controller {
                         if (list != null) {
                             if (!list.get(0).getStatus().getUploadStatus().equals("processed")
                                     || list.get(0).getStatus().getUploadStatus().equals("private")) {
-                                throw new IOException("Video not available");
+                                throw new IOException("Video not available: " + s.getLink());
                             }
                             if (list.get(0).getContentDetails() != null) {
                                 if (list.get(0).getContentDetails().getRegionRestriction() != null) {
                                     if (list.get(0).getContentDetails().getRegionRestriction().getBlocked() != null) {
                                         if (list.get(0).getContentDetails().getRegionRestriction().getBlocked()
                                                 .contains("DE")) {
-                                            throw new IOException("Video not available");
+                                            throw new IOException("Video not available: " + s.getLink());
                                         }
                                     }
                                     if (list.get(0).getContentDetails().getRegionRestriction().getAllowed() != null) {
                                         if (!list.get(0).getContentDetails().getRegionRestriction().getAllowed()
                                                 .contains("DE")) {
-                                            throw new IOException("Video not available");
+                                            throw new IOException("Video not available: " + s.getLink());
                                         }
                                     }
                                 }
                             }
                         } else {
-                            throw new IOException("Video not available");
+                            throw new IOException("Video not available: " + s.getLink());
                         }
                     } catch (IndexOutOfBoundsException | IOException e) {
                         logger.warn("Song seems to got deleted, skipping", e);
@@ -570,26 +570,26 @@ public class Controller {
                                 v = list.get(0);
                                 if (!v.getStatus().getUploadStatus().equals("processed")
                                         || v.getStatus().getUploadStatus().equals("private")) {
-                                    throw new IOException("Video not available");
+                                    throw new IOException("Video not available: " + vID);
                                 }
                                 if (v.getContentDetails() != null) {
                                     if (v.getContentDetails().getRegionRestriction() != null) {
                                         if (v.getContentDetails().getRegionRestriction().getBlocked() != null) {
                                             if (v.getContentDetails().getRegionRestriction().getBlocked()
                                                     .contains("DE")) {
-                                                throw new IOException("Video not available");
+                                                throw new IOException("Video not available: " + vID);
                                             }
                                         }
                                         if (v.getContentDetails().getRegionRestriction().getAllowed() != null) {
                                             if (!v.getContentDetails().getRegionRestriction().getAllowed()
                                                     .contains("DE")) {
-                                                throw new IOException("Video not available");
+                                                throw new IOException("Video not available: " + vID);
                                             }
                                         }
                                     }
                                 }
                             } else {
-                                throw new IOException("Video not available");
+                                throw new IOException("Video not available: " + vID);
                             }
 
                             if (Duration.parse(v.getContentDetails().getDuration()).getSeconds() > 390

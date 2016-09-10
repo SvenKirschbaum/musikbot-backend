@@ -22,7 +22,7 @@ import de.elite12.musikbot.shared.Util;
 
 public class SongManagement extends HttpServlet {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 8275807815188101274L;
     private Controller control;
@@ -90,20 +90,20 @@ public class SongManagement extends HttpServlet {
                                 v = list.get(0);
                                 if (!v.getStatus().getUploadStatus().equals("processed")
                                         || v.getStatus().getUploadStatus().equals("private")) {
-                                    throw new IOException("Video not available");
+                                    throw new IOException("Video not available: " + vid);
                                 }
                                 if (v.getContentDetails() != null) {
                                     if (v.getContentDetails().getRegionRestriction() != null) {
                                         if (v.getContentDetails().getRegionRestriction().getBlocked() != null) {
                                             if (v.getContentDetails().getRegionRestriction().getBlocked()
                                                     .contains("DE")) {
-                                                throw new IOException("Video not available");
+                                                throw new IOException("Video not available: " + vid);
                                             }
                                         }
                                         if (v.getContentDetails().getRegionRestriction().getAllowed() != null) {
                                             if (!v.getContentDetails().getRegionRestriction().getAllowed()
                                                     .contains("DE")) {
-                                                throw new IOException("Video not available");
+                                                throw new IOException("Video not available: " + vid);
                                             }
                                         }
                                     }

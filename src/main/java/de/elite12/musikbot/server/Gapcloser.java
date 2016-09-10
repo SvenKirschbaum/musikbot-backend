@@ -204,26 +204,26 @@ public class Gapcloser extends HttpServlet {
                         if (list != null) {
                             if (!list.get(0).getStatus().getUploadStatus().equals("processed")
                                     || list.get(0).getStatus().getUploadStatus().equals("private")) {
-                                throw new IOException("Video not available");
+                                throw new IOException("Video not available: " + s.getLink());
                             }
                             if (list.get(0).getContentDetails() != null) {
                                 if (list.get(0).getContentDetails().getRegionRestriction() != null) {
                                     if (list.get(0).getContentDetails().getRegionRestriction().getBlocked() != null) {
                                         if (list.get(0).getContentDetails().getRegionRestriction().getBlocked()
                                                 .contains("DE")) {
-                                            throw new IOException("Video not available");
+                                            throw new IOException("Video not available: " + s.getLink());
                                         }
                                     }
                                     if (list.get(0).getContentDetails().getRegionRestriction().getAllowed() != null) {
                                         if (!list.get(0).getContentDetails().getRegionRestriction().getAllowed()
                                                 .contains("DE")) {
-                                            throw new IOException("Video not available");
+                                            throw new IOException("Video not available: " + s.getLink());
                                         }
                                     }
                                 }
                             }
                         } else {
-                            throw new IOException("Video not available");
+                            throw new IOException("Video not available: " + s.getLink());
                         }
                     } catch (IndexOutOfBoundsException | IOException e) {
                         Logger.getLogger(this.getClass()).warn("Song seems to got deleted, skipping", e);
@@ -259,26 +259,26 @@ public class Gapcloser extends HttpServlet {
                         if (list != null) {
                             if (!list.get(0).getStatus().getUploadStatus().equals("processed")
                                     || list.get(0).getStatus().getUploadStatus().equals("private")) {
-                                throw new IOException("Video not available");
+                                throw new IOException("Video not available: " + s.getLink());
                             }
                             if (list.get(0).getContentDetails() != null) {
                                 if (list.get(0).getContentDetails().getRegionRestriction() != null) {
                                     if (list.get(0).getContentDetails().getRegionRestriction().getBlocked() != null) {
                                         if (list.get(0).getContentDetails().getRegionRestriction().getBlocked()
                                                 .contains("DE")) {
-                                            throw new IOException("Video not available");
+                                            throw new IOException("Video not available: " + s.getLink());
                                         }
                                     }
                                     if (list.get(0).getContentDetails().getRegionRestriction().getAllowed() != null) {
                                         if (!list.get(0).getContentDetails().getRegionRestriction().getAllowed()
                                                 .contains("DE")) {
-                                            throw new IOException("Video not available");
+                                            throw new IOException("Video not available: " + s.getLink());
                                         }
                                     }
                                 }
                             }
                         } else {
-                            throw new IOException("Video not available");
+                            throw new IOException("Video not available: " + s.getLink());
                         }
                     } catch (IndexOutOfBoundsException | IOException e) {
                         Logger.getLogger(this.getClass()).warn("Song seems to got deleted, skipping", e);
@@ -325,23 +325,23 @@ public class Gapcloser extends HttpServlet {
                             if (v.getContentDetails().getRegionRestriction() != null) {
                                 if (v.getContentDetails().getRegionRestriction().getBlocked() != null) {
                                     if (v.getContentDetails().getRegionRestriction().getBlocked().contains("DE")) {
-                                        throw new IOException("Video not available");
+                                        throw new IOException("Video not available: " + s.getLink());
                                     }
                                 }
                                 if (v.getContentDetails().getRegionRestriction().getAllowed() != null) {
                                     if (!v.getContentDetails().getRegionRestriction().getAllowed().contains("DE")) {
-                                        throw new IOException("Video not available");
+                                        throw new IOException("Video not available: " + s.getLink());
                                     }
                                 }
                             }
                         }
                     } else {
-                        throw new IOException("Video not available");
+                        throw new IOException("Video not available: " + s.getLink());
                     }
 
                     return s;
                 } catch (IndexOutOfBoundsException | IllegalArgumentException | IOException | StackOverflowError e1) {
-                    Logger.getLogger(Gapcloser.class).error("Error loading Playlist, trying again in 5 Minutes", e1);
+                    Logger.getLogger(Gapcloser.class).error("Error loading Playlist, trying again in 2 Minutes", e1);
                     this.setMode(Mode.OFF);
                     Timer timer = new Timer();
                     timer.schedule(new TimerTask() {
@@ -356,7 +356,7 @@ public class Gapcloser extends HttpServlet {
                                 Controller.getInstance().getConnectionListener().getHandle().start();
                             }
                         }
-                    }, 300000L);
+                    }, 120000L);
                 }
 
                 break;
