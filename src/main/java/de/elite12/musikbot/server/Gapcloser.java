@@ -342,8 +342,6 @@ public class Gapcloser extends HttpServlet {
                     Logger.getLogger(this.getClass()).warn("Song invalid, skipping", e1);
                     return this.findnextSong();
                 }
-
-                break;
             } else {
                 return s;
             }
