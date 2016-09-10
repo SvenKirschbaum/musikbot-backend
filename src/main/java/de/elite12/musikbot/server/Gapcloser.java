@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.servlet.ServletException;
@@ -319,7 +317,7 @@ public class Gapcloser extends HttpServlet {
                         v = vlist.get(0);
                         if (!v.getStatus().getUploadStatus().equals("processed")
                                 || v.getStatus().getUploadStatus().equals("private")) {
-                            return this.findnextSong();
+                            throw new IOException("Video not available: " + s.getLink());
                         }
                         if (v.getContentDetails() != null) {
                             if (v.getContentDetails().getRegionRestriction() != null) {
@@ -341,22 +339,8 @@ public class Gapcloser extends HttpServlet {
 
                     return s;
                 } catch (IndexOutOfBoundsException | IllegalArgumentException | IOException | StackOverflowError e1) {
-                    Logger.getLogger(Gapcloser.class).error("Error loading Playlist, trying again in 2 Minutes", e1);
-                    this.setMode(Mode.OFF);
-                    Timer timer = new Timer();
-                    timer.schedule(new TimerTask() {
-
-                        @Override
-                        public void run() {
-                            if (getMode() == Mode.OFF) {
-                                setMode(Mode.PLAYLIST);
-                            }
-                            if (Controller.getInstance().getSongtitle() == null) {
-                                Controller.getInstance().getConnectionListener().getHandle().stop();
-                                Controller.getInstance().getConnectionListener().getHandle().start();
-                            }
-                        }
-                    }, 120000L);
+                    Logger.getLogger(this.getClass()).warn("Song invalid, skipping", e1);
+                    return this.findnextSong();
                 }
 
                 break;
