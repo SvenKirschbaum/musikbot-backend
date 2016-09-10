@@ -214,6 +214,12 @@ public class Gapcloser extends HttpServlet {
                                             throw new IOException("Video not available");
                                         }
                                     }
+                                    if (list.get(0).getContentDetails().getRegionRestriction().getAllowed() != null) {
+                                        if (!list.get(0).getContentDetails().getRegionRestriction().getAllowed()
+                                                .contains("DE")) {
+                                            throw new IOException("Video not available");
+                                        }
+                                    }
                                 }
                             }
                         } else {
@@ -259,6 +265,12 @@ public class Gapcloser extends HttpServlet {
                                 if (list.get(0).getContentDetails().getRegionRestriction() != null) {
                                     if (list.get(0).getContentDetails().getRegionRestriction().getBlocked() != null) {
                                         if (list.get(0).getContentDetails().getRegionRestriction().getBlocked()
+                                                .contains("DE")) {
+                                            throw new IOException("Video not available");
+                                        }
+                                    }
+                                    if (list.get(0).getContentDetails().getRegionRestriction().getAllowed() != null) {
+                                        if (!list.get(0).getContentDetails().getRegionRestriction().getAllowed()
                                                 .contains("DE")) {
                                             throw new IOException("Video not available");
                                         }
@@ -313,9 +325,12 @@ public class Gapcloser extends HttpServlet {
                             if (v.getContentDetails().getRegionRestriction() != null) {
                                 if (v.getContentDetails().getRegionRestriction().getBlocked() != null) {
                                     if (v.getContentDetails().getRegionRestriction().getBlocked().contains("DE")) {
-                                        Logger.getLogger(Gapcloser.class)
-                                                .error("Video (" + e.name + ") is blocked in Germany");
-                                        return this.findnextSong();
+                                        throw new IOException("Video not available");
+                                    }
+                                }
+                                if (v.getContentDetails().getRegionRestriction().getAllowed() != null) {
+                                    if (!v.getContentDetails().getRegionRestriction().getAllowed().contains("DE")) {
+                                        throw new IOException("Video not available");
                                     }
                                 }
                             }

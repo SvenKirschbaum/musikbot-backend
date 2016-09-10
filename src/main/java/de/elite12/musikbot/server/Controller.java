@@ -245,6 +245,12 @@ public class Controller {
                                             throw new IOException("Video not available");
                                         }
                                     }
+                                    if (list.get(0).getContentDetails().getRegionRestriction().getAllowed() != null) {
+                                        if (!list.get(0).getContentDetails().getRegionRestriction().getAllowed()
+                                                .contains("DE")) {
+                                            throw new IOException("Video not available");
+                                        }
+                                    }
                                 }
                             }
                         } else {
@@ -570,6 +576,12 @@ public class Controller {
                                     if (v.getContentDetails().getRegionRestriction() != null) {
                                         if (v.getContentDetails().getRegionRestriction().getBlocked() != null) {
                                             if (v.getContentDetails().getRegionRestriction().getBlocked()
+                                                    .contains("DE")) {
+                                                throw new IOException("Video not available");
+                                            }
+                                        }
+                                        if (v.getContentDetails().getRegionRestriction().getAllowed() != null) {
+                                            if (!v.getContentDetails().getRegionRestriction().getAllowed()
                                                     .contains("DE")) {
                                                 throw new IOException("Video not available");
                                             }
