@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -40,6 +40,7 @@ public class Gapcloser extends HttpServlet {
     private Mode mode;
     private Controller control;
     private String playlist;
+    public static Random rng = new Random();
 
     public Gapcloser(Controller ctr) {
         this.control = ctr;
@@ -302,7 +303,7 @@ public class Gapcloser extends HttpServlet {
             Playlist p = spid == null
                     ? said == null ? PlaylistImporter.getyoutubePlaylist(pid) : PlaylistImporter.getspotifyAlbum(said)
                     : PlaylistImporter.getspotifyPlaylist(spid.user, spid.pid);
-            Entry e = p.entrys[ThreadLocalRandom.current().nextInt(p.entrys.length)];
+            Entry e = p.entrys[Gapcloser.rng.nextInt(p.entrys.length)];
             Song s = new Song(0, null, null, e.name, e.link, false, false, null, 0, 0);
             if (s.gettype().equalsIgnoreCase("youtube")) {
 
