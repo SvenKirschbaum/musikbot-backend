@@ -1,12 +1,12 @@
 package de.elite12.musikbot.server;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-import java.util.Random;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -40,7 +40,7 @@ public class Gapcloser extends HttpServlet {
     private Mode mode;
     private Controller control;
     private String playlist;
-    public static Random rng = new Random();
+    public static SecureRandom rng = new SecureRandom();
 
     public Gapcloser(Controller ctr) {
         this.control = ctr;
