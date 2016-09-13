@@ -85,7 +85,7 @@ public class PlaylistServlet extends HttpServlet {
                     }
                 }
                 Logger.getLogger(PlaylistServlet.class).info("Playlist Importiert: " + req.getParameter("playlist")
-                        + " by User: " + req.getSession().getAttribute("playlist"));
+                        + " by User: " + req.getSession().getAttribute("user"));
                 resp.sendRedirect("/");
                 return;
             }
