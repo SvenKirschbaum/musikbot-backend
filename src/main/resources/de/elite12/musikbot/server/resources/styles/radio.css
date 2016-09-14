@@ -311,8 +311,7 @@ table.bordered th:last-child {
 }
 
 #playlist {
-	width: 70%;
-	margin: 36px auto 0 auto;
+	width: 100%;
 	box-sizing: border-box;
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
@@ -385,7 +384,7 @@ table.bordered th:last-child {
 #archivlink {
 	display: inline-block;
 	float: left;
-	margin: 9px 0 0 15.5%;
+	margin-top: 1%;
 	text-shadow: 0 -1px 0 #111;
 }
 
@@ -393,15 +392,13 @@ table.bordered th:last-child {
 	width: 150px;
 	float: right;
 }
-#deletebutton {
-	margin: 9px 15.5% 0 0;
-}
-#deleteandlockbutton {
-	margin: 9px 20px 0 0;
+#deletebutton,#deleteandlockbutton {
+	margin-left: 1%;
+	margin-top: 1%;
 }
 #form {
 	width: 340px;
-	margin: 60px auto 0 auto;
+	margin: 60px auto 5% auto;
 	vertical-align: middle;
 	overflow: hidden;
 	border-radius: 4px;
@@ -1159,4 +1156,10 @@ body.error {
 }
 #playlist tr td:nth-child(3) img {
     vertical-align: middle;
+}
+#pform {
+	max-width: 1300px;
+	margin-top: 36px;
+    margin-left: auto;
+    margin-right: auto;
 }

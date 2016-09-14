@@ -84,8 +84,9 @@
 			<% } %>
 
 
+			
+			<form id="pform">
 			<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) { %>
-			<form>
 				<input type="hidden" name="action" value="delete" />
 				<% } %>
 				<table
@@ -157,8 +158,8 @@
 				<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) { %>
 				    <input id="deletebutton" type="button" value="Löschen" onclick='var a = "";$("input[type=checkbox]:checked").each(function (data){a=a+"/"+$(this).val()});$.ajax({url: "/api/songs"+a,	method: "DELETE",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
 				    <input id="deleteandlockbutton" type="button" value="Löschen und Sperren" onclick='var a = "";$("input[type=checkbox]:checked").each(function (data){a=a+"/"+$(this).val()});$.ajax({url: "/api/songs"+a+"?lock=true",  method: "DELETE",   headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
-			</form>
 			<% } %>
+			</form>
 		</div>
 	</div>
 
