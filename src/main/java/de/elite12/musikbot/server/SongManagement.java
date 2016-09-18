@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import com.google.api.services.youtube.model.Video;
+import com.google.common.base.Ascii;
 import com.wrapper.spotify.models.Track;
 
 import de.elite12.musikbot.shared.Util;
@@ -114,7 +115,7 @@ public class SongManagement extends HttpServlet {
                             stmnt = this.getControl().getDB()
                                     .prepareStatement("INSERT INTO LOCKED_SONGS (YTID, SONG_NAME) VALUES	(?, ?)");
                             stmnt.setString(1, vid);
-                            stmnt.setString(2, v.getSnippet().getTitle());
+                            stmnt.setString(2, Ascii.truncate(v.getSnippet().getTitle(), 350, "..."));
                             stmnt.executeUpdate();
                             Logger.getLogger(SongManagement.class).info("added Song to locklist: " + vid + "by User: "
                                     + req.getSession().getAttribute("user"));
@@ -126,7 +127,7 @@ public class SongManagement extends HttpServlet {
                             stmnt = this.getControl().getDB()
                                     .prepareStatement("INSERT INTO LOCKED_SONGS (YTID, SONG_NAME) VALUES	(?, ?)");
                             stmnt.setString(1, sid);
-                            stmnt.setString(2, track.getName());
+                            stmnt.setString(2, Ascii.truncate(track.getName(), 350, "..."));
                             stmnt.executeUpdate();
                             Logger.getLogger(SongManagement.class).info("added Song to locklist: " + sid + "by User: "
                                     + req.getSession().getAttribute("user"));
