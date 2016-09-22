@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import com.google.api.services.youtube.model.Video;
+import com.wrapper.spotify.models.Track;
 
 import de.elite12.musikbot.server.PlaylistImporter.Playlist;
 import de.elite12.musikbot.server.PlaylistImporter.Playlist.Entry;
@@ -228,6 +229,12 @@ public class Gapcloser extends HttpServlet {
                         Logger.getLogger(this.getClass()).warn("Song seems to got deleted, skipping", e);
                         return this.findnextSong();
                     }
+                } else {
+                    Track t = Util.getTrack(Util.getSID(s.getLink()));
+                    if (t == null) {
+                        Logger.getLogger(this.getClass()).warn("Track invalid");
+                        return this.findnextSong();
+                    }
                 }
                 return s;
             } catch (SQLException e) {
@@ -281,6 +288,12 @@ public class Gapcloser extends HttpServlet {
                         }
                     } catch (IndexOutOfBoundsException | IOException e) {
                         Logger.getLogger(this.getClass()).warn("Song seems to got deleted, skipping", e);
+                        return this.findnextSong();
+                    }
+                } else {
+                    Track t = Util.getTrack(Util.getSID(s.getLink()));
+                    if (t == null) {
+                        Logger.getLogger(this.getClass()).warn("Track invalid");
                         return this.findnextSong();
                     }
                 }
@@ -344,6 +357,11 @@ public class Gapcloser extends HttpServlet {
                     return this.findnextSong();
                 }
             } else {
+                Track t = Util.getTrack(Util.getSID(s.getLink()));
+                if (t == null) {
+                    Logger.getLogger(this.getClass()).warn("Track invalid");
+                    return this.findnextSong();
+                }
                 return s;
             }
         }
