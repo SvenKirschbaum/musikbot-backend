@@ -13,7 +13,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -81,15 +80,6 @@ public class Status {
         st.playlistdauer = dauer / 60;
 
         return st;
-    }
-
-    @GET
-    @Path("/status")
-    public Response ConnectionStatus() {
-        if (Controller.getInstance().getState().equalsIgnoreCase("Keine Verbindung zum BOT")) {
-            return Response.serverError().build();
-        }
-        return Response.ok().entity(Controller.getInstance().getState()).build();
     }
 }
 
