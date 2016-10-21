@@ -150,6 +150,7 @@ public class Controller {
             sites.addServlet(new ServletHolder(new UserServlet(this)), "/user/");
             sites.addServlet(new ServletHolder(new OnlineServlet(this)), "/whoisonline/");
             sites.addServlet(new ServletHolder(new LogServlet(this)), "/log/");
+            sites.addServlet(new ServletHolder(new DebugServlet(this)), "/debug/");
 
             ResourceConfig config = new ResourceConfig().register(new RolesAllowedDynamicFeature())
                     .packages("de.elite12.musikbot.server.rest");

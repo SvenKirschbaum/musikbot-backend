@@ -100,6 +100,7 @@
 						<li><a href="/gapcloser/">Gapcloser</a></li>
 						<li><a href="/log/">Log</a></li>
 						<li><a href="/whoisonline/">Wer ist online?</a></li>
+						<li><a href="/debug/">Entwicklermenü</a></li>
 					</ul>
 				</div>
 			</div>

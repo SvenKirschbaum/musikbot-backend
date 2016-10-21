@@ -865,7 +865,7 @@ a.currentpage:visited {
 
 /* import */
 
-#import {
+#import, #debug {
 	display: block;
 	width: 400px;
 	margin: 0 auto;
@@ -1162,4 +1162,11 @@ body.error {
 	margin-top: 36px;
     margin-left: auto;
     margin-right: auto;
+}
+#debug li {
+	display: list-item;
+	list-style: none;
+}
+#debug input {
+	margin: 5px;
 }
