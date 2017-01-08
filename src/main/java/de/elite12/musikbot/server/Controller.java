@@ -449,7 +449,7 @@ public class Controller {
                             return Response.status(404).entity("URL ungültig").build();
                         }
                         stmnt = this.getDB().prepareStatement(
-                                "INSERT INTO PUBLIC.PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED) VALUES(?, ?, ?, NOW(), ?, ?, FALSE)",
+                                "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED) VALUES(?, ?, ?, NOW(), ?, ?, FALSE)",
                                 Statement.RETURN_GENERATED_KEYS);
                         stmnt.setBoolean(1, false);
                         stmnt.setString(2, "http://open.spotify.com/track/" + SID);
@@ -602,7 +602,7 @@ public class Controller {
                             return Response.status(404).entity("URL ungültig").build();
                         }
                         stmnt = this.getDB().prepareStatement(
-                                "INSERT INTO PUBLIC.PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED) VALUES(?, ?, ?, NOW(), ?, ?, FALSE)",
+                                "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED) VALUES(?, ?, ?, NOW(), ?, ?, FALSE)",
                                 Statement.RETURN_GENERATED_KEYS);
                         stmnt.setBoolean(1, false);
                         stmnt.setString(2, "https://www.youtube.com/watch?v=" + vID);

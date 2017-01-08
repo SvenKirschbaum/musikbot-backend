@@ -161,7 +161,7 @@ public class Gapcloser extends HttpServlet {
         if (s != null) {
             try {
                 PreparedStatement stmnt = this.getControl().getDB().prepareStatement(
-                        "INSERT INTO PUBLIC.PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED, SONG_PLAYED_AT) VALUES(?, ?, ?, NOW(), ?, ?, FALSE, NOW())",
+                        "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED, SONG_PLAYED_AT) VALUES(?, ?, ?, NOW(), ?, ?, FALSE, NOW())",
                         Statement.RETURN_GENERATED_KEYS);
                 stmnt.setBoolean(1, true);
                 stmnt.setString(2, s.getLink());
