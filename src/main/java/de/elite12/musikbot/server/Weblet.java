@@ -345,7 +345,7 @@ public class Weblet extends HttpServlet {
         Logger.getLogger(this.getClass()).debug("Update Lastsen Info for User: " + u);
         PreparedStatement stmnt = null;
         try {
-            stmnt = this.getControl().getDB().prepareCall("UPDATE USER SET LASTSEEN = UNIX_TIMESTAMP() WHERE NAME = ?");
+            stmnt = this.getControl().getDB().prepareStatement("UPDATE USER SET LASTSEEN = UNIX_TIMESTAMP() WHERE NAME = ?");
             stmnt.setString(1, u.getName());
             stmnt.execute();
         } catch (SQLException e) {
