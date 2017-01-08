@@ -20,6 +20,7 @@ import java.util.Scanner;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.jetty.server.Server;
@@ -40,6 +41,7 @@ import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.YouTube.Captions.Delete;
 import com.google.api.services.youtube.model.Video;
 import com.google.common.io.Closeables;
 import com.wrapper.spotify.models.Track;
@@ -59,7 +61,7 @@ public class Controller {
 
     private ConnectionListener connectionListener;
     private Server server;
-    private Connection connection = null;
+    private BasicDataSource bds;
     private Userservice userservice;
     private String songtitle = "Kein Song";
     private String state = "Keine Verbindung zum BOT";
@@ -99,14 +101,18 @@ public class Controller {
 
             logger.debug("Youtube API Connection initialised");
 
-            try {
-            	this.connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/musikbot","musikbot",getSecurePassword());
-                logger.debug("Userservice initialised");
-            } catch (SQLException e1) {
-                logger.fatal("Error initialising Database-Connection. System will Exit!", e1);
-                Runtime.getRuntime().exit(-1);
-            }
+            
+            logger.debug("Initialising DataSource");
+            this.bds = new BasicDataSource();
+            this.bds.setUrl("jdbc:mariadb://localhost:3306/musikbot");
+            this.bds.setUsername("musikbot");
+            this.bds.setPassword(getSecurePassword());
+            this.bds.setMinIdle(5);
+            this.bds.setMaxIdle(10);
+            this.bds.setMaxOpenPreparedStatements(100);
+            
             this.userservice = new Userservice(this);
+            logger.debug("Userservice initialised");
 
             this.connectionListener = new ConnectionListener(this);
             logger.debug("ConnectionListener initialised");
@@ -186,8 +192,8 @@ public class Controller {
         return connectionListener;
     }
 
-    public Connection getDB() {
-        return connection;
+    public Connection getDB() throws SQLException {
+		return this.bds.getConnection();
     }
 
     public static Controller getInstance() {
@@ -377,8 +383,7 @@ public class Controller {
             logger.debug("Shutting down jetty...");
             this.server.stop();
             logger.debug("Closing SQL Connection");
-            this.connection.commit();
-            this.connection.close();
+            this.bds.close();
             logger.debug("Interrupting Main Thread...");
             Thread.currentThread().interrupt();
         } catch (Exception e) {
@@ -667,7 +672,7 @@ public class Controller {
             PreparedStatement stmnt = null;
             ResultSet rs = null;
             try {
-                stmnt = this.connection.prepareStatement("SELECT * FROM LOCKED_SONGS WHERE ytid = ?");
+                stmnt = this.getDB().prepareStatement("SELECT * FROM LOCKED_SONGS WHERE ytid = ?");
                 stmnt.setString(1, VID);
                 rs = stmnt.executeQuery();
                 if (rs.next()) {
