@@ -37,9 +37,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
-import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.Video;
@@ -61,7 +59,6 @@ public class Controller {
 
     private ConnectionListener connectionListener;
     private Server server;
-    private org.hsqldb.Server hsqlServer;
     private Connection connection = null;
     private Userservice userservice;
     private String songtitle = "Kein Song";
@@ -92,34 +89,24 @@ public class Controller {
             logger.info("Starting Musikbot Controller...");
             this.server = new Server(8080);
             logger.debug("Webserver initialised");
-            this.hsqlServer = new org.hsqldb.Server();
             logger.debug("SQL Server initialised");
 
-            HttpTransport transport = new NetHttpTransport();
-            JsonFactory jsonfactory = new JacksonFactory();
-            this.yt = new YouTube.Builder(transport, jsonfactory, new HttpRequestInitializer() {
+            this.yt = new YouTube.Builder(new NetHttpTransport(), new JacksonFactory(), new HttpRequestInitializer() {
                 @Override
                 public void initialize(HttpRequest request) throws IOException {
                 }
             }).setApplicationName("e12-musikbot").build();
 
             logger.debug("Youtube API Connection initialised");
-            hsqlServer.setLogWriter(null);
-            hsqlServer.setSilent(true);
-            hsqlServer.setDatabaseName(0, "xdb");
-            hsqlServer.setDatabasePath(0, "file:musikbotdb");
-            hsqlServer.start();
 
             try {
-                Class.forName("org.hsqldb.jdbcDriver");
-                this.connection = DriverManager.getConnection("jdbc:hsqldb:hsql://localhost/xdb", "sa",
-                        getSecurePassword());
-                this.userservice = new Userservice(this);
+            	this.connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/musikbot","musikbot",getSecurePassword());
                 logger.debug("Userservice initialised");
-            } catch (ClassNotFoundException | SQLException e1) {
+            } catch (SQLException e1) {
                 logger.fatal("Error initialising Database-Connection. System will Exit!", e1);
                 Runtime.getRuntime().exit(-1);
             }
+            this.userservice = new Userservice(this);
 
             this.connectionListener = new ConnectionListener(this);
             logger.debug("ConnectionListener initialised");
@@ -389,8 +376,9 @@ public class Controller {
             this.getConnectionListener().getSocket().close();
             logger.debug("Shutting down jetty...");
             this.server.stop();
-            logger.debug("Shutting down SQL Server");
-            this.hsqlServer.shutdown();
+            logger.debug("Closing SQL Connection");
+            this.connection.commit();
+            this.connection.close();
             logger.debug("Interrupting Main Thread...");
             Thread.currentThread().interrupt();
         } catch (Exception e) {
@@ -717,7 +705,7 @@ public class Controller {
     }
 
     private static String getSecurePassword() {
-        return "a17cfe1428afc4ce22da7cebe0f33b6b21b1eff5dd2842678afa479e3f";
+        return "Q8rIj4ziwIBI8O3id4SAfATOYOfo81";
     }
 
     private static class Shutdown extends Thread {
