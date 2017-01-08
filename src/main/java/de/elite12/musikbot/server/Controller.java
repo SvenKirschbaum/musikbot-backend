@@ -104,7 +104,7 @@ public class Controller {
             
             logger.debug("Initialising DataSource");
             this.bds = new BasicDataSource();
-            this.bds.setUrl("jdbc:mariadb://localhost:3306/musikbot");
+            this.bds.setUrl("jdbc:mysql://localhost:3306/musikbot");
             this.bds.setUsername("musikbot");
             this.bds.setPassword(getSecurePassword());
             this.bds.setMinIdle(5);
