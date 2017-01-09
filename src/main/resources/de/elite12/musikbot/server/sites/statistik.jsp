@@ -5,6 +5,7 @@
 	}
 %>
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
+<%@ page import="de.elite12.musikbot.server.Weblet.TopEntry"%>
 <%@ include file="header.jsp"%>
 <title>Elite12 - Musikbot</title>
 </head>
@@ -27,13 +28,13 @@
 				<tbody>
 					<% 
 					int i = 1;
-					while(((ResultSet)request.getAttribute("mostplayed")).next() && i<=10) {
+					for(TopEntry e:((List<TopEntry>)request.getAttribute("mostplayed"))) {
 				%>
 					<tr>
 						<td><%= i %>.</td>
 						<td class="link"><a
-							href="<%= ((ResultSet)request.getAttribute("mostplayed")).getString("SONG_LINK") %>"><%= ((ResultSet)request.getAttribute("mostplayed")).getString("SONG_NAME") %></a></td>
-						<td><%= ((ResultSet)request.getAttribute("mostplayed")).getString("ANZAHL") %></td>
+							href="<%= e.getLink() %>"><%= e.getName() %></a></td>
+						<td><%= e.getCount() %></td>
 					</tr>
 					<%
 						i++;
@@ -55,13 +56,13 @@
 				<tbody>
 					<% 
 					i = 1;
-					while(((ResultSet)request.getAttribute("mostskipped")).next() && i<=10) {
+					for(TopEntry e:((List<TopEntry>)request.getAttribute("mostskipped"))) {
 				%>
 					<tr>
 						<td><%= i %>.</td>
 						<td class="link"><a
-							href="<%= ((ResultSet)request.getAttribute("mostskipped")).getString("SONG_LINK") %>"><%= ((ResultSet)request.getAttribute("mostskipped")).getString("SONG_NAME") %></a></td>
-						<td><%= ((ResultSet)request.getAttribute("mostskipped")).getString("ANZAHL") %></td>
+							href="<%= e.getLink() %>"><%= e.getName() %></a></td>
+						<td><%= e.getCount() %></td>
 					</tr>
 					<%
 						i++;
@@ -83,20 +84,20 @@
 				<tbody>
 					<% 
 					i = 1;
-					while(((ResultSet)request.getAttribute("topusers")).next() && i<=10) {
+					for(TopEntry e:((List<TopEntry>)request.getAttribute("topusers"))) {
 				%>
 					<tr>
 						<td><%= i %>.</td>
 						<td>
 							<% 
 								try {
-									UUID id = UUID.fromString(((ResultSet)request.getAttribute("topusers")).getString("AUTOR")); 
+									UUID id = UUID.fromString(e.getName()); 
 									%>Gast<%
 								}
-								catch (IllegalArgumentException e) {%> <%= ((ResultSet)request.getAttribute("topusers")).getString("AUTOR") %>
+								catch (IllegalArgumentException err) {%> <%= e.getName() %>
 							<%} %>
 						</td>
-						<td><%= ((ResultSet)request.getAttribute("topusers")).getString("ANZAHL") %></td>
+						<td><%= e.getCount() %></td>
 					</tr>
 					<%
 						i++;
@@ -112,32 +113,32 @@
 					<tr>
 						<td>User:</td>
 						<td>
-							<% ((ResultSet)request.getAttribute("allgemein")).next(); %><%= ((ResultSet)request.getAttribute("allgemein")).getInt(1) %></td>
+							<%= ((List<TopEntry>)request.getAttribute("allgemein")).get(0).getCount() %></td>
 					</tr>
 					<tr>
 						<td>Admins:</td>
 						<td>
-							<% ((ResultSet)request.getAttribute("allgemein")).next(); %><%= ((ResultSet)request.getAttribute("allgemein")).getInt(1) %></td>
+							<%= ((List<TopEntry>)request.getAttribute("allgemein")).get(1).getCount() %></td>
 					</tr>
 					<tr>
 						<td>Gäste:</td>
 						<td>
-							<% ((ResultSet)request.getAttribute("allgemein")).next(); %><%= ((ResultSet)request.getAttribute("allgemein")).getInt(1) %></td>
+							<%= ((List<TopEntry>)request.getAttribute("allgemein")).get(2).getCount() %></td>
 					</tr>
 					<tr>
 						<td>Wünsche:</td>
 						<td>
-							<% ((ResultSet)request.getAttribute("allgemein")).next(); %><%= ((ResultSet)request.getAttribute("allgemein")).getInt(1) %></td>
+							<%= ((List<TopEntry>)request.getAttribute("allgemein")).get(3).getCount() %></td>
 					</tr>
 					<tr>
 						<td>Skippes:</td>
 						<td>
-							<% ((ResultSet)request.getAttribute("allgemein")).next(); %><%= ((ResultSet)request.getAttribute("allgemein")).getInt(1) %></td>
+							<%= ((List<TopEntry>)request.getAttribute("allgemein")).get(4).getCount() %></td>
 					</tr>
 					<tr>
 						<td>Gesamte Dauer:</td>
 						<td>
-							<% ((ResultSet)request.getAttribute("allgemein")).next(); %><%= ((ResultSet)request.getAttribute("allgemein")).getInt(1)/60/60 %>
+							<%= ((List<TopEntry>)request.getAttribute("allgemein")).get(5).getCount()/60/60 %>
 							Stunden
 						</td>
 					</tr>

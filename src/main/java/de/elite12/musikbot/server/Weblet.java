@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -87,21 +89,42 @@ public class Weblet extends HttpServlet {
             try {
             	c = this.getControl().getDB();
                 stmnt1 = c.prepareStatement(
-                        "SELECT SONG_NAME,SONG_LINK,COUNT(*) AS anzahl FROM PLAYLIST WHERE AUTOR != 'Automatisch' GROUP BY SONG_NAME,SONG_LINK ORDER BY COUNT(*) DESC");
+                        "SELECT SONG_NAME,SONG_LINK,COUNT(*) AS anzahl FROM PLAYLIST WHERE AUTOR != 'Automatisch' GROUP BY SONG_NAME,SONG_LINK ORDER BY COUNT(*) DESC LIMIT 10");
                 rs = stmnt1.executeQuery();
-                req.setAttribute("mostplayed", rs);
+                ArrayList<TopEntry> list = new ArrayList<>(10);
+                while(rs.next()) {
+                	list.add(new TopEntry(rs.getString(1), rs.getString(2), rs.getInt(3)));
+                }
+                req.setAttribute("mostplayed", list);
+                
                 stmnt2 = c.prepareStatement(
-                        "SELECT SONG_NAME,SONG_LINK,COUNT(*) AS anzahl FROM PLAYLIST WHERE SONG_SKIPPED = TRUE AND AUTOR != 'Automatisch' GROUP BY SONG_NAME,SONG_LINK ORDER BY COUNT(*) DESC");
+                        "SELECT SONG_NAME,SONG_LINK,COUNT(*) AS anzahl FROM PLAYLIST WHERE SONG_SKIPPED = TRUE AND AUTOR != 'Automatisch' GROUP BY SONG_NAME,SONG_LINK ORDER BY COUNT(*) DESC LIMIT 10");
                 rs = stmnt2.executeQuery();
-                req.setAttribute("mostskipped", rs);
+                list = new ArrayList<>(10);
+                while(rs.next()) {
+                	list.add(new TopEntry(rs.getString(1), rs.getString(2), rs.getInt(3)));
+                }
+                req.setAttribute("mostskipped", list);
+                
+                
                 stmnt3 = c.prepareStatement(
-                        "SELECT AUTOR,COUNT(*) AS anzahl FROM PLAYLIST WHERE AUTOR != 'Automatisch' GROUP BY AUTOR ORDER BY COUNT(*) DESC");
+                        "SELECT AUTOR,COUNT(*) AS anzahl FROM PLAYLIST WHERE AUTOR != 'Automatisch' GROUP BY AUTOR ORDER BY COUNT(*) DESC LIMIT 10");
                 rs = stmnt3.executeQuery();
-                req.setAttribute("topusers", rs);
+                list = new ArrayList<>(10);
+                while(rs.next()) {
+                	list.add(new TopEntry(rs.getString(1), null, rs.getInt(2)));
+                }
+                req.setAttribute("topusers", list);
+                
+                
                 stmnt4 = c.prepareStatement(
                         "select count(*) from USER UNION ALL select count(*) from USER WHERE ADMIN = TRUE UNION ALL SELECT Count(*) FROM (SELECT AUTOR FROM PLAYLIST WHERE CHAR_LENGTH(AUTOR) = 36 GROUP BY Autor) AS T UNION ALL select count(*) from PLAYLIST WHERE AUTOR != 'Automatisch' UNION ALL select count(*) from PLAYLIST WHERE SONG_SKIPPED = TRUE UNION ALL select sum(SONG_DAUER) from PLAYLIST WHERE SONG_SKIPPED = FALSE;");
                 rs = stmnt4.executeQuery();
-                req.setAttribute("allgemein", rs);
+                list = new ArrayList<>(10);
+                while(rs.next()) {
+                	list.add(new TopEntry(null, null, rs.getInt(3)));
+                }
+                req.setAttribute("allgemein", list);
             } catch (SQLException e) {
                 Logger.getLogger(this.getClass()).error("SQLException", e);
             } finally {
@@ -433,5 +456,24 @@ public class Weblet extends HttpServlet {
 
     private void readObject(java.io.ObjectInputStream stream) throws java.io.IOException, ClassNotFoundException {
         throw new java.io.NotSerializableException(getClass().getName());
+    }
+    public class TopEntry{
+    	private final String name;
+    	private final String link;
+    	private final Integer count;
+    	public TopEntry(String n, String l, Integer c) {
+    		this.name=n;
+    		this.link=l;
+    		this.count=c;
+    	}
+    	public String getName() {
+			return name;
+		}
+		public String getLink() {
+			return link;
+		}
+		public Integer getCount() {
+			return count;
+		}
     }
 }
