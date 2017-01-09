@@ -1,6 +1,7 @@
 package de.elite12.musikbot.server;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,13 +33,12 @@ public class OnlineServlet extends HttpServlet {
 			throws ServletException, IOException {
 		req.setAttribute("worked", Boolean.valueOf(true));
 		PreparedStatement stmnt = null;
+		Connection c = null;
 		ResultSet rs = null;
 		try {
 			Logger.getLogger(OnlineServlet.class).debug("Building Online List");
-			stmnt = this
-					.getControl()
-					.getDB()
-					.prepareStatement(
+			c = this.getControl().getDB();
+			stmnt = c.prepareStatement(
 							"select * from USER WHERE UNIX_TIMESTAMP()-LASTSEEN <300");
 			rs = stmnt.executeQuery();
 			req.setAttribute("result", rs);
@@ -59,6 +59,12 @@ public class OnlineServlet extends HttpServlet {
 			} catch (NullPointerException | SQLException e) {
 				Logger.getLogger(OnlineServlet.class).error(
 						"Error Closing Statement", e);
+			}
+			try {
+				c.close();
+			} catch (NullPointerException | SQLException e) {
+				Logger.getLogger(OnlineServlet.class).error(
+						"Error Closing Connection", e);
 			}
 		}
 	}

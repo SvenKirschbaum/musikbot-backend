@@ -1,6 +1,7 @@
 package de.elite12.musikbot.server;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,12 +34,11 @@ public class FeedGenerator extends HttpServlet {
 		req.setAttribute("worked", Boolean.valueOf(true));
 		ResultSet rs = null;
 		PreparedStatement stmnt = null;
+		Connection c = null;
 		try {
 			Logger.getLogger(FeedGenerator.class).debug("Generation Feed...");
-			stmnt = this
-					.getControl()
-					.getDB()
-					.prepareStatement(
+			c = this.getControl().getDB();
+			stmnt = c.prepareStatement(
 							"select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC");
 			rs = stmnt.executeQuery();
 			req.setAttribute("result", rs);
@@ -59,6 +59,12 @@ public class FeedGenerator extends HttpServlet {
 			} catch (Exception e) {
 				Logger.getLogger(FeedGenerator.class).error(
 						"Error closing Statement", e);
+			}
+			try {
+				c.close();
+			} catch (Exception e) {
+				Logger.getLogger(FeedGenerator.class).error(
+						"Error closing Connection", e);
 			}
 		}
 	}

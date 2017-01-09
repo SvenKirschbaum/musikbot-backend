@@ -2,6 +2,7 @@ package de.elite12.musikbot.server;
 
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -46,15 +47,18 @@ public class Gapcloser extends HttpServlet {
     public Gapcloser(Controller ctr) {
         this.control = ctr;
         PreparedStatement stmnt = null;
-        ResultSet rs;
+        ResultSet rs = null;
+        Connection c = null;
         try {
-            stmnt = this.getControl().getDB().prepareStatement("SELECT value FROM SETTINGS WHERE name = ?");
+        	c = this.getControl().getDB();
+            stmnt = c.prepareStatement("SELECT value FROM SETTINGS WHERE name = ?");
             stmnt.setString(1, "gapcloser");
             rs = stmnt.executeQuery();
             rs.next();
             this.mode = Mode.valueOf(rs.getString("value"));
+            rs.close();
             stmnt.close();
-            stmnt = this.getControl().getDB().prepareStatement("SELECT value FROM SETTINGS WHERE name = ?");
+            stmnt = c.prepareStatement("SELECT value FROM SETTINGS WHERE name = ?");
             stmnt.setString(1, "playlist");
             rs = stmnt.executeQuery();
             rs.next();
@@ -62,10 +66,20 @@ public class Gapcloser extends HttpServlet {
         } catch (SQLException e) {
             Logger.getLogger(this.getClass()).error("SQLException", e);
         } finally {
-            try {
+        	try {
+                rs.close();
+            } catch (SQLException | NullPointerException e) {
+                Logger.getLogger(this.getClass()).debug("Cant close Resultset", e);
+            }
+        	try {
                 stmnt.close();
             } catch (SQLException | NullPointerException e) {
                 Logger.getLogger(this.getClass()).debug("Cant close Statement", e);
+            }
+        	try {
+                c.close();
+            } catch (SQLException | NullPointerException e) {
+                Logger.getLogger(this.getClass()).debug("Cant close Connection", e);
             }
         }
     }
@@ -128,14 +142,16 @@ public class Gapcloser extends HttpServlet {
 
     private void save() {
         PreparedStatement stmnt = null;
+        Connection c = null;
         try {
-            stmnt = this.getControl().getDB().prepareStatement("UPDATE SETTINGS SET value = ? WHERE name = ?");
+        	c = this.getControl().getDB();
+            stmnt = c.prepareStatement("UPDATE SETTINGS SET value = ? WHERE name = ?");
             stmnt.setString(1, this.getMode().name());
             stmnt.setString(2, "gapcloser");
             stmnt.executeUpdate();
             Logger.getLogger(this.getClass()).debug("Einstellung " + this.getMode() + " wurde gespeichert");
             stmnt.close();
-            stmnt = this.getControl().getDB().prepareStatement("UPDATE SETTINGS SET value = ? WHERE name = ?");
+            stmnt = c.prepareStatement("UPDATE SETTINGS SET value = ? WHERE name = ?");
             stmnt.setString(1, this.getPlaylist());
             stmnt.setString(2, "playlist");
             stmnt.executeUpdate();
@@ -143,10 +159,15 @@ public class Gapcloser extends HttpServlet {
         } catch (SQLException e) {
             Logger.getLogger(this.getClass()).error("SQLException", e);
         } finally {
-            try {
+        	try {
                 stmnt.close();
             } catch (NullPointerException | SQLException e) {
                 Logger.getLogger(this.getClass()).debug("Eror closing Statement", e);
+            }
+        	try {
+                c.close();
+            } catch (NullPointerException | SQLException e) {
+                Logger.getLogger(this.getClass()).debug("Eror closing Connection", e);
             }
         }
     }
@@ -159,8 +180,12 @@ public class Gapcloser extends HttpServlet {
             Logger.getLogger(this.getClass()).error("Error loading Gapcloser Song", e);
         }
         if (s != null) {
+        	Connection c = null;
+        	PreparedStatement stmnt = null;
+        	ResultSet key = null;
             try {
-                PreparedStatement stmnt = this.getControl().getDB().prepareStatement(
+            	c = this.getControl().getDB();
+                stmnt = c.prepareStatement(
                         "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED, SONG_PLAYED_AT) VALUES(?, ?, ?, NOW(), ?, ?, FALSE, NOW())",
                         Statement.RETURN_GENERATED_KEYS);
                 stmnt.setBoolean(1, true);
@@ -169,13 +194,31 @@ public class Gapcloser extends HttpServlet {
                 stmnt.setString(4, "Automatisch");
                 stmnt.setInt(5, s.getDauer());
                 stmnt.executeUpdate();
-                ResultSet key = stmnt.getGeneratedKeys();
+                key = stmnt.getGeneratedKeys();
                 key.next();
                 Logger.getLogger(this.getClass())
                         .info("Gapcloser generated Song (ID: " + key.getLong(1) + ")" + s.toString());
             } catch (SQLException e) {
-                e.printStackTrace();
+                Logger.getLogger(Gapcloser.class).error("Error inserting Song",e);
             }
+            finally {
+            	try {
+					key.close();
+				} catch (SQLException e) {
+					Logger.getLogger(this.getClass()).debug("Eror closing Resultset", e);
+				}
+            	try {
+					stmnt.close();
+				} catch (SQLException e) {
+					Logger.getLogger(this.getClass()).debug("Eror closing Statement", e);
+				}
+            	try {
+					c.close();
+				} catch (SQLException e) {
+					Logger.getLogger(this.getClass()).debug("Eror closing Connection", e);
+				}
+            }
+            
         }
         return s;
     }
@@ -187,9 +230,11 @@ public class Gapcloser extends HttpServlet {
         }
         case RANDOM100: {
             PreparedStatement stmnt = null;
-            ResultSet rs;
+            ResultSet rs = null;
+            Connection c = null;
             try {
-                stmnt = this.getControl().getDB().prepareStatement(
+            	c = this.getControl().getDB();
+                stmnt = c.prepareStatement(
                         "SELECT SONG_NAME,SONG_LINK,SONG_DAUER FROM (SELECT SONG_NAME,SONG_LINK,SONG_DAUER FROM PLAYLIST WHERE AUTOR != 'Automatisch' GROUP BY SONG_NAME,SONG_LINK,SONG_DAUER ORDER BY COUNT(*) DESC LIMIT 100) ORDER BY RAND() LIMIT 1");
                 rs = stmnt.executeQuery();
                 rs.next();
@@ -240,19 +285,31 @@ public class Gapcloser extends HttpServlet {
             } catch (SQLException e) {
                 Logger.getLogger(this.getClass()).error("SQLException", e);
             } finally {
-                try {
+            	try {
+                    rs.close();
+                } catch (SQLException | NullPointerException e) {
+                    Logger.getLogger(this.getClass()).debug("Cant close Resultset", e);
+                }
+            	try {
                     stmnt.close();
                 } catch (SQLException | NullPointerException e) {
                     Logger.getLogger(this.getClass()).debug("Cant close Statement", e);
+                }
+            	try {
+                    c.close();
+                } catch (SQLException | NullPointerException e) {
+                    Logger.getLogger(this.getClass()).debug("Cant close Connection", e);
                 }
             }
             break;
         }
         case RANDOM: {
             PreparedStatement stmnt = null;
-            ResultSet rs;
+            ResultSet rs = null;
+            Connection c = null;
             try {
-                stmnt = this.getControl().getDB().prepareStatement("select * from PLAYLIST ORDER BY RAND() LIMIT 1");
+            	c = this.getControl().getDB();
+                stmnt = c.prepareStatement("select * from PLAYLIST ORDER BY RAND() LIMIT 1");
                 rs = stmnt.executeQuery();
                 Song s = new Song(rs);
                 if (s.gettype().equals("youtube")) {
@@ -301,10 +358,20 @@ public class Gapcloser extends HttpServlet {
             } catch (SQLException e) {
                 Logger.getLogger(this.getClass()).error("SQLException", e);
             } finally {
-                try {
+            	try {
+                    rs.close();
+                } catch (SQLException | NullPointerException e) {
+                    Logger.getLogger(this.getClass()).debug("Cant close Resultset", e);
+                }
+            	try {
                     stmnt.close();
                 } catch (SQLException | NullPointerException e) {
                     Logger.getLogger(this.getClass()).debug("Cant close Statement", e);
+                }
+            	try {
+                    c.close();
+                } catch (SQLException | NullPointerException e) {
+                    Logger.getLogger(this.getClass()).debug("Cant close Connection", e);
                 }
             }
             break;

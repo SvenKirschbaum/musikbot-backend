@@ -1,6 +1,7 @@
 package de.elite12.musikbot.server;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -78,24 +79,29 @@ public class Weblet extends HttpServlet {
             req.setAttribute("worked", Boolean.valueOf(true));
             req.setAttribute("control", this.getControl());
             PreparedStatement stmnt = null;
-            ResultSet rs;
+            ResultSet rs = null;
+            Connection c = null;
             try {
-                stmnt = this.getControl().getDB().prepareStatement(
+            	c = this.getControl().getDB();
+                stmnt = c.prepareStatement(
                         "SELECT SONG_NAME,SONG_LINK,COUNT(*) AS anzahl FROM PLAYLIST WHERE AUTOR != 'Automatisch' GROUP BY SONG_NAME,SONG_LINK ORDER BY COUNT(*) DESC");
                 rs = stmnt.executeQuery();
                 req.setAttribute("mostplayed", rs);
                 stmnt.close();
-                stmnt = this.getControl().getDB().prepareStatement(
+                rs.close();
+                stmnt = c.prepareStatement(
                         "SELECT SONG_NAME,SONG_LINK,COUNT(*) AS anzahl FROM PLAYLIST WHERE SONG_SKIPPED = TRUE AND AUTOR != 'Automatisch' GROUP BY SONG_NAME,SONG_LINK ORDER BY COUNT(*) DESC");
                 rs = stmnt.executeQuery();
                 req.setAttribute("mostskipped", rs);
                 stmnt.close();
-                stmnt = this.getControl().getDB().prepareStatement(
+                rs.close();
+                stmnt = c.prepareStatement(
                         "SELECT AUTOR,COUNT(*) AS anzahl FROM PLAYLIST WHERE AUTOR != 'Automatisch' GROUP BY AUTOR ORDER BY COUNT(*) DESC");
                 rs = stmnt.executeQuery();
                 req.setAttribute("topusers", rs);
                 stmnt.close();
-                stmnt = this.getControl().getDB().prepareStatement(
+                rs.close();
+                stmnt = c.prepareStatement(
                         "select count(*) from USER UNION ALL select count(*) from USER WHERE ADMIN = TRUE UNION ALL SELECT Count(*) FROM (SELECT AUTOR FROM PLAYLIST WHERE CHAR_LENGTH(AUTOR) = 36 GROUP BY Autor) AS T UNION ALL select count(*) from PLAYLIST WHERE AUTOR != 'Automatisch' UNION ALL select count(*) from PLAYLIST WHERE SONG_SKIPPED = TRUE UNION ALL select sum(SONG_DAUER) from PLAYLIST WHERE SONG_SKIPPED = FALSE;");
                 rs = stmnt.executeQuery();
                 req.setAttribute("allgemein", rs);
@@ -103,10 +109,20 @@ public class Weblet extends HttpServlet {
             } catch (SQLException e) {
                 Logger.getLogger(this.getClass()).error("SQLException", e);
             } finally {
-                try {
+            	try {
                     stmnt.close();
                 } catch (SQLException | NullPointerException e) {
                     Logger.getLogger(this.getClass()).debug("Cant close Statement", e);
+                }
+            	try {
+                    rs.close();
+                } catch (SQLException | NullPointerException e) {
+                    Logger.getLogger(this.getClass()).debug("Cant close ResultSet", e);
+                }
+            	try {
+                    c.close();
+                } catch (SQLException | NullPointerException e) {
+                    Logger.getLogger(this.getClass()).debug("Cant close Connection", e);
                 }
             }
             req.getRequestDispatcher("/statistik.jsp").forward(req, resp);
@@ -116,6 +132,7 @@ public class Weblet extends HttpServlet {
             req.setAttribute("worked", Boolean.valueOf(true));
             PreparedStatement stmnt = null;
             ResultSet rs = null;
+            Connection c = null;
             try {
                 int p;
                 try {
@@ -126,13 +143,15 @@ public class Weblet extends HttpServlet {
                 } catch (NumberFormatException e) {
                     p = 1;
                 }
-                stmnt = this.getControl().getDB().prepareStatement("SELECT COUNT(*) FROM PLAYLIST");
+                c = this.getControl().getDB();
+                stmnt = c.prepareStatement("SELECT COUNT(*) FROM PLAYLIST");
                 rs = stmnt.executeQuery();
                 rs.next();
                 req.setAttribute("seiten", Double.valueOf(Math.ceil(1D * rs.getInt(1) / 30)).intValue());
                 req.setAttribute("page", p);
                 stmnt.close();
-                stmnt = this.getControl().getDB().prepareStatement(
+                rs.close();
+                stmnt = c.prepareStatement(
                         "select * from PLAYLIST WHERE SONG_PLAYED = TRUE ORDER BY SONG_SORT DESC LIMIT " + (p - 1) * 30
                                 + ",30");
                 rs = stmnt.executeQuery();
@@ -143,10 +162,20 @@ public class Weblet extends HttpServlet {
             } catch (SQLException e) {
                 Logger.getLogger(this.getClass()).error("SQLException", e);
             } finally {
-                try {
+            	try {
                     stmnt.close();
                 } catch (SQLException | NullPointerException e) {
                     Logger.getLogger(this.getClass()).debug("Cant close Statement", e);
+                }
+            	try {
+                    rs.close();
+                } catch (SQLException | NullPointerException e) {
+                    Logger.getLogger(this.getClass()).debug("Cant close Resultset", e);
+                }
+            	try {
+                    c.close();
+                } catch (SQLException | NullPointerException e) {
+                    Logger.getLogger(this.getClass()).debug("Cant close Connection", e);
                 }
             }
             return;
@@ -159,9 +188,10 @@ public class Weblet extends HttpServlet {
         req.setAttribute("worked", Boolean.valueOf(true));
         PreparedStatement stmnt = null;
         ResultSet rs = null;
+        Connection c = null;
         try {
-            stmnt = this.getControl().getDB()
-                    .prepareStatement("select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC");
+        	c = this.getControl().getDB();
+            stmnt = c.prepareStatement("select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC");
             rs = stmnt.executeQuery();
             req.setAttribute("result", rs);
             req.setAttribute("control", this.getControl());
@@ -183,6 +213,11 @@ public class Weblet extends HttpServlet {
             } catch (NullPointerException | SQLException e) {
                 Logger.getLogger(this.getClass()).error("Error closing Statement", e);
             }
+            try {
+                c.close();
+            } catch (NullPointerException | SQLException e) {
+                Logger.getLogger(this.getClass()).error("Error closing Connection", e);
+            }
         }
     }
 
@@ -198,6 +233,7 @@ public class Weblet extends HttpServlet {
                 resp.sendRedirect("/register/");
             } else {
                 PreparedStatement stmnt = null;
+                Connection c = null;
                 try {
                     User u = this.getControl().getUserservice().getUserbyName(req.getParameter("username"));
                     if (u != null) {
@@ -232,8 +268,8 @@ public class Weblet extends HttpServlet {
                                         if (this.getControl().getUserservice().changeUser(u) == 1) {
                                             this.getControl().addmessage(req, "Registrierung Erfolgreich",
                                                     UserMessage.TYPE_SUCCESS);
-                                            stmnt = this.getControl().getDB()
-                                                    .prepareStatement("UPDATE PLAYLIST SET AUTOR = ? WHERE AUTOR = ?");
+                                            c = this.getControl().getDB();
+                                            stmnt = c.prepareStatement("UPDATE PLAYLIST SET AUTOR = ? WHERE AUTOR = ?");
                                             stmnt.setString(1, u.getName());
                                             stmnt.setString(2,
                                                     ((UUID) req.getSession().getAttribute("guest_id")).toString());
@@ -253,11 +289,16 @@ public class Weblet extends HttpServlet {
                 } catch (SQLException e) {
                     Logger.getLogger(this.getClass()).error("SQLException", e);
                 } finally {
-                    try {
-                        stmnt.close();
-                    } catch (NullPointerException | SQLException e) {
-                        Logger.getLogger(this.getClass()).debug("Eror closing Statement", e);
-                    }
+                	 try {
+                         stmnt.close();
+                     } catch (NullPointerException | SQLException e) {
+                         Logger.getLogger(this.getClass()).debug("Eror closing Statement", e);
+                     }
+                	 try {
+                         c.close();
+                     } catch (NullPointerException | SQLException e) {
+                         Logger.getLogger(this.getClass()).debug("Eror closing Connection", e);
+                     }
                 }
             }
             return;
@@ -344,17 +385,24 @@ public class Weblet extends HttpServlet {
     private void updatelastseen(User u) {
         Logger.getLogger(this.getClass()).debug("Update Lastsen Info for User: " + u);
         PreparedStatement stmnt = null;
+        Connection c = null;
         try {
-            stmnt = this.getControl().getDB().prepareStatement("UPDATE USER SET LASTSEEN = UNIX_TIMESTAMP() WHERE NAME = ?");
+        	c = this.getControl().getDB();
+            stmnt = c.prepareStatement("UPDATE USER SET LASTSEEN = UNIX_TIMESTAMP() WHERE NAME = ?");
             stmnt.setString(1, u.getName());
             stmnt.execute();
         } catch (SQLException e) {
             Logger.getLogger(this.getClass()).error("SQLException", e);
         } finally {
-            try {
+        	try {
                 stmnt.close();
             } catch (NullPointerException | SQLException e) {
                 Logger.getLogger(this.getClass()).error("Error closing Statement", e);
+            }
+        	try {
+                c.close();
+            } catch (NullPointerException | SQLException e) {
+                Logger.getLogger(this.getClass()).error("Error closing Connection", e);
             }
         }
     }

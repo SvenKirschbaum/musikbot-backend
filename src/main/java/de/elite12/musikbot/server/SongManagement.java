@@ -1,6 +1,7 @@
 package de.elite12.musikbot.server;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -37,6 +38,7 @@ public class SongManagement extends HttpServlet {
         if (req.getSession().getAttribute("user") != null && ((User) req.getSession().getAttribute("user")).isAdmin()) {
             PreparedStatement stmnt = null;
             ResultSet rs = null;
+            Connection c = null;
             try {
                 Logger.getLogger(SongManagement.class).debug("Building locked Song List");
                 this.getControl().addmessage(req,
@@ -44,7 +46,8 @@ public class SongManagement extends HttpServlet {
                         UserMessage.TYPE_NOTIFY);
                 req.setAttribute("worked", Boolean.valueOf(true));
 
-                stmnt = this.getControl().getDB().prepareStatement("SELECT * FROM LOCKED_SONGS");
+                c = this.getControl().getDB();
+                stmnt = c.prepareStatement("SELECT * FROM LOCKED_SONGS");
                 rs = stmnt.executeQuery();
                 req.setAttribute("result", rs);
                 req.setAttribute("control", this.getControl());
@@ -59,6 +62,11 @@ public class SongManagement extends HttpServlet {
                 }
                 try {
                     stmnt.close();
+                } catch (NullPointerException | SQLException e) {
+                    Logger.getLogger(SongManagement.class).error("Unknown SQL-Exception", e);
+                }
+                try {
+                    c.close();
                 } catch (NullPointerException | SQLException e) {
                     Logger.getLogger(SongManagement.class).error("Unknown SQL-Exception", e);
                 }
@@ -77,6 +85,7 @@ public class SongManagement extends HttpServlet {
                 String song = req.getParameter("song");
                 if (song != null) {
                     PreparedStatement stmnt = null;
+                    Connection c = null;
                     try {
                         String vid = Util.getVID(req.getParameter("song"));
                         String sid = Util.getSID(req.getParameter("song"));
@@ -112,8 +121,8 @@ public class SongManagement extends HttpServlet {
                             } else {
                                 throw new IOException("Video not available");
                             }
-                            stmnt = this.getControl().getDB()
-                                    .prepareStatement("INSERT INTO LOCKED_SONGS (YTID, SONG_NAME) VALUES	(?, ?)");
+                            c = this.getControl().getDB();
+                            stmnt = c.prepareStatement("INSERT INTO LOCKED_SONGS (YTID, SONG_NAME) VALUES	(?, ?)");
                             stmnt.setString(1, vid);
                             stmnt.setString(2, Ascii.truncate(v.getSnippet().getTitle(), 350, "..."));
                             stmnt.executeUpdate();
@@ -124,8 +133,8 @@ public class SongManagement extends HttpServlet {
                             if (track == null) {
                                 throw new IOException("");
                             }
-                            stmnt = this.getControl().getDB()
-                                    .prepareStatement("INSERT INTO LOCKED_SONGS (YTID, SONG_NAME) VALUES	(?, ?)");
+                            c = this.getControl().getDB();
+                            stmnt = c.prepareStatement("INSERT INTO LOCKED_SONGS (YTID, SONG_NAME) VALUES	(?, ?)");
                             stmnt.setString(1, sid);
                             stmnt.setString(2, Ascii.truncate(track.getName(), 350, "..."));
                             stmnt.executeUpdate();
@@ -144,10 +153,15 @@ public class SongManagement extends HttpServlet {
                     } catch (SQLException e) {
                         Logger.getLogger(SongManagement.class).error("Sql Exception", e);
                     } finally {
-                        try {
+                    	try {
                             stmnt.close();
                         } catch (NullPointerException | SQLException e) {
                             Logger.getLogger(SongManagement.class).error("Exception closing Statement", e);
+                        }
+                    	try {
+                            c.close();
+                        } catch (NullPointerException | SQLException e) {
+                            Logger.getLogger(SongManagement.class).error("Exception closing Connection", e);
                         }
                     }
                 } else {
@@ -158,8 +172,10 @@ public class SongManagement extends HttpServlet {
             case "delete": {
                 if (req.getParameterValues("song") != null) {
                     PreparedStatement stmnt = null;
+                    Connection c = null;
                     try {
-                        stmnt = this.getControl().getDB().prepareStatement("DELETE FROM LOCKED_SONGS WHERE id = ?");
+                    	c = this.getControl().getDB();
+                        stmnt = c.prepareStatement("DELETE FROM LOCKED_SONGS WHERE id = ?");
                         for (String s : req.getParameterValues("song")) {
                             stmnt.setInt(1, Integer.parseInt(s));
                             stmnt.addBatch();
@@ -171,10 +187,15 @@ public class SongManagement extends HttpServlet {
                     } catch (SQLException e) {
                         Logger.getLogger(SongManagement.class).error("Sql Exception", e);
                     } finally {
-                        try {
+                    	try {
                             stmnt.close();
                         } catch (NullPointerException | SQLException e) {
                             Logger.getLogger(SongManagement.class).error("Exception closing Statement", e);
+                        }
+                    	try {
+                            c.close();
+                        } catch (NullPointerException | SQLException e) {
+                            Logger.getLogger(SongManagement.class).error("Exception closing Connection", e);
                         }
                     }
                 }

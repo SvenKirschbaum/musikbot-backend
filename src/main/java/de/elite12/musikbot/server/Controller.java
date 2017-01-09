@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,9 +17,16 @@ import java.util.Properties;
 import java.util.Scanner;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.sql.DataSource;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.dbcp2.ConnectionFactory;
+import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp2.PoolableConnection;
+import org.apache.commons.dbcp2.PoolableConnectionFactory;
+import org.apache.commons.dbcp2.PoolingDataSource;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.jetty.server.Server;
@@ -41,7 +47,6 @@ import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.YouTube.Captions.Delete;
 import com.google.api.services.youtube.model.Video;
 import com.google.common.io.Closeables;
 import com.wrapper.spotify.models.Track;
@@ -61,7 +66,7 @@ public class Controller {
 
     private ConnectionListener connectionListener;
     private Server server;
-    private BasicDataSource bds;
+    private DataSource ds;
     private Userservice userservice;
     private String songtitle = "Kein Song";
     private String state = "Keine Verbindung zum BOT";
@@ -101,15 +106,19 @@ public class Controller {
 
             logger.debug("Youtube API Connection initialised");
 
-            
+            /*
+             *  this.bds.setUrl("jdbc:mariadb://localhost:3306/musikbot");
+             *	this.bds.setUsername("musikbot");
+             *	this.bds.setPassword(getSecurePassword());
+             */
             logger.debug("Initialising DataSource");
-            this.bds = new BasicDataSource();
-            this.bds.setUrl("jdbc:mysql://localhost:3306/musikbot");
-            this.bds.setUsername("musikbot");
-            this.bds.setPassword(getSecurePassword());
-            this.bds.setMinIdle(5);
-            this.bds.setMaxIdle(10);
-            this.bds.setMaxOpenPreparedStatements(100);
+            Class.forName("org.mariadb.jdbc.Driver");
+            ConnectionFactory connectionFactory = new DriverManagerConnectionFactory("jdbc:mariadb://localhost:3306/musikbot","musikbot",getSecurePassword());
+            PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, null);
+            ObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
+            poolableConnectionFactory.setPool(connectionPool);
+            PoolingDataSource<PoolableConnection> dataSource = new PoolingDataSource<>(connectionPool);
+            this.ds = dataSource;
             
             this.userservice = new Userservice(this);
             logger.debug("Userservice initialised");
@@ -193,7 +202,7 @@ public class Controller {
     }
 
     public Connection getDB() throws SQLException {
-		return this.bds.getConnection();
+		return this.ds.getConnection();
     }
 
     public static Controller getInstance() {
@@ -207,14 +216,16 @@ public class Controller {
     public Song getnextSong() {
         PreparedStatement stmnt = null;
         ResultSet rs = null;
+        Connection c = null;
         try {
-            stmnt = this.getDB().prepareStatement(
+        	c = this.getDB();
+            stmnt = c.prepareStatement(
                     "select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC LIMIT 0,1");
             rs = stmnt.executeQuery();
             if (rs.next()) {
                 stmnt.close();
                 logger.debug("Found Song in Database");
-                stmnt = this.getDB().prepareStatement(
+                stmnt = c.prepareStatement(
                         "UPDATE PLAYLIST SET SONG_PLAYED = TRUE, SONG_PLAYED_AT = NOW() WHERE SONG_ID = ?");
                 stmnt.setInt(1, rs.getInt("SONG_ID"));
                 stmnt.execute();
@@ -278,6 +289,11 @@ public class Controller {
             } catch (NullPointerException | SQLException e) {
                 logger.error("Error closing Statement");
             }
+            try {
+                c.close();
+            } catch (NullPointerException | SQLException e) {
+                logger.error("Error closing Connection");
+            }
         }
     }
 
@@ -317,15 +333,17 @@ public class Controller {
     public void markskipped() {
         PreparedStatement stmnt = null;
         ResultSet rs = null;
+        Connection c = null;
         try {
             logger.debug("Marking last Song as skipped");
-            stmnt = this.getDB().prepareStatement(
+            c = this.getDB();
+            stmnt = c.prepareStatement(
                     "select * from PLAYLIST WHERE SONG_PLAYED = TRUE ORDER BY SONG_ID DESC LIMIT 0,1");
             rs = stmnt.executeQuery();
             if (rs.next()) {
                 PreparedStatement stmnt2 = null;
                 try {
-                    stmnt2 = this.getDB().prepareStatement(
+                    stmnt2 = c.prepareStatement(
                             "UPDATE PLAYLIST SET SONG_SKIPPED = TRUE WHERE SONG_ID = " + rs.getInt("SONG_ID"));
                     stmnt2.execute();
                 } catch (SQLException e) {
@@ -350,6 +368,11 @@ public class Controller {
                 stmnt.close();
             } catch (NullPointerException | SQLException e) {
                 logger.error("Error closing Statement");
+            }
+            try {
+                c.close();
+            } catch (NullPointerException | SQLException e) {
+                logger.error("Error closing Connection");
             }
         }
     }
@@ -382,8 +405,6 @@ public class Controller {
             this.getConnectionListener().getSocket().close();
             logger.debug("Shutting down jetty...");
             this.server.stop();
-            logger.debug("Closing SQL Connection");
-            this.bds.close();
             logger.debug("Interrupting Main Thread...");
             Thread.currentThread().interrupt();
         } catch (Exception e) {
@@ -405,6 +426,7 @@ public class Controller {
 
     private Response addSSong(String SID, User user, String gid) {
         logger.debug("Adding new Song to Playlist... :" + SID);
+        Connection c = null;
         PreparedStatement stmnt = null;
         ResultSet rs = null;
         String notice = null;
@@ -419,22 +441,21 @@ public class Controller {
                 }
 
             }
-            stmnt = this.getDB().prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE");
+            c = this.getDB();
+            stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE");
             rs = stmnt.executeQuery();
             rs.next();
             if (rs.getInt(1) < 24) {
                 rs.close();
                 stmnt.close();
-                stmnt = this.getDB()
-                        .prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND SONG_LINK = ?");
+                stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND SONG_LINK = ?");
                 stmnt.setString(1, "http://open.spotify.com/track/" + SID);
                 rs = stmnt.executeQuery();
                 rs.next();
                 if (rs.getInt(1) == 0) {
                     rs.close();
                     stmnt.close();
-                    stmnt = this.getDB()
-                            .prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND AUTOR = ?");
+                    stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND AUTOR = ?");
                     if (user != null) {
                         stmnt.setString(1, user.getName());
                     } else {
@@ -453,7 +474,7 @@ public class Controller {
                             logger.debug("Song not available");
                             return Response.status(404).entity("URL ungültig").build();
                         }
-                        stmnt = this.getDB().prepareStatement(
+                        stmnt = c.prepareStatement(
                                 "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED) VALUES(?, ?, ?, NOW(), ?, ?, FALSE)",
                                 Statement.RETURN_GENERATED_KEYS);
                         stmnt.setBoolean(1, false);
@@ -508,12 +529,19 @@ public class Controller {
             } catch (NullPointerException | SQLException e) {
                 logger.error("Error closing Statement");
             }
+            try {
+            	c.close();
+            }
+            catch(NullPointerException | SQLException e) {
+            	logger.error("Error closing Connection");
+            }
         }
         return Response.status(500).entity("Unbekannter Fehler").build();
     }
 
     private Response addYSong(String vID, User user, String gid) {
         logger.debug("Adding new Song to Playlist... :" + user);
+        Connection c = null;
         PreparedStatement stmnt = null;
         ResultSet rs = null;
         String notice = null;
@@ -528,22 +556,21 @@ public class Controller {
                 }
 
             }
-            stmnt = this.getDB().prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE");
+            c = this.getDB();
+            stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE");
             rs = stmnt.executeQuery();
             rs.next();
             if (rs.getInt(1) < 24) {
                 rs.close();
                 stmnt.close();
-                stmnt = this.getDB()
-                        .prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND SONG_LINK = ?");
+                stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND SONG_LINK = ?");
                 stmnt.setString(1, "https://www.youtube.com/watch?v=" + vID);
                 rs = stmnt.executeQuery();
                 rs.next();
                 if (rs.getInt(1) == 0) {
                     rs.close();
                     stmnt.close();
-                    stmnt = this.getDB()
-                            .prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND AUTOR = ?");
+                    stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND AUTOR = ?");
                     if (user != null) {
                         stmnt.setString(1, user.getName());
                     } else {
@@ -606,7 +633,7 @@ public class Controller {
                             logger.debug("Video not available", e);
                             return Response.status(404).entity("URL ungültig").build();
                         }
-                        stmnt = this.getDB().prepareStatement(
+                        stmnt = c.prepareStatement(
                                 "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED) VALUES(?, ?, ?, NOW(), ?, ?, FALSE)",
                                 Statement.RETURN_GENERATED_KEYS);
                         stmnt.setBoolean(1, false);
@@ -661,6 +688,11 @@ public class Controller {
             } catch (NullPointerException | SQLException e) {
                 logger.error("Error closing Statement");
             }
+            try {
+                c.close();
+            } catch (NullPointerException | SQLException e) {
+                logger.error("Error closing Connection");
+            }
         }
         return Response.status(500).entity("Unbekannter Fehler").build();
     }
@@ -671,8 +703,10 @@ public class Controller {
         if (VID != null) {
             PreparedStatement stmnt = null;
             ResultSet rs = null;
+            Connection c = null;
             try {
-                stmnt = this.getDB().prepareStatement("SELECT * FROM LOCKED_SONGS WHERE ytid = ?");
+            	c = this.getDB();
+                stmnt = c.prepareStatement("SELECT * FROM LOCKED_SONGS WHERE ytid = ?");
                 stmnt.setString(1, VID);
                 rs = stmnt.executeQuery();
                 if (rs.next()) {
@@ -691,6 +725,11 @@ public class Controller {
                     stmnt.close();
                 } catch (NullPointerException | SQLException e) {
                     logger.error("Error closing Statement");
+                }
+                try {
+                    c.close();
+                } catch (NullPointerException | SQLException e) {
+                    logger.error("Error closing Connection");
                 }
             }
         }

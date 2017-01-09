@@ -1,5 +1,6 @@
 package de.elite12.musikbot.server;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,8 +19,10 @@ public class Userservice {
         User u = null;
         PreparedStatement stmnt = null;
         ResultSet rs = null;
+        Connection c = null;
         try {
-            stmnt = this.getControl().getDB().prepareStatement("SELECT * FROM USER WHERE ID = ?");
+        	c = this.getControl().getDB();
+            stmnt = c.prepareStatement("SELECT * FROM USER WHERE ID = ?");
             stmnt.setInt(1, id);
             rs = stmnt.executeQuery();
             if (!rs.next()) {
@@ -41,6 +44,11 @@ public class Userservice {
             } catch (SQLException | NullPointerException e) {
                 Logger.getLogger(this.getClass()).error("Error closing Resultset", e);
             }
+            try {
+                c.close();
+            } catch (SQLException | NullPointerException e) {
+                Logger.getLogger(this.getClass()).error("Error closing Connection", e);
+            }
         }
         return u;
     }
@@ -50,8 +58,10 @@ public class Userservice {
         User u = null;
         PreparedStatement stmnt = null;
         ResultSet rs = null;
+        Connection c = null;
         try {
-            stmnt = this.getControl().getDB().prepareStatement("SELECT * FROM USER WHERE Name = ?");
+        	c = this.getControl().getDB();
+            stmnt = c.prepareStatement("SELECT * FROM USER WHERE Name = ?");
             stmnt.setString(1, name);
             rs = stmnt.executeQuery();
             if (!rs.next()) {
@@ -74,6 +84,11 @@ public class Userservice {
             } catch (SQLException | NullPointerException e) {
                 Logger.getLogger(this.getClass()).error("Error closing Resultset", e);
             }
+            try {
+                c.close();
+            } catch (SQLException | NullPointerException e) {
+                Logger.getLogger(this.getClass()).error("Error closing Connection", e);
+            }
         }
         return u;
     }
@@ -83,8 +98,10 @@ public class Userservice {
         User u = null;
         PreparedStatement stmnt = null;
         ResultSet rs = null;
+        Connection c = null;
         try {
-            stmnt = this.getControl().getDB().prepareStatement("SELECT * FROM USER WHERE EMAIL = ?");
+        	c = this.getControl().getDB();
+            stmnt = c.prepareStatement("SELECT * FROM USER WHERE EMAIL = ?");
             stmnt.setString(1, mail);
             rs = stmnt.executeQuery();
             if (!rs.next()) {
@@ -106,6 +123,11 @@ public class Userservice {
             } catch (SQLException | NullPointerException e) {
                 Logger.getLogger(this.getClass()).error("Error closing Resultset", e);
             }
+            try {
+                c.close();
+            } catch (SQLException | NullPointerException e) {
+                Logger.getLogger(this.getClass()).error("Error closing Connection", e);
+            }
         }
         return u;
     }
@@ -115,8 +137,10 @@ public class Userservice {
         User u = null;
         PreparedStatement stmnt = null;
         ResultSet rs = null;
+        Connection c = null;
         try {
-            stmnt = this.getControl().getDB().prepareStatement("SELECT * FROM USER WHERE TOKEN = ?");
+        	c = this.getControl().getDB();
+            stmnt = c.prepareStatement("SELECT * FROM USER WHERE TOKEN = ?");
             stmnt.setString(1, token);
             rs = stmnt.executeQuery();
             if (!rs.next()) {
@@ -138,16 +162,23 @@ public class Userservice {
             } catch (SQLException | NullPointerException e) {
                 Logger.getLogger(this.getClass()).error("Error closing Resultset", e);
             }
+            try {
+                c.close();
+            } catch (SQLException | NullPointerException e) {
+                Logger.getLogger(this.getClass()).error("Error closing Connection", e);
+            }
         }
         return u;
     }
 
     public Integer changeUser(User u) {
         PreparedStatement statement = null;
+        Connection c = null;
         Integer r = null;
         try {
+        	c = this.getControl().getDB();
             if (u.getId() != null) {
-                statement = this.getControl().getDB().prepareStatement(
+                statement = c.prepareStatement(
                         "UPDATE USER SET NAME = ?, PASSWORD = ?, EMAIL = ?, ADMIN = ?, TOKEN = ? WHERE ID = ?");
                 statement.setString(1, u.getName());
                 statement.setString(2, u.getPassword());
@@ -157,7 +188,7 @@ public class Userservice {
                 statement.setInt(6, u.getId());
                 Logger.getLogger(this.getClass()).info("User changed: " + u);
             } else {
-                statement = this.getControl().getDB().prepareStatement(
+                statement = c.prepareStatement(
                         "INSERT INTO USER (NAME, PASSWORD, EMAIL, ADMIN, TOKEN) VALUES (?, ?, ?, ?, ?)");
                 statement.setString(1, u.getName());
                 statement.setString(2, u.getPassword());
@@ -170,10 +201,15 @@ public class Userservice {
         } catch (SQLException e) {
             Logger.getLogger(this.getClass()).error("Error changing User: " + u.getName(), e);
         } finally {
-            try {
+        	try {
                 statement.close();
             } catch (SQLException | NullPointerException e) {
                 Logger.getLogger(this.getClass()).error("Error closing Statement", e);
+            }
+        	try {
+                c.close();
+            } catch (SQLException | NullPointerException e) {
+                Logger.getLogger(this.getClass()).error("Error closing Connection", e);
             }
         }
         return r;

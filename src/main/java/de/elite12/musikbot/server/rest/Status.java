@@ -1,5 +1,6 @@
 package de.elite12.musikbot.server.rest;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -42,9 +43,10 @@ public class Status {
 
         PreparedStatement stmnt = null;
         ResultSet rs = null;
+        Connection c = null;
         try {
-            stmnt = Controller.getInstance().getDB()
-                    .prepareStatement("select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC");
+        	c = Controller.getInstance().getDB();
+            stmnt = c.prepareStatement("select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC");
             rs = stmnt.executeQuery();
             while (rs.next()) {
                 Song s = new Song(rs);
@@ -74,6 +76,11 @@ public class Status {
                 stmnt.close();
             } catch (NullPointerException | SQLException e) {
                 Logger.getLogger(this.getClass()).error("Exception closing Statement", e);
+            }
+            try {
+                c.close();
+            } catch (NullPointerException | SQLException e) {
+                Logger.getLogger(this.getClass()).error("Exception closing Connection", e);
             }
         }
 
