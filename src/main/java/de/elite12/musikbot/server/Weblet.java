@@ -78,36 +78,50 @@ public class Weblet extends HttpServlet {
         if (req.getRequestURI().startsWith("/statistik/")) {
             req.setAttribute("worked", Boolean.valueOf(true));
             req.setAttribute("control", this.getControl());
-            PreparedStatement stmnt = null;
-            ResultSet rs = null;
+            PreparedStatement stmnt1 = null;
+            PreparedStatement stmnt2 = null;
+            PreparedStatement stmnt3 = null;
+            PreparedStatement stmnt4 = null;
+            ResultSet rs;
             Connection c = null;
             try {
             	c = this.getControl().getDB();
-                stmnt = c.prepareStatement(
+                stmnt1 = c.prepareStatement(
                         "SELECT SONG_NAME,SONG_LINK,COUNT(*) AS anzahl FROM PLAYLIST WHERE AUTOR != 'Automatisch' GROUP BY SONG_NAME,SONG_LINK ORDER BY COUNT(*) DESC");
-                rs = stmnt.executeQuery();
+                rs = stmnt1.executeQuery();
                 req.setAttribute("mostplayed", rs);
-                stmnt.close();
-                stmnt = c.prepareStatement(
+                stmnt2 = c.prepareStatement(
                         "SELECT SONG_NAME,SONG_LINK,COUNT(*) AS anzahl FROM PLAYLIST WHERE SONG_SKIPPED = TRUE AND AUTOR != 'Automatisch' GROUP BY SONG_NAME,SONG_LINK ORDER BY COUNT(*) DESC");
-                rs = stmnt.executeQuery();
+                rs = stmnt2.executeQuery();
                 req.setAttribute("mostskipped", rs);
-                stmnt.close();
-                stmnt = c.prepareStatement(
+                stmnt3 = c.prepareStatement(
                         "SELECT AUTOR,COUNT(*) AS anzahl FROM PLAYLIST WHERE AUTOR != 'Automatisch' GROUP BY AUTOR ORDER BY COUNT(*) DESC");
-                rs = stmnt.executeQuery();
+                rs = stmnt3.executeQuery();
                 req.setAttribute("topusers", rs);
-                stmnt.close();
-                stmnt = c.prepareStatement(
+                stmnt4 = c.prepareStatement(
                         "select count(*) from USER UNION ALL select count(*) from USER WHERE ADMIN = TRUE UNION ALL SELECT Count(*) FROM (SELECT AUTOR FROM PLAYLIST WHERE CHAR_LENGTH(AUTOR) = 36 GROUP BY Autor) AS T UNION ALL select count(*) from PLAYLIST WHERE AUTOR != 'Automatisch' UNION ALL select count(*) from PLAYLIST WHERE SONG_SKIPPED = TRUE UNION ALL select sum(SONG_DAUER) from PLAYLIST WHERE SONG_SKIPPED = FALSE;");
-                rs = stmnt.executeQuery();
+                rs = stmnt4.executeQuery();
                 req.setAttribute("allgemein", rs);
-                stmnt.close();
             } catch (SQLException e) {
                 Logger.getLogger(this.getClass()).error("SQLException", e);
             } finally {
             	try {
-                    stmnt.close();
+                    stmnt1.close();
+                } catch (SQLException | NullPointerException e) {
+                    Logger.getLogger(this.getClass()).debug("Cant close Statement", e);
+                }
+            	try {
+                    stmnt2.close();
+                } catch (SQLException | NullPointerException e) {
+                    Logger.getLogger(this.getClass()).debug("Cant close Statement", e);
+                }
+            	try {
+                    stmnt3.close();
+                } catch (SQLException | NullPointerException e) {
+                    Logger.getLogger(this.getClass()).debug("Cant close Statement", e);
+                }
+            	try {
+                    stmnt4.close();
                 } catch (SQLException | NullPointerException e) {
                     Logger.getLogger(this.getClass()).debug("Cant close Statement", e);
                 }

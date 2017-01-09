@@ -145,31 +145,5 @@
 			</table>
 		</div>
 	</div>
-	<%
-	try {
-		((ResultSet)request.getAttribute("mostplayed")).close();
-	}
-	catch(SQLException e) {
-		
-	}
-	try {
-		((ResultSet)request.getAttribute("mostskipped")).close();
-	}
-	catch(SQLException e) {
-		
-	}
-	try {
-		((ResultSet)request.getAttribute("topusers")).close();
-	}
-	catch(SQLException e) {
-		
-	}
-	try {
-		((ResultSet)request.getAttribute("allgemein")).close();
-	}
-	catch(SQLException e) {
-		
-	}
-	%>
 
 	<%@ include file="footer.jsp"%>
