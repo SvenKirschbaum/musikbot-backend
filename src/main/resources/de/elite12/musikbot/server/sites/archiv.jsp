@@ -76,9 +76,6 @@
 
 				</tbody>
 			</table>
-			<div id="archivlink" class="link">
-				<a href="/">Zur Playlist</a>
-			</div>
 			<div class="pager">
 				<a href="/archiv/">First</a>
 				<%= this.getPager((int)request.getAttribute("page")-3, request) %>

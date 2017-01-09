@@ -213,7 +213,8 @@ public class Controller {
     }
 
     public Song getnextSong() {
-        PreparedStatement stmnt = null;
+    	PreparedStatement stmnt = null;
+    	PreparedStatement stmnt2 = null;
         ResultSet rs = null;
         Connection c = null;
         try {
@@ -222,12 +223,11 @@ public class Controller {
                     "select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC LIMIT 0,1");
             rs = stmnt.executeQuery();
             if (rs.next()) {
-                stmnt.close();
                 logger.debug("Found Song in Database");
-                stmnt = c.prepareStatement(
+                stmnt2 = c.prepareStatement(
                         "UPDATE PLAYLIST SET SONG_PLAYED = TRUE, SONG_PLAYED_AT = NOW() WHERE SONG_ID = ?");
-                stmnt.setInt(1, rs.getInt("SONG_ID"));
-                stmnt.execute();
+                stmnt2.setInt(1, rs.getInt("SONG_ID"));
+                stmnt2.execute();
                 Song s = new Song(rs);
                 if (s.gettype().equals("youtube")) {
                     try {
@@ -279,12 +279,12 @@ public class Controller {
             return null;
         } finally {
             try {
-                rs.close();
+                stmnt.close();
             } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing ResultSet");
+                logger.error("Error closing Statement");
             }
             try {
-                stmnt.close();
+                stmnt2.close();
             } catch (NullPointerException | SQLException e) {
                 logger.error("Error closing Statement");
             }
