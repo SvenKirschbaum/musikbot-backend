@@ -281,17 +281,17 @@ public class Controller {
             try {
                 stmnt.close();
             } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing Statement");
+                logger.error("Error closing Statement",e);
             }
             try {
-                stmnt2.close();
+                if(stmnt2!=null) stmnt2.close();
             } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing Statement");
+                logger.error("Error closing Statement",e);
             }
             try {
                 c.close();
             } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing Connection");
+                logger.error("Error closing Connection",e);
             }
         }
     }
