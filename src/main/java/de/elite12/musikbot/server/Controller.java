@@ -3,7 +3,6 @@ package de.elite12.musikbot.server;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -375,21 +374,6 @@ public class Controller {
                 logger.error("Error closing Connection");
             }
         }
-    }
-
-    public String MD5(String md5) {
-        try {
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
-            byte[] array = md.digest(md5.getBytes("UTF-8"));
-            StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < array.length; ++i) {
-                sb.append(Integer.toHexString(array[i] & 0xFF | 0x100).substring(1, 3));
-            }
-            return sb.toString();
-        } catch (java.security.NoSuchAlgorithmException | UnsupportedEncodingException e) {
-            logger.error("Error calculating MD5", e);
-        }
-        return null;
     }
 
     private void shutdown() {
