@@ -122,7 +122,7 @@ public class Weblet extends HttpServlet {
                 rs = stmnt4.executeQuery();
                 list = new ArrayList<>(10);
                 while(rs.next()) {
-                	list.add(new TopEntry(null, null, rs.getInt(3)));
+                	list.add(new TopEntry(null, null, rs.getInt(1)));
                 }
                 req.setAttribute("allgemein", list);
             } catch (SQLException e) {
