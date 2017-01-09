@@ -88,19 +88,16 @@ public class Weblet extends HttpServlet {
                 rs = stmnt.executeQuery();
                 req.setAttribute("mostplayed", rs);
                 stmnt.close();
-                rs.close();
                 stmnt = c.prepareStatement(
                         "SELECT SONG_NAME,SONG_LINK,COUNT(*) AS anzahl FROM PLAYLIST WHERE SONG_SKIPPED = TRUE AND AUTOR != 'Automatisch' GROUP BY SONG_NAME,SONG_LINK ORDER BY COUNT(*) DESC");
                 rs = stmnt.executeQuery();
                 req.setAttribute("mostskipped", rs);
                 stmnt.close();
-                rs.close();
                 stmnt = c.prepareStatement(
                         "SELECT AUTOR,COUNT(*) AS anzahl FROM PLAYLIST WHERE AUTOR != 'Automatisch' GROUP BY AUTOR ORDER BY COUNT(*) DESC");
                 rs = stmnt.executeQuery();
                 req.setAttribute("topusers", rs);
                 stmnt.close();
-                rs.close();
                 stmnt = c.prepareStatement(
                         "select count(*) from USER UNION ALL select count(*) from USER WHERE ADMIN = TRUE UNION ALL SELECT Count(*) FROM (SELECT AUTOR FROM PLAYLIST WHERE CHAR_LENGTH(AUTOR) = 36 GROUP BY Autor) AS T UNION ALL select count(*) from PLAYLIST WHERE AUTOR != 'Automatisch' UNION ALL select count(*) from PLAYLIST WHERE SONG_SKIPPED = TRUE UNION ALL select sum(SONG_DAUER) from PLAYLIST WHERE SONG_SKIPPED = FALSE;");
                 rs = stmnt.executeQuery();
@@ -113,11 +110,6 @@ public class Weblet extends HttpServlet {
                     stmnt.close();
                 } catch (SQLException | NullPointerException e) {
                     Logger.getLogger(this.getClass()).debug("Cant close Statement", e);
-                }
-            	try {
-                    rs.close();
-                } catch (SQLException | NullPointerException e) {
-                    Logger.getLogger(this.getClass()).debug("Cant close ResultSet", e);
                 }
             	try {
                     c.close();
