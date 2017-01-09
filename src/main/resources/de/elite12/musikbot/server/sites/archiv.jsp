@@ -23,6 +23,9 @@
 <title>Elite12 - Musikbot - Archiv</title>
 </head>
 <body>
+	<div id="backlink" class="link">
+		<a href="/">Zurück</a>
+	</div>
 	<div id="topic"></div>
 	<div id="content">
 

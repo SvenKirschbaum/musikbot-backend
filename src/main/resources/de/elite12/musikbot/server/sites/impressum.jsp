@@ -9,6 +9,9 @@
 <title>Elite12 - Musikbot</title>
 </head>
 <body>
+	<div id="backlink" class="link">
+		<a href="/">Zurück</a>
+	</div>
 	<div id="topic"></div>
 	<div id="content">
 
