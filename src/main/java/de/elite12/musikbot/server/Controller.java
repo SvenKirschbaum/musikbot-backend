@@ -16,16 +16,8 @@ import java.util.Properties;
 import java.util.Scanner;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.sql.DataSource;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.dbcp2.ConnectionFactory;
-import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp2.PoolableConnection;
-import org.apache.commons.dbcp2.PoolableConnectionFactory;
-import org.apache.commons.dbcp2.PoolingDataSource;
-import org.apache.commons.pool2.ObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.jetty.server.Server;
@@ -48,6 +40,8 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.Video;
 import com.google.common.io.Closeables;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.mchange.v2.c3p0.DataSources;
 import com.wrapper.spotify.models.Track;
 
 import de.elite12.musikbot.server.Gapcloser.Mode;
@@ -65,7 +59,7 @@ public class Controller {
 
     private ConnectionListener connectionListener;
     private Server server;
-    private DataSource ds;
+    private ComboPooledDataSource ds;
     private Userservice userservice;
     private String songtitle = "Kein Song";
     private String state = "Keine Verbindung zum BOT";
@@ -111,16 +105,18 @@ public class Controller {
              */
             logger.debug("Initialising DataSource");
             Class.forName("org.mariadb.jdbc.Driver");
-            ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
-                    "jdbc:mariadb://localhost:3306/musikbot", "musikbot", getSecurePassword());
-            PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,
-                    null);
-            poolableConnectionFactory.setFastFailValidation(true);
-            poolableConnectionFactory.setValidationQuery("SELECT 1");
-            ObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
-            poolableConnectionFactory.setPool(connectionPool);
-            PoolingDataSource<PoolableConnection> dataSource = new PoolingDataSource<>(connectionPool);
-            this.ds = dataSource;
+            ComboPooledDataSource cpds = new ComboPooledDataSource();
+            cpds.setDriverClass("org.mariadb.jdbc.Driver");
+            cpds.setJdbcUrl("jdbc:mariadb://localhost:3306/musikbot");
+            cpds.setUser("musikbot");
+            cpds.setPassword(getPassword());
+            cpds.setMinPoolSize(2);
+            cpds.setMaxPoolSize(20);
+            cpds.setInitialPoolSize(2);
+            cpds.setAcquireIncrement(2);
+            cpds.setTestConnectionOnCheckout(true);
+
+            this.ds = cpds;
 
             this.userservice = new Userservice(this);
             logger.debug("Userservice initialised");
@@ -394,6 +390,8 @@ public class Controller {
             this.getConnectionListener().getSocket().close();
             logger.debug("Shutting down jetty...");
             this.server.stop();
+            logger.debug("Destroying DataSource...");
+            DataSources.destroy(this.ds);
             logger.debug("Interrupting Main Thread...");
             Thread.currentThread().interrupt();
         } catch (Exception e) {
@@ -736,7 +734,7 @@ public class Controller {
         req.getSession().setAttribute("msg", msgs);
     }
 
-    private static String getSecurePassword() {
+    private static String getPassword() {
         return "Q8rIj4ziwIBI8O3id4SAfATOYOfo81";
     }
 

@@ -210,15 +210,15 @@
 			<version>1.5.5</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-dbcp2</artifactId>
-			<version>2.1.1</version>
-		</dependency>
-		<dependency>
 			<groupId>de.mkammerer</groupId>
 			<artifactId>argon2-jvm</artifactId>
 			<version>2.1</version>
 		</dependency>
+		<dependency>
+            <groupId>com.mchange</groupId>
+            <artifactId>c3p0</artifactId>
+            <version>0.9.5.2</version>
+        </dependency>
 	</dependencies>
 	<organization>
 		<name>Elite12</name>
