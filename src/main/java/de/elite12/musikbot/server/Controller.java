@@ -106,19 +106,22 @@ public class Controller {
             logger.debug("Youtube API Connection initialised");
 
             /*
-             *  this.bds.setUrl("jdbc:mariadb://localhost:3306/musikbot");
-             *	this.bds.setUsername("musikbot");
-             *	this.bds.setPassword(getSecurePassword());
+             * this.bds.setUrl("jdbc:mariadb://localhost:3306/musikbot"); this.bds.setUsername("musikbot");
+             * this.bds.setPassword(getSecurePassword());
              */
             logger.debug("Initialising DataSource");
             Class.forName("org.mariadb.jdbc.Driver");
-            ConnectionFactory connectionFactory = new DriverManagerConnectionFactory("jdbc:mariadb://localhost:3306/musikbot","musikbot",getSecurePassword());
-            PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, null);
+            ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
+                    "jdbc:mariadb://localhost:3306/musikbot", "musikbot", getSecurePassword());
+            PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,
+                    null);
+            poolableConnectionFactory.setFastFailValidation(true);
+            poolableConnectionFactory.setValidationQuery("SELECT 1");
             ObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
             poolableConnectionFactory.setPool(connectionPool);
             PoolingDataSource<PoolableConnection> dataSource = new PoolingDataSource<>(connectionPool);
             this.ds = dataSource;
-            
+
             this.userservice = new Userservice(this);
             logger.debug("Userservice initialised");
 
@@ -201,7 +204,7 @@ public class Controller {
     }
 
     public Connection getDB() throws SQLException {
-		return this.ds.getConnection();
+        return this.ds.getConnection();
     }
 
     public static Controller getInstance() {
@@ -213,12 +216,12 @@ public class Controller {
     }
 
     public Song getnextSong() {
-    	PreparedStatement stmnt = null;
-    	PreparedStatement stmnt2 = null;
+        PreparedStatement stmnt = null;
+        PreparedStatement stmnt2 = null;
         ResultSet rs = null;
         Connection c = null;
         try {
-        	c = this.getDB();
+            c = this.getDB();
             stmnt = c.prepareStatement(
                     "select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC LIMIT 0,1");
             rs = stmnt.executeQuery();
@@ -281,17 +284,19 @@ public class Controller {
             try {
                 stmnt.close();
             } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing Statement",e);
+                logger.error("Error closing Statement", e);
             }
             try {
-                if(stmnt2!=null) stmnt2.close();
+                if (stmnt2 != null) {
+                    stmnt2.close();
+                }
             } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing Statement",e);
+                logger.error("Error closing Statement", e);
             }
             try {
                 c.close();
             } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing Connection",e);
+                logger.error("Error closing Connection", e);
             }
         }
     }
@@ -514,10 +519,9 @@ public class Controller {
                 logger.error("Error closing Statement");
             }
             try {
-            	c.close();
-            }
-            catch(NullPointerException | SQLException e) {
-            	logger.error("Error closing Connection");
+                c.close();
+            } catch (NullPointerException | SQLException e) {
+                logger.error("Error closing Connection");
             }
         }
         return Response.status(500).entity("Unbekannter Fehler").build();
@@ -689,7 +693,7 @@ public class Controller {
             ResultSet rs = null;
             Connection c = null;
             try {
-            	c = this.getDB();
+                c = this.getDB();
                 stmnt = c.prepareStatement("SELECT * FROM LOCKED_SONGS WHERE ytid = ?");
                 stmnt.setString(1, VID);
                 rs = stmnt.executeQuery();
