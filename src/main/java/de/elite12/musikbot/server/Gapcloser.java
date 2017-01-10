@@ -518,6 +518,7 @@ public class Gapcloser extends HttpServlet {
         public int getNext() {
             if (p >= this.list.size()) {
                 p = 0;
+                Collections.shuffle(this.list);
             }
             return this.list.get(this.p++);
         }
