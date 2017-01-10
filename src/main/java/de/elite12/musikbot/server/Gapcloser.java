@@ -1,12 +1,13 @@
 package de.elite12.musikbot.server;
 
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -16,11 +17,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
+import com.google.api.services.youtube.model.PlaylistItem;
+import com.google.api.services.youtube.model.PlaylistItemListResponse;
 import com.google.api.services.youtube.model.Video;
 import com.wrapper.spotify.models.Track;
 
-import de.elite12.musikbot.server.PlaylistImporter.Playlist;
-import de.elite12.musikbot.server.PlaylistImporter.Playlist.Entry;
 import de.elite12.musikbot.shared.Song;
 import de.elite12.musikbot.shared.Util;
 import de.elite12.musikbot.shared.Util.SpotifyPlaylistHelper;
@@ -42,7 +43,7 @@ public class Gapcloser extends HttpServlet {
     private Mode mode;
     private Controller control;
     private String playlist;
-    public static SecureRandom rng = new SecureRandom();
+    private Permutationhelper permutation;
 
     public Gapcloser(Controller ctr) {
         this.control = ctr;
@@ -50,7 +51,7 @@ public class Gapcloser extends HttpServlet {
         ResultSet rs = null;
         Connection c = null;
         try {
-        	c = this.getControl().getDB();
+            c = this.getControl().getDB();
             stmnt = c.prepareStatement("SELECT value FROM SETTINGS WHERE name = ?");
             stmnt.setString(1, "gapcloser");
             rs = stmnt.executeQuery();
@@ -66,22 +67,23 @@ public class Gapcloser extends HttpServlet {
         } catch (SQLException e) {
             Logger.getLogger(this.getClass()).error("SQLException", e);
         } finally {
-        	try {
+            try {
                 rs.close();
             } catch (SQLException | NullPointerException e) {
                 Logger.getLogger(this.getClass()).debug("Cant close Resultset", e);
             }
-        	try {
+            try {
                 stmnt.close();
             } catch (SQLException | NullPointerException e) {
                 Logger.getLogger(this.getClass()).debug("Cant close Statement", e);
             }
-        	try {
+            try {
                 c.close();
             } catch (SQLException | NullPointerException e) {
                 Logger.getLogger(this.getClass()).debug("Cant close Connection", e);
             }
         }
+        createPermutation();
     }
 
     private Controller getControl() {
@@ -124,15 +126,15 @@ public class Gapcloser extends HttpServlet {
                 break;
             }
             }
-            if (Util.getPID(req.getParameter("playlist")) != null || Util.getSPID(req.getParameter("playlist")) != null
-                    || Util.getSAID(req.getParameter("playlist")) != null) {
+            if (Util.getPID(req.getParameter("playlist")) != null
+                    || Util.getSPID(req.getParameter("playlist")) != null) {
                 String link = Util.getSPID(req.getParameter("playlist")) == null
-                        ? Util.getSAID(req.getParameter("playlist")) == null
-                                ? "https://www.youtube.com/playlist?list=" + Util.getPID(req.getParameter("playlist"))
-                                : "https://open.spotify.com/album/" + Util.getSAID(req.getParameter("playlist"))
+                        ? "https://www.youtube.com/playlist?list=" + Util.getPID(req.getParameter("playlist"))
                         : Util.getSPID(req.getParameter("playlist")).toString();
                 this.setPlaylist(link);
             }
+
+            createPermutation();
             Logger.getLogger(this.getClass())
                     .info("Gapcloser zu " + this.getMode() + " geändert (Playlist: " + this.getPlaylist() + ")");
             save();
@@ -144,7 +146,7 @@ public class Gapcloser extends HttpServlet {
         PreparedStatement stmnt = null;
         Connection c = null;
         try {
-        	c = this.getControl().getDB();
+            c = this.getControl().getDB();
             stmnt = c.prepareStatement("UPDATE SETTINGS SET value = ? WHERE name = ?");
             stmnt.setString(1, this.getMode().name());
             stmnt.setString(2, "gapcloser");
@@ -159,12 +161,12 @@ public class Gapcloser extends HttpServlet {
         } catch (SQLException e) {
             Logger.getLogger(this.getClass()).error("SQLException", e);
         } finally {
-        	try {
+            try {
                 stmnt.close();
             } catch (NullPointerException | SQLException e) {
                 Logger.getLogger(this.getClass()).debug("Eror closing Statement", e);
             }
-        	try {
+            try {
                 c.close();
             } catch (NullPointerException | SQLException e) {
                 Logger.getLogger(this.getClass()).debug("Eror closing Connection", e);
@@ -180,11 +182,11 @@ public class Gapcloser extends HttpServlet {
             Logger.getLogger(this.getClass()).error("Error loading Gapcloser Song", e);
         }
         if (s != null) {
-        	Connection c = null;
-        	PreparedStatement stmnt = null;
-        	ResultSet key = null;
+            Connection c = null;
+            PreparedStatement stmnt = null;
+            ResultSet key = null;
             try {
-            	c = this.getControl().getDB();
+                c = this.getControl().getDB();
                 stmnt = c.prepareStatement(
                         "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED, SONG_PLAYED_AT) VALUES(?, ?, ?, NOW(), ?, ?, FALSE, NOW())",
                         Statement.RETURN_GENERATED_KEYS);
@@ -199,26 +201,25 @@ public class Gapcloser extends HttpServlet {
                 Logger.getLogger(this.getClass())
                         .info("Gapcloser generated Song (ID: " + key.getLong(1) + ")" + s.toString());
             } catch (SQLException e) {
-                Logger.getLogger(Gapcloser.class).error("Error inserting Song",e);
+                Logger.getLogger(Gapcloser.class).error("Error inserting Song", e);
+            } finally {
+                try {
+                    key.close();
+                } catch (SQLException e) {
+                    Logger.getLogger(this.getClass()).debug("Eror closing Resultset", e);
+                }
+                try {
+                    stmnt.close();
+                } catch (SQLException e) {
+                    Logger.getLogger(this.getClass()).debug("Eror closing Statement", e);
+                }
+                try {
+                    c.close();
+                } catch (SQLException e) {
+                    Logger.getLogger(this.getClass()).debug("Eror closing Connection", e);
+                }
             }
-            finally {
-            	try {
-					key.close();
-				} catch (SQLException e) {
-					Logger.getLogger(this.getClass()).debug("Eror closing Resultset", e);
-				}
-            	try {
-					stmnt.close();
-				} catch (SQLException e) {
-					Logger.getLogger(this.getClass()).debug("Eror closing Statement", e);
-				}
-            	try {
-					c.close();
-				} catch (SQLException e) {
-					Logger.getLogger(this.getClass()).debug("Eror closing Connection", e);
-				}
-            }
-            
+
         }
         return s;
     }
@@ -233,7 +234,7 @@ public class Gapcloser extends HttpServlet {
             ResultSet rs = null;
             Connection c = null;
             try {
-            	c = this.getControl().getDB();
+                c = this.getControl().getDB();
                 stmnt = c.prepareStatement(
                         "SELECT SONG_NAME,SONG_LINK,SONG_DAUER FROM (SELECT SONG_NAME,SONG_LINK,SONG_DAUER FROM PLAYLIST WHERE AUTOR != 'Automatisch' GROUP BY SONG_NAME,SONG_LINK,SONG_DAUER ORDER BY COUNT(*) DESC LIMIT 100) ORDER BY RAND() LIMIT 1");
                 rs = stmnt.executeQuery();
@@ -285,17 +286,17 @@ public class Gapcloser extends HttpServlet {
             } catch (SQLException e) {
                 Logger.getLogger(this.getClass()).error("SQLException", e);
             } finally {
-            	try {
+                try {
                     rs.close();
                 } catch (SQLException | NullPointerException e) {
                     Logger.getLogger(this.getClass()).debug("Cant close Resultset", e);
                 }
-            	try {
+                try {
                     stmnt.close();
                 } catch (SQLException | NullPointerException e) {
                     Logger.getLogger(this.getClass()).debug("Cant close Statement", e);
                 }
-            	try {
+                try {
                     c.close();
                 } catch (SQLException | NullPointerException e) {
                     Logger.getLogger(this.getClass()).debug("Cant close Connection", e);
@@ -308,7 +309,7 @@ public class Gapcloser extends HttpServlet {
             ResultSet rs = null;
             Connection c = null;
             try {
-            	c = this.getControl().getDB();
+                c = this.getControl().getDB();
                 stmnt = c.prepareStatement("select * from PLAYLIST ORDER BY RAND() LIMIT 1");
                 rs = stmnt.executeQuery();
                 Song s = new Song(rs);
@@ -358,17 +359,17 @@ public class Gapcloser extends HttpServlet {
             } catch (SQLException e) {
                 Logger.getLogger(this.getClass()).error("SQLException", e);
             } finally {
-            	try {
+                try {
                     rs.close();
                 } catch (SQLException | NullPointerException e) {
                     Logger.getLogger(this.getClass()).debug("Cant close Resultset", e);
                 }
-            	try {
+                try {
                     stmnt.close();
                 } catch (SQLException | NullPointerException e) {
                     Logger.getLogger(this.getClass()).debug("Cant close Statement", e);
                 }
-            	try {
+                try {
                     c.close();
                 } catch (SQLException | NullPointerException e) {
                     Logger.getLogger(this.getClass()).debug("Cant close Connection", e);
@@ -379,15 +380,29 @@ public class Gapcloser extends HttpServlet {
         case PLAYLIST: {
             String pid = Util.getPID(this.getPlaylist());
             SpotifyPlaylistHelper spid = Util.getSPID(this.getPlaylist());
-            String said = Util.getSAID(this.getPlaylist());
-            Playlist p = spid == null
-                    ? said == null ? PlaylistImporter.getyoutubePlaylist(pid) : PlaylistImporter.getspotifyAlbum(said)
-                    : PlaylistImporter.getspotifyPlaylist(spid.user, spid.pid);
-            Entry e = p.entrys[Gapcloser.rng.nextInt(p.entrys.length)];
-            Song s = new Song(0, null, null, e.name, e.link, false, false, null, 0, 0);
-            if (s.gettype().equalsIgnoreCase("youtube")) {
+            int id = this.permutation.getNext();
 
+            if (pid != null) {
+                int page = (int) Math.floor(id / 50.0);
                 try {
+                    PlaylistItemListResponse r = Controller.getInstance().getYouTube().playlistItems()
+                            .list("snippet,status").setKey(Controller.key).setPlaylistId(pid).setMaxResults(50L)
+                            .setFields(
+                                    "items/snippet/title,items/snippet/resourceId/videoId,items/snippet/position,nextPageToken,pageInfo")
+                            .execute();
+                    for (int i = 0; i < page; i++) {
+                        r = Controller.getInstance().getYouTube().playlistItems().list("snippet,status")
+                                .setKey(Controller.key).setPlaylistId(pid).setMaxResults(50L)
+                                .setPageToken(r.getNextPageToken())
+                                .setFields(
+                                        "items/snippet/title,items/snippet/resourceId/videoId,items/snippet/position,nextPageToken,pageInfo")
+                                .execute();
+                    }
+                    PlaylistItem item = r.getItems().get(id % 50);
+                    Song s = new Song(0, null, null, item.getSnippet().getTitle(),
+                            "https://www.youtube.com/watch?v=" + item.getSnippet().getResourceId().getVideoId(), false,
+                            false, null, 0, 0);
+
                     Video v;
                     List<Video> vlist = this.getControl().getYouTube().videos().list("status,snippet,contentDetails")
                             .setKey(Controller.key).setId(Util.getVID(s.getLink()))
@@ -423,14 +438,19 @@ public class Gapcloser extends HttpServlet {
                     Logger.getLogger(this.getClass()).warn("Song invalid, skipping", e1);
                     return this.findnextSong();
                 }
-            } else {
-                Track t = Util.getTrack(Util.getSID(s.getLink()));
+            } else if (spid != null) {
+                Track t = Util.getTrackfromPlaylist(spid.user, spid.pid, id);
                 if (t == null) {
                     Logger.getLogger(this.getClass()).warn("Track invalid");
                     return this.findnextSong();
                 }
+                Song s = new Song(0, null, null, "[" + t.getArtists().get(0).getName() + "] " + t.getName(),
+                        "https://open.spotify.com/track/" + t.getId(), false, false, null, 0, 0);
                 return s;
+            } else {
+                return null;
             }
+
         }
         default: {
             return null;
@@ -461,5 +481,45 @@ public class Gapcloser extends HttpServlet {
 
     public void setPlaylist(String playlist) {
         this.playlist = playlist;
+    }
+
+    private void createPermutation() {
+        String pid = Util.getPID(this.getPlaylist());
+        SpotifyPlaylistHelper spid = Util.getSPID(this.getPlaylist());
+        if (pid != null) {
+            try {
+                PlaylistItemListResponse r = Controller.getInstance().getYouTube().playlistItems().list("snippet")
+                        .setKey(Controller.key).setPlaylistId(pid).setMaxResults(1L).setFields("pageInfo/totalResults")
+                        .execute();
+                this.permutation = new Permutationhelper(r.getPageInfo().getTotalResults());
+            } catch (IOException e) {
+                Logger.getLogger(Gapcloser.class).fatal("Error loading Playlist count", e);
+            }
+        } else if (spid != null) {
+            this.permutation = new Permutationhelper(Util.getPlaylistlength(spid.user, spid.pid));
+        } else {
+            Logger.getLogger(Gapcloser.class).fatal("Playlist invalid");
+        }
+    }
+
+    private class Permutationhelper {
+        private int p;
+        private List<Integer> list;
+
+        public Permutationhelper(int size) {
+            this.p = 0;
+            this.list = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
+                this.list.add(i);
+            }
+            Collections.shuffle(this.list);
+        }
+
+        public int getNext() {
+            if (p >= this.list.size()) {
+                p = 0;
+            }
+            return this.list.get(this.p++);
+        }
     }
 }
