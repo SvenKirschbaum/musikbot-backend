@@ -69,7 +69,7 @@ public class Song {
         PreparedStatement stmnt2 = null;
         Connection c = null;
         try {
-        	c = Controller.getInstance().getDB();
+            c = Controller.getInstance().getDB();
             stmnt = c.prepareStatement("DELETE FROM PLAYLIST WHERE SONG_ID = ? AND SONG_PLAYED = FALSE");
             stmnt2 = c.prepareStatement("INSERT INTO LOCKED_SONGS (YTID, SONG_NAME) VALUES (?, ?)");
             for (String b : a) {
@@ -95,13 +95,13 @@ public class Song {
         } catch (SQLException e) {
             Logger.getLogger(this.getClass()).error("SQL Exception", e);
         } finally {
-        	try {
+            try {
                 stmnt.close();
                 stmnt2.close();
             } catch (NullPointerException | SQLException e) {
                 Logger.getLogger(this.getClass()).error("Error closing Statement", e);
             }
-        	try {
+            try {
                 c.close();
             } catch (NullPointerException | SQLException e) {
                 Logger.getLogger(this.getClass()).error("Error closing Connection", e);
@@ -123,9 +123,11 @@ public class Song {
     @RolesAllowed("admin")
     @Consumes(MediaType.TEXT_PLAIN)
     public void sortsong(@PathParam("id") String sid, String prev) {
-    	Connection c = null;
-    	PreparedStatement stmnt = null;
-    	ResultSet rs = null;
+        Connection c = null;
+        PreparedStatement stmnt = null;
+        PreparedStatement stmnt2 = null;
+        PreparedStatement stmnt3 = null;
+        ResultSet rs = null;
         try {
             int id = Integer.parseInt(sid);
             int pr = -1;
@@ -137,41 +139,36 @@ public class Song {
             c = Controller.getInstance().getDB();
             stmnt = c.prepareStatement("select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC");
             rs = stmnt.executeQuery();
-            stmnt.close();
             if (rs.next()) {
                 low = rs.getInt("SONG_SORT");
             }
             if (pr == -1) {
                 pr = low - 1;
             } else {
-                stmnt = c.prepareStatement("select * from PLAYLIST WHERE SONG_ID = ?");
-                stmnt.setInt(1, pr);
-                ResultSet rs2 = stmnt.executeQuery();
+                stmnt2 = c.prepareStatement("select * from PLAYLIST WHERE SONG_ID = ?");
+                stmnt2.setInt(1, pr);
+                ResultSet rs2 = stmnt2.executeQuery();
                 rs2.next();
                 pr = rs2.getInt("SONG_SORT");
-                rs2.close();
-                stmnt.close();
             }
-            stmnt = c.prepareStatement("UPDATE PLAYLIST SET SONG_SORT = ? WHERE SONG_ID = ?");
-            stmnt.setInt(1, pr + 1);
-            stmnt.setInt(2, id);
-            stmnt.addBatch();
+            stmnt3 = c.prepareStatement("UPDATE PLAYLIST SET SONG_SORT = ? WHERE SONG_ID = ?");
+            stmnt3.setInt(1, pr + 1);
+            stmnt3.setInt(2, id);
+            stmnt3.addBatch();
             do {
                 if (rs.getInt("SONG_ID") != id) {
                     if (rs.getInt("SONG_SORT") == pr + 1 && sc != null) {
                         low++;
                     }
                     if (rs.getInt("SONG_SORT") != low) {
-                        stmnt.setInt(1, low);
-                        stmnt.setInt(2, rs.getInt("Song_ID"));
-                        stmnt.addBatch();
+                        stmnt3.setInt(1, low);
+                        stmnt3.setInt(2, rs.getInt("Song_ID"));
+                        stmnt3.addBatch();
                     }
                     low++;
                 }
             } while (rs.next());
-            stmnt.executeBatch();
-            stmnt.close();
-            rs.close();
+            stmnt3.executeBatch();
             if (sc != null) {
                 Logger.getLogger(this.getClass()).info("Playlist sorted by: " + sc.getUserPrincipal());
             }
@@ -181,22 +178,36 @@ public class Song {
             e.printStackTrace();
             throw new WebApplicationException(e);
         } finally {
-        	try {
-        		c.close();
-        	}
-        	catch(SQLException e) {
-        		Logger.getLogger(this.getClass()).warn("Error closing Connection",e);
-        	}
+            try {
+                stmnt.close();
+            } catch (NullPointerException | SQLException e) {
+                Logger.getLogger(this.getClass()).warn("Error closing Statement", e);
+            }
+            try {
+                stmnt2.close();
+            } catch (NullPointerException | SQLException e) {
+                Logger.getLogger(this.getClass()).warn("Error closing Statement", e);
+            }
+            try {
+                stmnt3.close();
+            } catch (NullPointerException | SQLException e) {
+                Logger.getLogger(this.getClass()).warn("Error closing Statement", e);
+            }
+            try {
+                c.close();
+            } catch (NullPointerException | SQLException e) {
+                Logger.getLogger(this.getClass()).warn("Error closing Connection", e);
+            }
         }
 
     }
 
     private de.elite12.musikbot.shared.Song getSongbyID(int id) {
-    	Connection c = null;
-    	PreparedStatement stmnt = null;
-    	ResultSet rs = null;
+        Connection c = null;
+        PreparedStatement stmnt = null;
+        ResultSet rs = null;
         try {
-        	c = Controller.getInstance().getDB();
+            c = Controller.getInstance().getDB();
             stmnt = c.prepareStatement("select * from PLAYLIST WHERE SONG_ID = ?");
             stmnt.setInt(1, id);
             rs = stmnt.executeQuery();
@@ -211,26 +222,22 @@ public class Song {
             }
         } catch (SQLException e) {
             Logger.getLogger(this.getClass()).error("SQL ERROR", e);
-        }
-        finally {
-        	try {
-        		rs.close();
-        	}
-        	catch (SQLException e) {
-        		Logger.getLogger(this.getClass()).error("Error closing Resultset",e);
-        	}
-        	try {
-        		stmnt.close();
-        	}
-        	catch (SQLException e) {
-        		Logger.getLogger(this.getClass()).error("Error closing Statement",e);
-        	}
-        	try {
-        		c.close();
-        	}
-        	catch (SQLException e) {
-        		Logger.getLogger(this.getClass()).error("Error closing Connection",e);
-        	}
+        } finally {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                Logger.getLogger(this.getClass()).error("Error closing Resultset", e);
+            }
+            try {
+                stmnt.close();
+            } catch (SQLException e) {
+                Logger.getLogger(this.getClass()).error("Error closing Statement", e);
+            }
+            try {
+                c.close();
+            } catch (SQLException e) {
+                Logger.getLogger(this.getClass()).error("Error closing Connection", e);
+            }
         }
         return null;
     }
