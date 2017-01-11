@@ -20,14 +20,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 public class Weblet extends HttpServlet {
-    
+
     private static final long serialVersionUID = -4574458516914107420L;
     private Controller control;
-    
+
     public Weblet(Controller ctr) {
         this.control = ctr;
     }
-    
+
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.handleGuest(req);
@@ -96,21 +96,21 @@ public class Weblet extends HttpServlet {
                     list.add(new TopEntry(rs.getString(1), rs.getString(2), rs.getInt(3)));
                 }
                 req.setAttribute("mostplayed", list);
-
+                
                 rs = stmnt2.executeQuery();
                 list = new ArrayList<>(10);
                 while (rs.next()) {
                     list.add(new TopEntry(rs.getString(1), rs.getString(2), rs.getInt(3)));
                 }
                 req.setAttribute("mostskipped", list);
-
+                
                 rs = stmnt3.executeQuery();
                 list = new ArrayList<>(10);
                 while (rs.next()) {
                     list.add(new TopEntry(rs.getString(1), null, rs.getInt(2)));
                 }
                 req.setAttribute("topusers", list);
-
+                
                 rs = stmnt4.executeQuery();
                 list = new ArrayList<>(10);
                 while (rs.next()) {
@@ -140,12 +140,12 @@ public class Weblet extends HttpServlet {
                 } catch (NumberFormatException e) {
                     p = 1;
                 }
-
+                
                 ResultSet rs = stmnt.executeQuery();
                 rs.next();
                 req.setAttribute("seiten", Double.valueOf(Math.ceil(1D * rs.getInt(1) / 30)).intValue());
                 req.setAttribute("page", p);
-                
+
                 stmnt2.setInt(1, (p - 1) * 30);
                 rs = stmnt2.executeQuery();
                 req.setAttribute("result", rs);
@@ -156,7 +156,7 @@ public class Weblet extends HttpServlet {
             }
             return;
         }
-
+        
         if (!req.getRequestURI().equals("/")) {
             resp.sendError(404);
             return;
@@ -179,7 +179,7 @@ public class Weblet extends HttpServlet {
             Logger.getLogger(this.getClass()).error("SQLException", e);
         }
     }
-    
+
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.handleGuest(req);
@@ -227,7 +227,7 @@ public class Weblet extends HttpServlet {
                                                 req.getParameter("password"), req.getParameter("mail"));
                                         this.getControl().addmessage(req, "Registrierung Erfolgreich",
                                                 UserMessage.TYPE_SUCCESS);
-
+                                        
                                         stmnt.setString(1, u.getName());
                                         stmnt.setString(2,
                                                 ((UUID) req.getSession().getAttribute("guest_id")).toString());
@@ -246,7 +246,7 @@ public class Weblet extends HttpServlet {
                         }
                     }
                 }
-                
+
             }
             return;
         }
@@ -267,18 +267,18 @@ public class Weblet extends HttpServlet {
                             if (this.getControl().getUserservice().checkPassword(user, req.getParameter("password"))) {
                                 this.getControl().addmessage(req, "Login Erfolgreich", UserMessage.TYPE_SUCCESS);
                                 if (req.getSession().getAttribute("guest_id") != null) {
-                                    
+
                                     stmnt.setString(1, user.getName());
                                     stmnt.setString(2, ((UUID) req.getSession().getAttribute("guest_id")).toString());
                                     stmnt.executeUpdate();
                                 }
-                                
+
                                 req.getSession().setAttribute("user", user);
                                 resp.sendRedirect("/");
                                 Logger.getLogger(this.getClass())
                                         .info("Login by User: " + user + " from IP: " + req.getHeader("X-Real-IP")
                                                 + " Old-ID:" + req.getSession().getAttribute("guest_id"));
-                                
+
                                 req.getSession().removeAttribute("guest_id");
                                 return;
                             } else {
@@ -307,11 +307,11 @@ public class Weblet extends HttpServlet {
             resp.sendRedirect("/");
         }
     }
-    
+
     private Controller getControl() {
         return control;
     }
-    
+
     private boolean isValidEmailAddress(String email) {
         boolean result = true;
         try {
@@ -322,7 +322,7 @@ public class Weblet extends HttpServlet {
         }
         return result;
     }
-    
+
     private void updatelastseen(User u) {
         Logger.getLogger(this.getClass()).debug("Update Lastsen Info for User: " + u);
         try (
@@ -336,8 +336,11 @@ public class Weblet extends HttpServlet {
             Logger.getLogger(this.getClass()).error("SQLException", e);
         }
     }
-    
+
     private void handleGuest(HttpServletRequest req) {
+        if (req.getHeader("X-Real-IP").equals("46.38.251.200")) {
+            return;
+        }
         Logger.getLogger(this.getClass()).debug("Handling Guest...");
         UUID id = (UUID) req.getSession().getAttribute("guest_id");
         if (id == null && req.getSession().getAttribute("user") == null) {
@@ -350,34 +353,34 @@ public class Weblet extends HttpServlet {
             this.updatelastseen((User) req.getSession().getAttribute("user"));
         }
     }
-    
+
     private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
         throw new java.io.NotSerializableException(getClass().getName());
     }
-    
+
     private void readObject(java.io.ObjectInputStream stream) throws java.io.IOException, ClassNotFoundException {
         throw new java.io.NotSerializableException(getClass().getName());
     }
-    
+
     public class TopEntry {
         private final String name;
         private final String link;
         private final Integer count;
-        
+
         public TopEntry(String n, String l, Integer c) {
             this.name = n;
             this.link = l;
             this.count = c;
         }
-        
+
         public String getName() {
             return name;
         }
-        
+
         public String getLink() {
             return link;
         }
-        
+
         public Integer getCount() {
             return count;
         }
