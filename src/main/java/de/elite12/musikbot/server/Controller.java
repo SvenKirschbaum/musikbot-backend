@@ -212,19 +212,17 @@ public class Controller {
     }
 
     public Song getnextSong() {
-        PreparedStatement stmnt = null;
-        PreparedStatement stmnt2 = null;
-        ResultSet rs = null;
-        Connection c = null;
-        try {
-            c = this.getDB();
-            stmnt = c.prepareStatement(
-                    "select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC LIMIT 0,1");
-            rs = stmnt.executeQuery();
+        try (
+                Connection c = this.getDB();
+                PreparedStatement stmnt = c.prepareStatement(
+                        "select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC LIMIT 0,1");
+                PreparedStatement stmnt2 = c.prepareStatement(
+                        "UPDATE PLAYLIST SET SONG_PLAYED = TRUE, SONG_PLAYED_AT = NOW() WHERE SONG_ID = ?");
+        ) {
+            ResultSet rs = stmnt.executeQuery();
             if (rs.next()) {
                 logger.debug("Found Song in Database");
-                stmnt2 = c.prepareStatement(
-                        "UPDATE PLAYLIST SET SONG_PLAYED = TRUE, SONG_PLAYED_AT = NOW() WHERE SONG_ID = ?");
+                
                 stmnt2.setInt(1, rs.getInt("SONG_ID"));
                 stmnt2.execute();
                 Song s = new Song(rs);
@@ -276,24 +274,6 @@ public class Controller {
         } catch (SQLException e) {
             logger.error("Error loading next Song from Database", e);
             return null;
-        } finally {
-            try {
-                stmnt.close();
-            } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing Statement", e);
-            }
-            try {
-                if (stmnt2 != null) {
-                    stmnt2.close();
-                }
-            } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing Statement", e);
-            }
-            try {
-                c.close();
-            } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing Connection", e);
-            }
         }
     }
 
@@ -331,49 +311,26 @@ public class Controller {
     }
 
     public void markskipped() {
-        PreparedStatement stmnt = null;
-        ResultSet rs = null;
-        Connection c = null;
-        try {
+        try (
+                Connection c = this.getDB();
+                PreparedStatement stmnt = c.prepareStatement(
+                        "select * from PLAYLIST WHERE SONG_PLAYED = TRUE ORDER BY SONG_ID DESC LIMIT 0,1");
+        ) {
             logger.debug("Marking last Song as skipped");
-            c = this.getDB();
-            stmnt = c.prepareStatement(
-                    "select * from PLAYLIST WHERE SONG_PLAYED = TRUE ORDER BY SONG_ID DESC LIMIT 0,1");
-            rs = stmnt.executeQuery();
+
+            ResultSet rs = stmnt.executeQuery();
             if (rs.next()) {
-                PreparedStatement stmnt2 = null;
-                try {
-                    stmnt2 = c.prepareStatement(
-                            "UPDATE PLAYLIST SET SONG_SKIPPED = TRUE WHERE SONG_ID = " + rs.getInt("SONG_ID"));
+                try (
+                        PreparedStatement stmnt2 = c.prepareStatement(
+                                "UPDATE PLAYLIST SET SONG_SKIPPED = TRUE WHERE SONG_ID = " + rs.getInt("SONG_ID"));
+                ) {
                     stmnt2.execute();
                 } catch (SQLException e) {
                     logger.error("SQL Error marking last Song as skipped", e);
-                } finally {
-                    try {
-                        stmnt2.close();
-                    } catch (NullPointerException | SQLException e) {
-                        logger.error("Error closing Statement2");
-                    }
                 }
             }
         } catch (SQLException e) {
             logger.error("SQL Error marking last Song as skipped", e);
-        } finally {
-            try {
-                rs.close();
-            } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing ResultSet");
-            }
-            try {
-                stmnt.close();
-            } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing Statement");
-            }
-            try {
-                c.close();
-            } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing Connection");
-            }
         }
     }
 
@@ -413,11 +370,18 @@ public class Controller {
 
     private Response addSSong(String SID, User user, String gid) {
         logger.debug("Adding new Song to Playlist... :" + SID);
-        Connection c = null;
-        PreparedStatement stmnt = null;
-        ResultSet rs = null;
         String notice = null;
-        try {
+        try (
+                Connection c = this.getDB();
+                PreparedStatement stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE");
+                PreparedStatement stmnt2 = c
+                        .prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND SONG_LINK = ?");
+                PreparedStatement stmnt3 = c
+                        .prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND AUTOR = ?");
+                PreparedStatement stmnt4 = c.prepareStatement(
+                        "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED) VALUES(?, ?, ?, NOW(), ?, ?, FALSE)",
+                        Statement.RETURN_GENERATED_KEYS);
+        ) {
             if (this.islocked(SID)) {
                 if (user != null && user.isAdmin()) {
                     logger.debug("Song is locked, but User is Admin, creating Notice");
@@ -428,30 +392,21 @@ public class Controller {
                 }
 
             }
-            c = this.getDB();
-            stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE");
-            rs = stmnt.executeQuery();
+            ResultSet rs = stmnt.executeQuery();
             rs.next();
             if (rs.getInt(1) < 24) {
-                rs.close();
-                stmnt.close();
-                stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND SONG_LINK = ?");
                 stmnt.setString(1, "http://open.spotify.com/track/" + SID);
-                rs = stmnt.executeQuery();
-                rs.next();
-                if (rs.getInt(1) == 0) {
-                    rs.close();
-                    stmnt.close();
-                    stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND AUTOR = ?");
+                ResultSet rs2 = stmnt2.executeQuery();
+                rs2.next();
+                if (rs2.getInt(1) == 0) {
                     if (user != null) {
-                        stmnt.setString(1, user.getName());
+                        stmnt3.setString(1, user.getName());
                     } else {
-                        stmnt.setString(1, gid);
+                        stmnt3.setString(1, gid);
                     }
-                    rs = stmnt.executeQuery();
-                    rs.next();
-                    if (rs.getInt(1) < 2 || user != null && user.isAdmin()) {
-                        stmnt.close();
+                    ResultSet rs3 = stmnt3.executeQuery();
+                    rs3.next();
+                    if (rs3.getInt(1) < 2 || user != null && user.isAdmin()) {
                         Track track = Util.getTrack(SID);
                         if (track != null) {
                             if (track.getDuration() > 390000 && !(user != null && user.isAdmin())) {
@@ -461,20 +416,18 @@ public class Controller {
                             logger.debug("Song not available");
                             return Response.status(404).entity("URL ungültig").build();
                         }
-                        stmnt = c.prepareStatement(
-                                "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED) VALUES(?, ?, ?, NOW(), ?, ?, FALSE)",
-                                Statement.RETURN_GENERATED_KEYS);
-                        stmnt.setBoolean(1, false);
-                        stmnt.setString(2, "http://open.spotify.com/track/" + SID);
-                        stmnt.setString(3, "[" + track.getArtists().get(0).getName() + "] " + track.getName());
+
+                        stmnt4.setBoolean(1, false);
+                        stmnt4.setString(2, "http://open.spotify.com/track/" + SID);
+                        stmnt4.setString(3, "[" + track.getArtists().get(0).getName() + "] " + track.getName());
                         if (user != null) {
-                            stmnt.setString(4, user.getName());
+                            stmnt4.setString(4, user.getName());
                         } else {
-                            stmnt.setString(4, gid);
+                            stmnt4.setString(4, gid);
                         }
-                        stmnt.setInt(5, (int) Math.round(new Integer(track.getDuration()).doubleValue() / 1000));
-                        stmnt.executeUpdate();
-                        ResultSet key = stmnt.getGeneratedKeys();
+                        stmnt4.setInt(5, (int) Math.round(new Integer(track.getDuration()).doubleValue() / 1000));
+                        stmnt4.executeUpdate();
+                        ResultSet key = stmnt4.getGeneratedKeys();
                         key.next();
                         try {
                             logger.info("Succesfully added Song (ID: " + key.getLong(1) + ") to Playlist: " + SID
@@ -505,33 +458,24 @@ public class Controller {
             }
         } catch (SQLException e) {
             logger.error("Error adding Song \"" + SID + "\"", e);
-        } finally {
-            try {
-                rs.close();
-            } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing ResultSet");
-            }
-            try {
-                stmnt.close();
-            } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing Statement");
-            }
-            try {
-                c.close();
-            } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing Connection");
-            }
         }
         return Response.status(500).entity("Unbekannter Fehler").build();
     }
 
     private Response addYSong(String vID, User user, String gid) {
         logger.debug("Adding new Song to Playlist... :" + user);
-        Connection c = null;
-        PreparedStatement stmnt = null;
-        ResultSet rs = null;
         String notice = null;
-        try {
+        try (
+                Connection c = this.getDB();
+                PreparedStatement stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE");
+                PreparedStatement stmnt2 = c
+                        .prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND SONG_LINK = ?");
+                PreparedStatement stmnt3 = c
+                        .prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND AUTOR = ?");
+                PreparedStatement stmnt4 = c.prepareStatement(
+                        "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED) VALUES(?, ?, ?, NOW(), ?, ?, FALSE)",
+                        Statement.RETURN_GENERATED_KEYS);
+        ) {
             if (this.islocked(vID)) {
                 if (user != null && user.isAdmin()) {
                     logger.debug("Song is locked, but User is Admin, creating Notice");
@@ -542,30 +486,22 @@ public class Controller {
                 }
 
             }
-            c = this.getDB();
-            stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE");
-            rs = stmnt.executeQuery();
+            
+            ResultSet rs = stmnt.executeQuery();
             rs.next();
             if (rs.getInt(1) < 24) {
-                rs.close();
-                stmnt.close();
-                stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND SONG_LINK = ?");
-                stmnt.setString(1, "https://www.youtube.com/watch?v=" + vID);
-                rs = stmnt.executeQuery();
-                rs.next();
-                if (rs.getInt(1) == 0) {
-                    rs.close();
-                    stmnt.close();
-                    stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND AUTOR = ?");
+                stmnt2.setString(1, "https://www.youtube.com/watch?v=" + vID);
+                ResultSet rs2 = stmnt2.executeQuery();
+                rs2.next();
+                if (rs2.getInt(1) == 0) {
                     if (user != null) {
-                        stmnt.setString(1, user.getName());
+                        stmnt3.setString(1, user.getName());
                     } else {
-                        stmnt.setString(1, gid);
+                        stmnt3.setString(1, gid);
                     }
-                    rs = stmnt.executeQuery();
-                    rs.next();
-                    if (rs.getInt(1) < 2 || user != null && user.isAdmin()) {
-                        stmnt.close();
+                    ResultSet rs3 = stmnt3.executeQuery();
+                    rs3.next();
+                    if (rs3.getInt(1) < 2 || user != null && user.isAdmin()) {
                         Video v;
                         try {
                             List<Video> list = this.getYouTube().videos().list("status,snippet,contentDetails")
@@ -619,20 +555,17 @@ public class Controller {
                             logger.debug("Video not available", e);
                             return Response.status(404).entity("URL ungültig").build();
                         }
-                        stmnt = c.prepareStatement(
-                                "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED) VALUES(?, ?, ?, NOW(), ?, ?, FALSE)",
-                                Statement.RETURN_GENERATED_KEYS);
-                        stmnt.setBoolean(1, false);
-                        stmnt.setString(2, "https://www.youtube.com/watch?v=" + vID);
-                        stmnt.setString(3, v.getSnippet().getTitle());
+                        stmnt4.setBoolean(1, false);
+                        stmnt4.setString(2, "https://www.youtube.com/watch?v=" + vID);
+                        stmnt4.setString(3, v.getSnippet().getTitle());
                         if (user != null) {
-                            stmnt.setString(4, user.getName());
+                            stmnt4.setString(4, user.getName());
                         } else {
-                            stmnt.setString(4, gid);
+                            stmnt4.setString(4, gid);
                         }
-                        stmnt.setInt(5, (int) Duration.parse(v.getContentDetails().getDuration()).getSeconds());
-                        stmnt.executeUpdate();
-                        ResultSet key = stmnt.getGeneratedKeys();
+                        stmnt4.setInt(5, (int) Duration.parse(v.getContentDetails().getDuration()).getSeconds());
+                        stmnt4.executeUpdate();
+                        ResultSet key = stmnt4.getGeneratedKeys();
                         key.next();
                         try {
                             logger.info("Succesfully added Song (ID: " + key.getLong(1) + ") to Playlist: " + vID
@@ -663,22 +596,6 @@ public class Controller {
             }
         } catch (SQLException e) {
             logger.error("Error adding Song \"" + user + "\"", e);
-        } finally {
-            try {
-                rs.close();
-            } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing ResultSet");
-            }
-            try {
-                stmnt.close();
-            } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing Statement");
-            }
-            try {
-                c.close();
-            } catch (NullPointerException | SQLException e) {
-                logger.error("Error closing Connection");
-            }
         }
         return Response.status(500).entity("Unbekannter Fehler").build();
     }
@@ -687,36 +604,18 @@ public class Controller {
         logger.debug("Checking if Song is locked: " + VID);
         boolean result = false;
         if (VID != null) {
-            PreparedStatement stmnt = null;
-            ResultSet rs = null;
-            Connection c = null;
-            try {
-                c = this.getDB();
-                stmnt = c.prepareStatement("SELECT * FROM LOCKED_SONGS WHERE ytid = ?");
+            try (
+                    Connection c = this.getDB();
+                    PreparedStatement stmnt = c.prepareStatement("SELECT * FROM LOCKED_SONGS WHERE ytid = ?");
+            ) {
                 stmnt.setString(1, VID);
-                rs = stmnt.executeQuery();
+                ResultSet rs = stmnt.executeQuery();
                 if (rs.next()) {
                     logger.debug("Song is locked");
                     result = true;
                 }
             } catch (SQLException e) {
                 logger.error("SQL Exception while checking Song Lock", e);
-            } finally {
-                try {
-                    rs.close();
-                } catch (NullPointerException | SQLException e) {
-                    logger.error("Error closing ResultSet");
-                }
-                try {
-                    stmnt.close();
-                } catch (NullPointerException | SQLException e) {
-                    logger.error("Error closing Statement");
-                }
-                try {
-                    c.close();
-                } catch (NullPointerException | SQLException e) {
-                    logger.error("Error closing Connection");
-                }
             }
         }
         logger.debug("Song not locked");

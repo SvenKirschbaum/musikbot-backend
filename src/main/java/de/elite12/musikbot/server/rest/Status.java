@@ -28,7 +28,7 @@ import de.elite12.musikbot.shared.Util;
 public class Status {
     @Context
     private HttpServletRequest req;
-
+    
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public StatusUpdate getstatus() {
@@ -41,13 +41,12 @@ public class Status {
 
         int dauer = 0;
 
-        PreparedStatement stmnt = null;
-        ResultSet rs = null;
-        Connection c = null;
-        try {
-        	c = Controller.getInstance().getDB();
-            stmnt = c.prepareStatement("select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC");
-            rs = stmnt.executeQuery();
+        try (
+                Connection c = Controller.getInstance().getDB();
+                PreparedStatement stmnt = c
+                        .prepareStatement("select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC");
+        ) {
+            ResultSet rs = stmnt.executeQuery();
             while (rs.next()) {
                 Song s = new Song(rs);
                 dauer += s.getDauer();
@@ -66,22 +65,6 @@ public class Status {
             }
         } catch (SQLException e) {
             Logger.getLogger(this.getClass()).error("SQL Exception", e);
-        } finally {
-            try {
-                rs.close();
-            } catch (NullPointerException | SQLException e) {
-                Logger.getLogger(this.getClass()).error("Exception closing ResultSet", e);
-            }
-            try {
-                stmnt.close();
-            } catch (NullPointerException | SQLException e) {
-                Logger.getLogger(this.getClass()).error("Exception closing Statement", e);
-            }
-            try {
-                c.close();
-            } catch (NullPointerException | SQLException e) {
-                Logger.getLogger(this.getClass()).error("Exception closing Connection", e);
-            }
         }
 
         st.playlistdauer = dauer / 60;
