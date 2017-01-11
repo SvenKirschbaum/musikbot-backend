@@ -28,11 +28,11 @@ public class SongManagement extends HttpServlet {
      */
     private static final long serialVersionUID = 8275807815188101274L;
     private Controller control;
-    
+
     public SongManagement(Controller ctr) {
         this.control = ctr;
     }
-    
+
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (req.getSession().getAttribute("user") != null && ((User) req.getSession().getAttribute("user")).isAdmin()) {
@@ -57,7 +57,7 @@ public class SongManagement extends HttpServlet {
             resp.sendRedirect("/");
         }
     }
-    
+
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (req.getSession().getAttribute("user") != null && ((User) req.getSession().getAttribute("user")).isAdmin()) {
@@ -122,7 +122,7 @@ public class SongManagement extends HttpServlet {
                             } else {
                                 throw new IOException("");
                             }
-                        } catch (IOException e) {
+                        } catch (IndexOutOfBoundsException | IOException e) {
                             Logger.getLogger(SongManagement.class).warn("Service Exception", e);
                             this.getControl().addmessage(req, "Der eingegebene Link war ungültig!",
                                     UserMessage.TYPE_ERROR);
@@ -168,15 +168,15 @@ public class SongManagement extends HttpServlet {
         }
         resp.sendRedirect("/");
     }
-    
+
     private Controller getControl() {
         return control;
     }
-    
+
     private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
         throw new java.io.NotSerializableException(getClass().getName());
     }
-    
+
     private void readObject(java.io.ObjectInputStream stream) throws java.io.IOException, ClassNotFoundException {
         throw new java.io.NotSerializableException(getClass().getName());
     }
