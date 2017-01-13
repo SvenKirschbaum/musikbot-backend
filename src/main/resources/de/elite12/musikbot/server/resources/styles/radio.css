@@ -1180,27 +1180,17 @@ body.error {
     margin-right: 5%;
     color: #9E9E9E;
 }
-#usercontainer > div {
-	float: left;
+#pbild {
+	float:left;
+}
+.listwrapper {
+	width: 33%;
+    float: left;
     margin-left: 2%;
-    margin-top: 2%;
 }
-#usercontainer > div td {
-	padding: 4px;
-}
-#usercontainer > div > div td {
-	padding: 2px;
-}
-#topskipped, #topsongs {
+.listwrapper > div {
 	margin-bottom: 5%;
 }
-#usercontainer > div > div td:first-child,#usercontainer > div > div td:last-child {
-	width: 10%;
-	text-align: center;
-}
-#usercontainer table {
-	width: 100%;
-}
-#usercontainer th {
-	color: #E0E0E0;
+.listwrapper td {
+	padding: 3px;
 }

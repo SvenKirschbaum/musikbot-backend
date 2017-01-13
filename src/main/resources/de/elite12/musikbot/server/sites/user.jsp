@@ -19,6 +19,7 @@
 			<img alt="profilbild"
 				src="https://www.gravatar.com/avatar/<%=Util.md5Hex(((User) request.getAttribute("viewuser")).getEmail().toLowerCase(Locale.GERMAN))%>?s=350&d=<%=URLEncoder.encode("https://musikbot.elite12.de/res/favicon.png","UTF-8") %>" />
 		</div>
+		<div class="listwrapper">
 		<div id="userstats" class="bordered">
 		<div class="statsheadline">Allgemein:</div>
 			<table>
@@ -36,7 +37,32 @@
 				</tbody>
 			</table>
 		</div>
-		<div><div id="topsongs" class="bordered">
+		<div id="recent" class="bordered">
+			<div class="statsheadline">Most recent:</div>
+			<table>
+				<thead>
+					<tr>
+						<th>Nr.</th>
+						<th>Titel</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% 
+					for(TopEntry e:((List<TopEntry>)request.getAttribute("recent"))) {
+				%>
+					<tr>
+						<td><%= e.getCount() %></td>
+						<td class="link" title="<%= HtmlUtils.htmlEscape(e.getName()) %>"><a
+							href="<%= e.getLink() %>"><%= e.getName().length() > 60 ? HtmlUtils.htmlEscape(e.getName().substring(0, 60)) + "..." : HtmlUtils.htmlEscape(e.getName()) %></a></td>
+					</tr>
+					<%
+					}
+				%>
+				</tbody>
+			</table>
+		</div>
+		</div>
+		<div class="listwrapper"><div id="topsongs" class="bordered">
 			<div class="statsheadline">Am meisten gewünscht:</div>
 			<table>
 				<thead>
@@ -91,30 +117,6 @@
 				%>
 				</tbody>
 			</table>
-		</div></div>
-		<div id="recent" class="bordered">
-			<div class="statsheadline">Most recent:</div>
-			<table>
-				<thead>
-					<tr>
-						<th>Nr.</th>
-						<th>Titel</th>
-					</tr>
-				</thead>
-				<tbody>
-					<% 
-					for(TopEntry e:((List<TopEntry>)request.getAttribute("recent"))) {
-				%>
-					<tr>
-						<td><%= e.getCount() %></td>
-						<td class="link" title="<%= HtmlUtils.htmlEscape(e.getName()) %>"><a
-							href="<%= e.getLink() %>"><%= e.getName().length() > 60 ? HtmlUtils.htmlEscape(e.getName().substring(0, 60)) + "..." : HtmlUtils.htmlEscape(e.getName()) %></a></td>
-					</tr>
-					<%
-					}
-				%>
-				</tbody>
-			</table>
 		</div>
-	</div>
+	</div></div>
 	<%@ include file="footer.jsp"%>
