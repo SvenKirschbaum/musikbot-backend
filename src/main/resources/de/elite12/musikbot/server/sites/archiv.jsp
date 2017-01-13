@@ -56,14 +56,14 @@
 						<td><%=timeformat.format(rs.getObject("SONG_PLAYED_AT"))%></td>
 						<td <% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) {%>
 								title="<%= rs.getString("AUTOR") %>" <% } %>>
-							<%
+							<a href="/user/<%=rs.getString("AUTOR")%>"><%
 								try {
 											UUID id = UUID.fromString(rs.getString("AUTOR"));
 							%>Gast<%
 								} catch (IllegalArgumentException e) {
 							%> <%=rs.getString("AUTOR")%> <%
 								}
-							%>
+							%></a>
 						</td>
 						<td title="<%=HtmlUtils.htmlEscape(rs.getString("SONG_NAME"))%>"><%=rs.getString("SONG_NAME").length() > 60 ? HtmlUtils.htmlEscape(rs
 							.getString("SONG_NAME").substring(0, 60)) + "..."

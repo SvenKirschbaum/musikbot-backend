@@ -17,7 +17,7 @@
 	<div id="usercontainer">
 		<div id="pbild" class="bordered">
 			<img alt="profilbild"
-				src="https://www.gravatar.com/avatar/<%=Util.md5Hex(((User) request.getAttribute("viewuser")).getEmail().toLowerCase(Locale.GERMAN))%>?s=350" />
+				src="https://www.gravatar.com/avatar/<%=Util.md5Hex(((User) request.getAttribute("viewuser")).getEmail().toLowerCase(Locale.GERMAN))%>?s=350&d=<%=URLEncoder.encode("https://musikbot.elite12.de/res/favicon.png","UTF-8") %>" />
 		</div>
 		<div id="userstats" class="bordered">
 		<div class="statsheadline">Allgemein:</div>

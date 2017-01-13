@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.UUID;
+
 import de.elite12.musikbot.server.Weblet;
 
 import javax.servlet.ServletException;
@@ -36,6 +38,12 @@ public class UserServlet extends HttpServlet {
 		String[] path = req.getPathInfo().split("/");
 		if (path.length > 0) {
 			User user = this.ctr.getUserservice().getUserbyName(path[path.length - 1]);
+			try {
+				user = new User(UUID.fromString(path[path.length-1]).toString(), null, "gast@elite12.de", false);
+			}
+			catch(IllegalArgumentException e) {
+				
+			}
 			if (user != null) {
 				req.setAttribute("viewuser", user);
 				req.setAttribute("worked", Boolean.valueOf(true));
@@ -43,7 +51,7 @@ public class UserServlet extends HttpServlet {
 				boolean admin = (((User) req.getSession().getAttribute("user")) != null
 						? ((User) req.getSession().getAttribute("user")).isAdmin() : false);
 				ArrayList<DataEntry> userinfo = new ArrayList<>();
-				userinfo.add(new DataEntry("ID:", user.getId().toString(), false));
+				userinfo.add(new DataEntry("ID:", user.getId()!=null?user.getId().toString():"Null", false));
 				userinfo.add(new DataEntry("Username:", user.getName(), admin));
 				if (user.equals(req.getSession().getAttribute("user")) || admin) {
 					userinfo.add(new DataEntry("Email:", user.getEmail(), true));
