@@ -1194,3 +1194,6 @@ body.error {
 .listwrapper td {
 	padding: 3px;
 }
+#usercontainer table {
+	width:100%;
+}
