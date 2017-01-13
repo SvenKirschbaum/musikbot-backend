@@ -51,7 +51,9 @@ public class UserServlet extends HttpServlet {
 				boolean admin = (((User) req.getSession().getAttribute("user")) != null
 						? ((User) req.getSession().getAttribute("user")).isAdmin() : false);
 				ArrayList<DataEntry> userinfo = new ArrayList<>();
-				userinfo.add(new DataEntry("ID:", user.getId()!=null?user.getId().toString():"Null", false));
+				if(admin) {
+					userinfo.add(new DataEntry("ID:", user.getId()!=null?user.getId().toString():"Null", false));
+				}
 				userinfo.add(new DataEntry("Username:", user.getName(), admin));
 				if (user.equals(req.getSession().getAttribute("user")) || admin) {
 					userinfo.add(new DataEntry("Email:", user.getEmail(), true));
