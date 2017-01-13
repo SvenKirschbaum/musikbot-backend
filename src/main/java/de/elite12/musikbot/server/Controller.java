@@ -147,7 +147,7 @@ public class Controller {
             sites.addServlet(new ServletHolder(this.g), "/gapcloser/");
             sites.addServlet(new ServletHolder(new FeedGenerator(this)), "/feed/");
             sites.addServlet(new ServletHolder(new SongManagement(this)), "/songs/");
-            sites.addServlet(new ServletHolder(new UserServlet(this)), "/user/");
+            sites.addServlet(new ServletHolder(new UserServlet(this)), "/user/*");
             sites.addServlet(new ServletHolder(new OnlineServlet(this)), "/whoisonline/");
             sites.addServlet(new ServletHolder(new LogServlet(this)), "/log/");
             sites.addServlet(new ServletHolder(new DebugServlet(this)), "/debug/");
@@ -395,7 +395,7 @@ public class Controller {
             ResultSet rs = stmnt.executeQuery();
             rs.next();
             if (rs.getInt(1) < 24) {
-                stmnt.setString(1, "http://open.spotify.com/track/" + SID);
+                stmnt2.setString(1, "http://open.spotify.com/track/" + SID);
                 ResultSet rs2 = stmnt2.executeQuery();
                 rs2.next();
                 if (rs2.getInt(1) == 0) {

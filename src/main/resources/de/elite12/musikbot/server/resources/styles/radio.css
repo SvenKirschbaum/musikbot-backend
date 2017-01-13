@@ -1170,3 +1170,16 @@ body.error {
 #debug input {
 	margin: 5px;
 }
+#usercontainer {
+	width: 90%;
+    height: 80%;
+    padding: 0px;
+    box-sizing: border-box;
+    margin-left: 5%;
+    margin-right: 5%;
+}
+#usercontainer > div {
+	float: left;
+    margin-left: 2%;
+    margin-top: 2%;
+}
