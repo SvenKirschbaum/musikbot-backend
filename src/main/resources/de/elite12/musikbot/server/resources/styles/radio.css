@@ -784,6 +784,7 @@ table.bordered th:last-child {
 	font-weight: bold;
 	line-height: 1.1em;
 	margin-bottom: 4px;
+	color: #E0E0E0;
 }
 
 /* registrieren */
@@ -1177,9 +1178,29 @@ body.error {
     box-sizing: border-box;
     margin-left: 5%;
     margin-right: 5%;
+    color: #9E9E9E;
 }
 #usercontainer > div {
 	float: left;
     margin-left: 2%;
     margin-top: 2%;
+}
+#usercontainer > div td {
+	padding: 2px;
+}
+#usercontainer > div > div td {
+	padding: 2px;
+}
+#topskipped, #topsongs {
+	margin-bottom: 5%;
+}
+#usercontainer > div > div td:first-child,#usercontainer > div > div td:last-child {
+	width: 10%;
+	text-align: center;
+}
+#usercontainer table {
+	width: 100%;
+}
+#usercontainer th {
+	color: #E0E0E0;
 }

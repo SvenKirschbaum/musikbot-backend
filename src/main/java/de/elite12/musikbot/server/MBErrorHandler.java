@@ -26,9 +26,13 @@ public class MBErrorHandler extends
 			HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
 		super.handle(target, baseRequest, request, response);
+		String username = "Unbekannt (no session)";
+		if(request.getSession(false) != null) {
+			username = (String) request.getSession().getAttribute("user");
+		}
 		Logger.getLogger(MBErrorHandler.class).warn(
 				"Handling Error for User: "
-						+ request.getSession().getAttribute("user")
+						+ username
 						+ " Error Code: " + response.getStatus() + " Message: "
 						+ HttpStatus.getMessage(response.getStatus())+ " Path: "
 						+ request.getRequestURI()+(request.getQueryString()==null?"":"?"+request.getQueryString()));

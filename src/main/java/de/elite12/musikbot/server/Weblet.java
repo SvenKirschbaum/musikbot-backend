@@ -362,7 +362,7 @@ public class Weblet extends HttpServlet {
         throw new java.io.NotSerializableException(getClass().getName());
     }
     
-    public class TopEntry {
+    public static class TopEntry {
         private final String name;
         private final String link;
         private final Integer count;

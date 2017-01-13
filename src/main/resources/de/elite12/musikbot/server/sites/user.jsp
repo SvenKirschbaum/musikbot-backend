@@ -7,7 +7,9 @@
 %>
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
 <%@ include file="header.jsp"%>
-<title>USERNAME - Elite12 - Musikbot</title>
+<%@ page import="de.elite12.musikbot.server.Weblet.TopEntry"%>
+<%@ page import="de.elite12.musikbot.server.UserServlet.DataEntry"%>
+<title><%= ((User) request.getAttribute("viewuser")).getName() %> - Elite12 - Musikbot</title>
 </head>
 <body>
 	<div id="topic"></div>
@@ -15,9 +17,80 @@
 	<div id="usercontainer">
 		<div id="pbild" class="bordered">
 			<img alt="profilbild"
-				src="https://www.gravatar.com/avatar/<%=Util.md5Hex(((User) request.getAttribute("user")).getEmail().toLowerCase(Locale.GERMAN))%>?s=350" />
+				src="https://www.gravatar.com/avatar/<%=Util.md5Hex(((User) request.getAttribute("viewuser")).getEmail().toLowerCase(Locale.GERMAN))%>?s=350" />
 		</div>
-		<div id="userstats" class="bordered"></div>
-		<div id="topsongs" class="bordered"></div>
+		<div id="userstats" class="bordered">
+		<div class="statsheadline">Allgemein:</div>
+			<table>
+				<tbody>
+					<%
+					for(DataEntry e:((DataEntry[])request.getAttribute("userinfo"))) {
+				%>
+					<tr>
+						<td><%= e.name %></td>
+						<td><%= e.value %></td>
+					</tr>
+					<%
+					}
+				%>
+				</tbody>
+			</table>
+		</div>
+		<div><div id="topsongs" class="bordered">
+			<div class="statsheadline">Am meisten gewünscht:</div>
+			<table>
+				<thead>
+					<tr>
+						<th>Nr.</th>
+						<th>Titel</th>
+						<th>Anzahl</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% 
+					int i = 1;
+					for(TopEntry e:((List<TopEntry>)request.getAttribute("toplist"))) {
+				%>
+					<tr>
+						<td><%= i %>.</td>
+						<td class="link"><a
+							href="<%= e.getLink() %>"><%= e.getName() %></a></td>
+						<td><%= e.getCount() %></td>
+					</tr>
+					<%
+						i++;
+					}
+				%>
+				</tbody>
+			</table>
+		</div>
+		<div id="topskipped" class="bordered">
+			<div class="statsheadline">Am meisten geskippt:</div>
+			<table>
+				<thead>
+					<tr>
+						<th>Nr.</th>
+						<th>Titel</th>
+						<th>Anzahl</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% 
+					i = 1;
+					for(TopEntry e:((List<TopEntry>)request.getAttribute("topskipped"))) {
+				%>
+					<tr>
+						<td><%= i %>.</td>
+						<td class="link"><a
+							href="<%= e.getLink() %>"><%= e.getName() %></a></td>
+						<td><%= e.getCount() %></td>
+					</tr>
+					<%
+						i++;
+					}
+				%>
+				</tbody>
+			</table>
+		</div></div>
 	</div>
 	<%@ include file="footer.jsp"%>

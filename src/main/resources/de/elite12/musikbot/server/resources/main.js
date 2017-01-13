@@ -732,6 +732,9 @@ function handleAPIResponse(data,textStatus,jqXHR) {
 	if(message) {
 		$("#messages").append('<div id="msg_'+number+'" class="'+type+'" style="display:none">'+message+'<div class="close_button" onclick="closemsg('+number+')"></div></div>');
 		$("#msg_"+number).slideDown(1000);
+		setTimeout(() => {
+			closemsg(number);
+		}, 3000);
 	}
 	
 }
