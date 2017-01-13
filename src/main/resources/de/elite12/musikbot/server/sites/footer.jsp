@@ -78,7 +78,7 @@
 		</form>
 		<div class="userbar">
 			Willkommen
-			<a href="/user/<%=((User) session.getAttribute("user")).getName()%>"><%=((User) session.getAttribute("user")).getName()%></a>! <span
+			<a href="/user/<%=((User) session.getAttribute("user")).getName()%>"><%=((User) session.getAttribute("user")).getName()%></a><span
 				onclick="document.getElementById('logoutform').submit()"
 				class="link">(Logout)</span>
 				

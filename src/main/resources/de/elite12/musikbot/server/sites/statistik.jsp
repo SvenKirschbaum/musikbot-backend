@@ -88,7 +88,7 @@
 				%>
 					<tr>
 						<td><%= i %>.</td>
-						<td>
+						<td><a href="/user/<%=e.getName()%>">
 							<% 
 								try {
 									UUID id = UUID.fromString(e.getName()); 
@@ -96,7 +96,7 @@
 								}
 								catch (IllegalArgumentException err) {%> <%= e.getName() %>
 							<%} %>
-						</td>
+						</a></td>
 						<td><%= e.getCount() %></td>
 					</tr>
 					<%
