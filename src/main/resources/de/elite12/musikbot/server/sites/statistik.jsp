@@ -32,8 +32,8 @@
 				%>
 					<tr>
 						<td><%= i %>.</td>
-						<td class="link"><a
-							href="<%= e.getLink() %>"><%= e.getName() %></a></td>
+						<td class="link" title="<%= HtmlUtils.htmlEscape(e.getName()) %>"><a
+							href="<%= e.getLink() %>"><%= e.getName().length() > 120 ? HtmlUtils.htmlEscape(e.getName().substring(0, 120)) + "..." : HtmlUtils.htmlEscape(e.getName()) %></a></td>
 						<td><%= e.getCount() %></td>
 					</tr>
 					<%
@@ -60,8 +60,8 @@
 				%>
 					<tr>
 						<td><%= i %>.</td>
-						<td class="link"><a
-							href="<%= e.getLink() %>"><%= e.getName() %></a></td>
+						<td class="link" title="<%= HtmlUtils.htmlEscape(e.getName()) %>"><a
+							href="<%= e.getLink() %>"><%= e.getName().length() > 120 ? HtmlUtils.htmlEscape(e.getName().substring(0, 120)) + "..." : HtmlUtils.htmlEscape(e.getName()) %></a></td>
 						<td><%= e.getCount() %></td>
 					</tr>
 					<%

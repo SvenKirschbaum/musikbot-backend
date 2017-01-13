@@ -64,6 +64,7 @@ public class UserServlet extends HttpServlet {
 						PreparedStatement stmnt2 = c.prepareStatement("SELECT COUNT(SONG_ID) FROM PLAYLIST WHERE AUTOR = ? AND SONG_SKIPPED = TRUE");
 						PreparedStatement stmnt3 = c.prepareStatement("SELECT SONG_NAME,SONG_LINK,COUNT(*) AS anzahl FROM PLAYLIST WHERE AUTOR = ? GROUP BY SONG_LINK ORDER BY COUNT(*) DESC LIMIT 10");
 						PreparedStatement stmnt4 = c.prepareStatement("SELECT SONG_NAME,SONG_LINK,COUNT(*) AS anzahl FROM PLAYLIST WHERE AUTOR = ? AND SONG_SKIPPED = TRUE GROUP BY SONG_LINK ORDER BY COUNT(*) DESC LIMIT 10");
+						PreparedStatement stmnt5 = c.prepareStatement("SELECT SONG_NAME,SONG_LINK,SONG_ID FROM PLAYLIST WHERE AUTOR = ? ORDER BY SONG_ID DESC LIMIT 10");
 				) {
 					stmnt.setString(1, user.getName());
 					ResultSet r = stmnt.executeQuery();
@@ -87,6 +88,13 @@ public class UserServlet extends HttpServlet {
 	                    list.add(new TopEntry(r4.getString(1), r4.getString(2), r4.getInt(3)));
 	                }
 					req.setAttribute("topskipped", list);
+					stmnt5.setString(1, user.getName());
+					ResultSet r5 = stmnt5.executeQuery();
+					list = new ArrayList<>(10);
+					while (r5.next()) {
+	                    list.add(new TopEntry(r5.getString(1), r5.getString(2), r5.getInt(3)));
+	                }
+					req.setAttribute("recent", list);
 				} catch (SQLException e) {
 					Logger.getLogger(UserServlet.class).error("Error reading Userdata",e);
 					resp.sendError(500);

@@ -53,8 +53,8 @@
 				%>
 					<tr>
 						<td><%= i %>.</td>
-						<td class="link"><a
-							href="<%= e.getLink() %>"><%= e.getName() %></a></td>
+						<td class="link" title="<%= HtmlUtils.htmlEscape(e.getName()) %>"><a
+							href="<%= e.getLink() %>"><%= e.getName().length() > 60 ? HtmlUtils.htmlEscape(e.getName().substring(0, 60)) + "..." : HtmlUtils.htmlEscape(e.getName()) %></a></td>
 						<td><%= e.getCount() %></td>
 					</tr>
 					<%
@@ -81,8 +81,8 @@
 				%>
 					<tr>
 						<td><%= i %>.</td>
-						<td class="link"><a
-							href="<%= e.getLink() %>"><%= e.getName() %></a></td>
+						<td class="link" title="<%= HtmlUtils.htmlEscape(e.getName()) %>"><a
+							href="<%= e.getLink() %>"><%= e.getName().length() > 60 ? HtmlUtils.htmlEscape(e.getName().substring(0, 60)) + "..." : HtmlUtils.htmlEscape(e.getName()) %></a></td>
 						<td><%= e.getCount() %></td>
 					</tr>
 					<%
@@ -92,5 +92,29 @@
 				</tbody>
 			</table>
 		</div></div>
+		<div id="recent" class="bordered">
+			<div class="statsheadline">Most recent:</div>
+			<table>
+				<thead>
+					<tr>
+						<th>Nr.</th>
+						<th>Titel</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% 
+					for(TopEntry e:((List<TopEntry>)request.getAttribute("recent"))) {
+				%>
+					<tr>
+						<td><%= e.getCount() %></td>
+						<td class="link" title="<%= HtmlUtils.htmlEscape(e.getName()) %>"><a
+							href="<%= e.getLink() %>"><%= e.getName().length() > 60 ? HtmlUtils.htmlEscape(e.getName().substring(0, 60)) + "..." : HtmlUtils.htmlEscape(e.getName()) %></a></td>
+					</tr>
+					<%
+					}
+				%>
+				</tbody>
+			</table>
+		</div>
 	</div>
 	<%@ include file="footer.jsp"%>
