@@ -163,6 +163,7 @@ public class Userservice {
             statement.setString(3, u.getEmail());
             statement.setBoolean(4, u.isAdmin());
             statement.setString(5, u.getToken());
+            statement.execute();
             Logger.getLogger(this.getClass()).info("User created: " + u);
         } catch (SQLException e) {
             Logger.getLogger(this.getClass()).error("Error changing User: " + u.getName(), e);
