@@ -784,6 +784,7 @@ table.bordered th:last-child {
 	font-weight: bold;
 	line-height: 1.1em;
 	margin-bottom: 4px;
+	color: #E0E0E0;
 }
 
 /* registrieren */
@@ -1169,4 +1170,30 @@ body.error {
 }
 #debug input {
 	margin: 5px;
+}
+#usercontainer {
+	width: 90%;
+    height: 80%;
+    padding: 0px;
+    box-sizing: border-box;
+    margin-left: 5%;
+    margin-right: 5%;
+    color: #9E9E9E;
+}
+#pbild {
+	float:left;
+}
+.listwrapper {
+	width: 33%;
+    float: left;
+    margin-left: 2%;
+}
+.listwrapper > div {
+	margin-bottom: 5%;
+}
+.listwrapper td {
+	padding: 3px;
+}
+#usercontainer table {
+	width:100%;
 }

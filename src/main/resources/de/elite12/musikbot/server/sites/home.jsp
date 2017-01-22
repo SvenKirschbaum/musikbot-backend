@@ -122,13 +122,13 @@
 								<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) {%>
 								title="<%= rs.getString("AUTOR") %>" <% } %>>
 								<img alt="pb_playlist" src="https://www.gravatar.com/avatar/<%= gravatarid %>?s=20&d=<%=URLEncoder.encode("https://musikbot.elite12.de/res/favicon_small.png","UTF-8") %>" />
-								<% 
+								<a href="/user/<%= rs.getString("AUTOR") %>"><% 
 								try {
 									UUID id = UUID.fromString(rs.getString("AUTOR")); 
 									%>Gast<%
 								}
 								catch (IllegalArgumentException e) {%> <%= rs.getString("AUTOR") %>
-								<%} %>
+								<%} %></a>
 							</td>
 							<td
 								title="<%= HtmlUtils.htmlEscape(rs.getString("SONG_NAME")) %>"><%= rs.getString("SONG_NAME").length() > 60 ? HtmlUtils.htmlEscape(rs.getString("SONG_NAME").substring(0, 60)) + "..." : HtmlUtils.htmlEscape(rs.getString("SONG_NAME")) %></td>
