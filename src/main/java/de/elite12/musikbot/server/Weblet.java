@@ -329,7 +329,7 @@ public class Weblet extends HttpServlet {
 	}
 
 	private boolean checkblocked(HttpServletRequest req) {
-		return this.ipmap.get(req.getHeader("X-Real-IP")) >= 3;
+		return this.ipmap.get(req.getHeader("X-Real-IP")) == null?false:this.ipmap.get(req.getHeader("X-Real-IP")) >= 3;
 	}
 
 	private void handleLoginFailure(HttpServletRequest req) {
