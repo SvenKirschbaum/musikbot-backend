@@ -24,7 +24,8 @@ public class DebugServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
     		throws ServletException, IOException {
-    	if (req.getSession().getAttribute("user") != null && ((User) req.getSession().getAttribute("user")).isAdmin()) {
+    	User u = SessionHelper.getUserFromSession(req.getSession());
+    	if (u != null && u.isAdmin()) {
             req.setAttribute("worked", Boolean.valueOf(true));
             req.setAttribute("control", this.control);
             req.getRequestDispatcher("/debug.jsp").forward(req, resp);
@@ -36,7 +37,8 @@ public class DebugServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
     		throws ServletException, IOException {
-    	if (req.getSession().getAttribute("user") != null && ((User) req.getSession().getAttribute("user")).isAdmin()) {
+    	User u = SessionHelper.getUserFromSession(req.getSession());
+    	if (u != null && u.isAdmin()) {
     		Enumeration<String> e = req.getParameterNames();
     		while(e.hasMoreElements()) {
     			switch(e.nextElement()) {

@@ -243,7 +243,7 @@ public class Weblet extends HttpServlet {
 										stmnt.setString(2,
 												((UUID) req.getSession().getAttribute("guest_id")).toString());
 										stmnt.executeUpdate();
-										req.getSession().setAttribute("user", u);
+										SessionHelper.attachUserToSession(req.getSession(), u);
 										resp.sendRedirect("/");
 										Logger.getLogger(this.getClass()).debug("Succesfull registration");
 									} catch (SQLException e) {
@@ -287,7 +287,7 @@ public class Weblet extends HttpServlet {
 										stmnt.executeUpdate();
 									}
 
-									req.getSession().setAttribute("user", user);
+									SessionHelper.attachUserToSession(req.getSession(), user);
 									resp.sendRedirect("/");
 									Logger.getLogger(this.getClass())
 											.info("Login by User: " + user + " from IP: " + req.getHeader("X-Real-IP")
@@ -312,8 +312,8 @@ public class Weblet extends HttpServlet {
 				break;
 			}
 			case "logout": {
-				Logger.getLogger(this.getClass()).info("Logout from User: " + req.getSession().getAttribute("user"));
-				req.getSession().removeAttribute("user");
+				Logger.getLogger(this.getClass()).info("Logout from User: " + SessionHelper.getUserFromSession(req.getSession()));
+				SessionHelper.removeUserFromSession(req.getSession());
 				resp.sendRedirect("/");
 				return;
 			}
@@ -378,14 +378,15 @@ public class Weblet extends HttpServlet {
 		}
 		Logger.getLogger(this.getClass()).debug("Handling Guest...");
 		UUID id = (UUID) req.getSession().getAttribute("guest_id");
-		if (id == null && req.getSession().getAttribute("user") == null) {
+		User user = SessionHelper.getUserFromSession(req.getSession());
+		if (id == null && user == null) {
 			UUID u = UUID.randomUUID();
 			Logger.getLogger(this.getClass())
 					.info("New Guest: IP: " + req.getHeader("X-Real-IP") + " Assigned ID: " + u);
 			req.getSession().setAttribute("guest_id", u);
 		}
-		if (req.getSession().getAttribute("user") != null) {
-			this.updatelastseen((User) req.getSession().getAttribute("user"));
+		if (user != null) {
+			this.updatelastseen(user);
 		}
 	}
 

@@ -50,14 +50,15 @@ public class UserServlet extends HttpServlet {
 				req.setAttribute("viewuser", user);
 				req.setAttribute("worked", Boolean.valueOf(true));
 				req.setAttribute("control", this.ctr);
-				boolean admin = (((User) req.getSession().getAttribute("user")) != null
-						? ((User) req.getSession().getAttribute("user")).isAdmin() : false);
+				User u = SessionHelper.getUserFromSession(req.getSession());
+				boolean admin = (u != null
+						? u.isAdmin() : false);
 				ArrayList<DataEntry> userinfo = new ArrayList<>();
 				if(!guest) {
 					userinfo.add(new DataEntry("ID:", user.getId()!=null?user.getId().toString():"Null", false,"id"));
 				}
 				userinfo.add(new DataEntry("Username:", user.getName(), false,"username"));
-				if ((user.equals(req.getSession().getAttribute("user")) || admin)&&!guest) {
+				if ((user.equals(u) || admin)&&!guest) {
 					userinfo.add(new DataEntry("Email:", user.getEmail(), true,"email"));
 					userinfo.add(new DataEntry("Passwort:", "****", true, "password"));
 				}

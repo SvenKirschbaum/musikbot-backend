@@ -27,8 +27,10 @@
 		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 		
-		  <%if (session.getAttribute("user") != null) {%>
-			ga('create', 'UA-60228333-1', { 'userId': '<%=((User) session.getAttribute("user")).hashCode()%>'});
+		  <%
+		  User user = SessionHelper.getUserFromSession(session);
+		  if (user != null) {%>
+			ga('create', 'UA-60228333-1', { 'userId': '<%=user.hashCode()%>'});
 		<%} else {%>
 			ga('create', 'UA-60228333-1', 'auto');
 		<%}%>

@@ -22,7 +22,7 @@
 <%@ page import="de.elite12.musikbot.server.*"%>
 <div id="footer">
 	<%
-		if (session.getAttribute("user") == null) {
+		if (user == null) {
 	%>
 	<div id="login">
 		<span onclick="show(loginbox)" class="link">Login</span> <span
@@ -70,15 +70,15 @@
 	%>
 	<div id="login">
 		<div id="profilbild" class="tooltip">
-			<img alt="profilbild" src="https://www.gravatar.com/avatar/<%= Util.md5Hex(((User)session.getAttribute("user")).getEmail().toLowerCase(Locale.GERMAN)) %>?s=20" />
-			<div class="bordered"><img alt="profilbild" src="https://www.gravatar.com/avatar/<%= Util.md5Hex(((User)session.getAttribute("user")).getEmail().toLowerCase(Locale.GERMAN)) %>?s=350" /></div>
+			<img alt="profilbild" src="https://www.gravatar.com/avatar/<%= Util.md5Hex(user.getEmail().toLowerCase(Locale.GERMAN)) %>?s=20" />
+			<div class="bordered"><img alt="profilbild" src="https://www.gravatar.com/avatar/<%= Util.md5Hex(user.getEmail().toLowerCase(Locale.GERMAN)) %>?s=350" /></div>
 		</div>
 		<form id="logoutform" action="/" method="post">
 			<input type="hidden" name="action" value="logout" />
 		</form>
 		<div class="userbar">
 			Willkommen
-			<a href="/user/<%=((User) session.getAttribute("user")).getName()%>"><%=((User) session.getAttribute("user")).getName()%></a><span
+			<a href="/user/<%=user.getName()%>"><%=user.getName()%></a><span
 				onclick="document.getElementById('logoutform').submit()"
 				class="link">(Logout)</span>
 				
@@ -86,7 +86,7 @@
 	</div>
 
 			<%
-				if (((User) session.getAttribute("user")).isAdmin()) {
+				if (user.isAdmin()) {
 			%>
 			<div id="amenu">
 				<span class="link" onclick="togglevis(amenubox)">Admin-Menü</span>

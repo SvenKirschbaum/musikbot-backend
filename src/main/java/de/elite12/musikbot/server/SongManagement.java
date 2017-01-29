@@ -35,7 +35,8 @@ public class SongManagement extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (req.getSession().getAttribute("user") != null && ((User) req.getSession().getAttribute("user")).isAdmin()) {
+    	User u = SessionHelper.getUserFromSession(req.getSession());
+        if (u != null && u.isAdmin()) {
             try (
                     Connection c = this.getControl().getDB();
                     PreparedStatement stmnt = c.prepareStatement("SELECT * FROM LOCKED_SONGS");
@@ -60,7 +61,8 @@ public class SongManagement extends HttpServlet {
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (req.getSession().getAttribute("user") != null && ((User) req.getSession().getAttribute("user")).isAdmin()) {
+    	User u = SessionHelper.getUserFromSession(req.getSession());
+        if (u != null && u.isAdmin()) {
             switch (req.getParameter("action")) {
                 case "add": {
                     String song = req.getParameter("song");
@@ -108,7 +110,7 @@ public class SongManagement extends HttpServlet {
                                 stmnt.setString(2, Ascii.truncate(v.getSnippet().getTitle(), 350, "..."));
                                 stmnt.executeUpdate();
                                 Logger.getLogger(SongManagement.class).info("added Song to locklist: " + vid
-                                        + "by User: " + req.getSession().getAttribute("user"));
+                                        + "by User: " + u);
                             } else if (sid != null) {
                                 Track track = Util.getTrack(sid);
                                 if (track == null) {
@@ -118,7 +120,7 @@ public class SongManagement extends HttpServlet {
                                 stmnt.setString(2, Ascii.truncate(track.getName(), 350, "..."));
                                 stmnt.executeUpdate();
                                 Logger.getLogger(SongManagement.class).info("added Song to locklist: " + sid
-                                        + "by User: " + req.getSession().getAttribute("user"));
+                                        + "by User: " + u);
                             } else {
                                 throw new IOException("");
                             }
@@ -152,7 +154,7 @@ public class SongManagement extends HttpServlet {
                             Logger.getLogger(SongManagement.class)
                                     .info("deleted Songs from locklist: "
                                             + Arrays.toString(req.getParameterValues("song")) + "by User: "
-                                            + req.getSession().getAttribute("user"));
+                                            + u);
                         } catch (SQLException e) {
                             Logger.getLogger(SongManagement.class).error("Sql Exception", e);
                         }

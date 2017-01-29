@@ -25,7 +25,7 @@ public class UserAPI {
 	@POST
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Path("{userid}/{attribute}")
-	public Response deleteSong(@PathParam("userid") int userid, @PathParam("attribute") String attr, String value) {
+	public Response updateUser(@PathParam("userid") int userid, @PathParam("attribute") String attr, String value) {
 		User user = (User) sc.getUserPrincipal();
 		User target = Controller.getInstance().getUserservice().getUserbyId(userid);
 		switch (attr) {
@@ -34,9 +34,6 @@ public class UserAPI {
 					if(Util.isValidEmailAddress(value)) {
 						target.setEmail(value);
 						Controller.getInstance().getUserservice().changeUser(target);
-						if(((User)req.getSession().getAttribute("user")).getId() == target.getId()) {
-							req.getSession().setAttribute("user", target);
-						}
 						return Response.status(200).build();
 					}
 					else {
@@ -51,9 +48,6 @@ public class UserAPI {
 				if(selforadmin(user, target)) {
 					target.setPassword(Controller.getInstance().getUserservice().hashPW(value));
 					Controller.getInstance().getUserservice().changeUser(target);
-					if(((User)req.getSession().getAttribute("user")).getId() == target.getId()) {
-						req.getSession().setAttribute("user", target);
-					}
 					return Response.status(200).build();
 				}
 				else {
@@ -65,9 +59,6 @@ public class UserAPI {
 					boolean admin = value.equalsIgnoreCase("ja") || value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true");
 					target.setAdmin(admin);
 					Controller.getInstance().getUserservice().changeUser(target);
-					if(((User)req.getSession().getAttribute("user")).getId() == target.getId()) {
-						req.getSession().setAttribute("user", target);
-					}
 					return Response.status(200).build();
 				}
 				else {

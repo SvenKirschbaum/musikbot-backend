@@ -26,7 +26,7 @@ public class MBErrorHandler extends org.eclipse.jetty.server.handler.ErrorHandle
         super.handle(target, baseRequest, request, response);
         String username = "Unbekannt (no session)";
         if (request.getSession(false) != null) {
-        	User u = (User)request.getSession().getAttribute("user");
+        	User u = SessionHelper.getUserFromSession(request.getSession());
             if(u != null) {
             	username = u.toString();
             }

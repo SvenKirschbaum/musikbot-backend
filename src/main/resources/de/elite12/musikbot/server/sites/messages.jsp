@@ -5,12 +5,6 @@
 	}
 %>
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
-<% 
-	if(request.getAttribute("worked") == null) {
-		response.sendRedirect("/");
-		return;
-	}
-%>
 <%@ page import="de.elite12.musikbot.server.*"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.LinkedList"%>

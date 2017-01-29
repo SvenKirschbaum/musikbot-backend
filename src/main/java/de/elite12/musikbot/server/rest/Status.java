@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.log4j.Logger;
 
 import de.elite12.musikbot.server.Controller;
+import de.elite12.musikbot.server.SessionHelper;
 import de.elite12.musikbot.server.User;
 import de.elite12.musikbot.shared.Song;
 import de.elite12.musikbot.shared.Util;
@@ -44,14 +45,15 @@ public class Status {
         try (
                 Connection c = Controller.getInstance().getDB();
                 PreparedStatement stmnt = c
-                        .prepareStatement("select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC");
+                        .prepareStatement("select * FROM PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC");
         ) {
             ResultSet rs = stmnt.executeQuery();
             while (rs.next()) {
                 Song s = new Song(rs);
                 dauer += s.getDauer();
-                if (!(req.getSession().getAttribute("user") != null
-                        && ((User) req.getSession().getAttribute("user")).isAdmin())) {
+                User u = SessionHelper.getUserFromSession(req.getSession());
+                if (!(u != null
+                        && u.isAdmin())) {
                     try {
                         UUID.fromString(s.getAutor());
                         s.setAutor("Gast");

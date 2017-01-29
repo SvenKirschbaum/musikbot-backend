@@ -16,7 +16,7 @@
 	function start() {
 		if(typeof update=='function') {
 			setInterval(function(){update()},8000);
-			<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) { %>
+			<% if(user != null && user.isAdmin()) { %>
 			initdnd();
 			<% } %>
 		}
@@ -60,7 +60,7 @@
 			</div>
 
 
-			<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) { %>
+			<% if(user != null && user.isAdmin()) { %>
 			<div id="control">
 				<table>
 					<tbody>
@@ -86,11 +86,11 @@
 
 			
 			<form id="pform">
-			<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) { %>
+			<% if(user != null && user.isAdmin()) { %>
 				<input type="hidden" name="action" value="delete" />
 				<% } %>
 				<table
-					class='bordered <% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) { %>admin<% } %>'
+					class='bordered <% if(user != null && user.isAdmin()) { %>admin<% } %>'
 					id="playlist">
 					<thead>
 						<tr>
@@ -99,7 +99,7 @@
 							<th>Eingefügt von</th>
 							<th>Titel</th>
 							<th>Link</th>
-							<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) { %><th>Löschen?</th>
+							<% if(user != null && user.isAdmin()) { %><th>Löschen?</th>
 							<% } %>
 						</tr>
 					</thead>
@@ -111,15 +111,15 @@
 						%>
 						<tr class="songentry" id='song_<%= rs.getInt("SONG_ID") %>'>
 							<td style="text-align: center"
-								<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) {%>
+								<% if(user != null && user.isAdmin()) {%>
 								class="draghandle" <% } %>><%= rs.getInt("SONG_ID") %></td>
 							<td><%= timeformat.format(rs.getObject("SONG_INSERT_AT")) %></td>
 							<td
 								<%
-							     User user = ((Controller)request.getAttribute("control")).getUserservice().getUserbyName(rs.getString("AUTOR"));
-							     String gravatarid = user==null?Util.md5Hex("null"):Util.md5Hex(user.getEmail().toLowerCase(Locale.GERMAN));
+							     User luser = ((Controller)request.getAttribute("control")).getUserservice().getUserbyName(rs.getString("AUTOR"));
+							     String gravatarid = luser==null?Util.md5Hex("null"):Util.md5Hex(luser.getEmail().toLowerCase(Locale.GERMAN));
 								%>
-								<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) {%>
+								<% if(user != null && user.isAdmin()) {%>
 								title="<%= rs.getString("AUTOR") %>" <% } %>>
 								<img alt="pb_playlist" src="https://www.gravatar.com/avatar/<%= gravatarid %>?s=20&d=<%=URLEncoder.encode("https://musikbot.elite12.de/res/favicon_small.png","UTF-8") %>" />
 								<a href="/user/<%= rs.getString("AUTOR") %>"><% 
@@ -134,7 +134,7 @@
 								title="<%= HtmlUtils.htmlEscape(rs.getString("SONG_NAME")) %>"><%= rs.getString("SONG_NAME").length() > 60 ? HtmlUtils.htmlEscape(rs.getString("SONG_NAME").substring(0, 60)) + "..." : HtmlUtils.htmlEscape(rs.getString("SONG_NAME")) %></td>
 							<td><a href="<%= rs.getString("SONG_LINK") %>"
 								target="_blank"><%= rs.getString("SONG_LINK") %></a></td>
-							<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) { %><td><input
+							<% if(user != null && user.isAdmin()) { %><td><input
 								type="checkbox" name="song" value="<%= rs.getInt("SONG_ID")%>" /></td>
 							<% } %>
 						</tr>
@@ -155,7 +155,7 @@
 				<div id="archivlink" class="link">
 					<a href="/archiv/">Zum Archiv</a>
 				</div>
-				<% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) { %>
+				<% if(user != null && user.isAdmin()) { %>
 				    <input id="deletebutton" type="button" value="Löschen" onclick='var a = "";$("input[type=checkbox]:checked").each(function (data){a=a+"/"+$(this).val()});$.ajax({url: "/api/songs"+a,	method: "DELETE",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
 				    <input id="deleteandlockbutton" type="button" value="Löschen und Sperren" onclick='var a = "";$("input[type=checkbox]:checked").each(function (data){a=a+"/"+$(this).val()});$.ajax({url: "/api/songs"+a+"?lock=true",  method: "DELETE",   headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
 			<% } %>

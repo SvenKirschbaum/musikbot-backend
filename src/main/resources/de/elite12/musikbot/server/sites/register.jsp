@@ -9,7 +9,7 @@
 <title>Elite12 - Musikbot - Registrierung</title>
 </head>
 <body>
-	<% if(session.getAttribute("user") == null) {%>
+	<% if(user == null) {%>
 	<div id="content">
 
 		<div id="content2">

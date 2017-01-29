@@ -30,6 +30,9 @@
 	if(u == null) {
 		style = "radio";
 	}
+	
+	
+	User user = SessionHelper.getUserFromSession(session);
 %>
 <!DOCTYPE html>
 <html lang="de">
@@ -43,9 +46,9 @@
 <script defer type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 <script defer src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-<% if(session.getAttribute("user") != null) { %>
+<% if(user != null) { %>
 <script type="text/javascript">
-	var authtoken = "<%= ((User)session.getAttribute("user")).getToken() %>";
+	var authtoken = "<%= user.getToken() %>";
 </script>
 <% } %>
 <script defer type="text/javascript" src="/res/main.js"></script>
@@ -55,8 +58,8 @@
   m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
   })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-  <% if(session.getAttribute("user") != null) { %>
-  ga('create', 'UA-60228333-1', { 'userId': '<%= ((User)session.getAttribute("user")).hashCode() %>'});
+  <% if(user != null) { %>
+  ga('create', 'UA-60228333-1', { 'userId': '<%= user.hashCode() %>'});
   <% } else { %>
   ga('create', 'UA-60228333-1', 'auto');
   <% } %>

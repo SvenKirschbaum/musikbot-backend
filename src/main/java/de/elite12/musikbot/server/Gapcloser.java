@@ -73,7 +73,8 @@ public class Gapcloser extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (req.getSession().getAttribute("user") != null && ((User) req.getSession().getAttribute("user")).isAdmin()) {
+    	User u = SessionHelper.getUserFromSession(req.getSession());
+        if (u != null && u.isAdmin()) {
             req.setAttribute("worked", Boolean.valueOf(true));
             req.setAttribute("mode", this.getMode());
             req.setAttribute("playlist", this.getPlaylist());
@@ -86,7 +87,8 @@ public class Gapcloser extends HttpServlet {
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (req.getSession().getAttribute("user") != null && ((User) req.getSession().getAttribute("user")).isAdmin()
+    	User u = SessionHelper.getUserFromSession(req.getSession());
+        if (u != null && u.isAdmin()
                 && req.getParameter("mode") != null) {
             req.setAttribute("worked", Boolean.valueOf(true));
             switch (req.getParameter("mode")) {

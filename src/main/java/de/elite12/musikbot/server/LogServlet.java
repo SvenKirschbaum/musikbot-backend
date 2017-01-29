@@ -28,7 +28,8 @@ public class LogServlet extends HttpServlet {
     
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (req.getSession().getAttribute("user") != null && ((User) req.getSession().getAttribute("user")).isAdmin()) {
+    	User u = SessionHelper.getUserFromSession(req.getSession());
+        if (u != null && u.isAdmin()) {
             if (req.getParameter("log") != null && req.getParameter("log").equalsIgnoreCase("log")) {
                 doPost(req, resp);
                 return;
@@ -41,7 +42,8 @@ public class LogServlet extends HttpServlet {
     
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (req.getSession().getAttribute("user") != null && ((User) req.getSession().getAttribute("user")).isAdmin()) {
+    	User u = SessionHelper.getUserFromSession(req.getSession());
+        if (u != null && u.isAdmin()) {
             req.setAttribute("worked", Boolean.valueOf(true));
             resp.setContentType("text/plain;charset=UTF-8");
 

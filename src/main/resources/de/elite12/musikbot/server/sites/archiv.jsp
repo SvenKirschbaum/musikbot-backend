@@ -54,7 +54,7 @@
 						title="Dieses Lied wurde nicht bis zum Ende gespielt!" <%}%>>
 						<td style="text-align: center"><%=rs.getInt("SONG_ID")%></td>
 						<td><%=timeformat.format(rs.getObject("SONG_PLAYED_AT"))%></td>
-						<td <% if(session.getAttribute("user") != null && ((User)session.getAttribute("user")).isAdmin()) {%>
+						<td <% if(user != null && user.isAdmin()) {%>
 								title="<%= rs.getString("AUTOR") %>" <% } %>>
 							<a href="/user/<%=rs.getString("AUTOR")%>"><%
 								try {

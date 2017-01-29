@@ -31,7 +31,8 @@ public class PlaylistServlet extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (req.getSession().getAttribute("user") != null && ((User) req.getSession().getAttribute("user")).isAdmin()) {
+    	User u = SessionHelper.getUserFromSession(req.getSession());
+        if (u != null && u.isAdmin()) {
             req.setAttribute("worked", Boolean.valueOf(true));
             this.getControl().addmessage(req, "Hinweis: Es werden nur die ersten 50 Videos einer Playlist angezeigt!",
                     UserMessage.TYPE_NOTIFY);
@@ -44,7 +45,8 @@ public class PlaylistServlet extends HttpServlet {
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (req.getSession().getAttribute("user") != null && ((User) req.getSession().getAttribute("user")).isAdmin()) {
+    	User u = SessionHelper.getUserFromSession(req.getSession());
+        if (u != null && u.isAdmin()) {
             req.setAttribute("worked", Boolean.valueOf(true));
             req.setAttribute("control", this.getControl());
 
@@ -78,14 +80,14 @@ public class PlaylistServlet extends HttpServlet {
                 for (String v : val) {
                     try {
                         this.getControl().addSong(p.entrys[Integer.parseInt(v)].link,
-                                (User) req.getSession().getAttribute("user"), null);
+                                u, null);
                     } catch (Exception e) {
                         Logger.getLogger(PlaylistServlet.class).error("pimport hat falsches Format: ", e);
                         return;
                     }
                 }
                 Logger.getLogger(PlaylistServlet.class).info("Playlist Importiert: " + req.getParameter("playlist")
-                        + " by User: " + req.getSession().getAttribute("user"));
+                        + " by User: " + u);
                 resp.sendRedirect("/");
                 return;
             }
