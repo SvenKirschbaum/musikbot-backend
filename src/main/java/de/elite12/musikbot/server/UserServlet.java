@@ -57,7 +57,7 @@ public class UserServlet extends HttpServlet {
 				if(!guest) {
 					userinfo.add(new DataEntry("ID:", user.getId()!=null?user.getId().toString():"Null", false,"id"));
 				}
-				userinfo.add(new DataEntry("Username:", user.getName(), false,"username"));
+				userinfo.add(new DataEntry("Username:", user.getName(), admin,"username"));
 				if ((user.equals(u) || admin)&&!guest) {
 					userinfo.add(new DataEntry("Email:", user.getEmail(), true,"email"));
 					userinfo.add(new DataEntry("Passwort:", "****", true, "password"));
