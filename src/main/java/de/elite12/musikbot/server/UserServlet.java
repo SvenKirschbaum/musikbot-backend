@@ -38,8 +38,10 @@ public class UserServlet extends HttpServlet {
 		String[] path = req.getPathInfo().split("/");
 		if (path.length > 0) {
 			User user = this.ctr.getUserservice().getUserbyName(path[path.length - 1]);
+			boolean guest = false;
 			try {
 				user = new User(UUID.fromString(path[path.length-1]).toString(), null, "gast@elite12.de", false);
+				guest = true;
 			}
 			catch(IllegalArgumentException e) {
 				
@@ -51,14 +53,15 @@ public class UserServlet extends HttpServlet {
 				boolean admin = (((User) req.getSession().getAttribute("user")) != null
 						? ((User) req.getSession().getAttribute("user")).isAdmin() : false);
 				ArrayList<DataEntry> userinfo = new ArrayList<>();
-				if(admin) {
-					userinfo.add(new DataEntry("ID:", user.getId()!=null?user.getId().toString():"Null", false));
+				if(!guest) {
+					userinfo.add(new DataEntry("ID:", user.getId()!=null?user.getId().toString():"Null", false,"id"));
 				}
-				userinfo.add(new DataEntry("Username:", user.getName(), admin));
-				if (user.equals(req.getSession().getAttribute("user")) || admin) {
-					userinfo.add(new DataEntry("Email:", user.getEmail(), true));
+				userinfo.add(new DataEntry("Username:", user.getName(), false,"username"));
+				if ((user.equals(req.getSession().getAttribute("user")) || admin)&&!guest) {
+					userinfo.add(new DataEntry("Email:", user.getEmail(), true,"email"));
+					userinfo.add(new DataEntry("Passwort:", "****", true, "password"));
 				}
-				userinfo.add(new DataEntry("Admin: ", user.isAdmin() ? "Ja" : "Nein", admin));
+				userinfo.add(new DataEntry("Admin: ", user.isAdmin() ? "Ja" : "Nein", admin&&!guest,"admin"));
 
 				try (
 						Connection c = this.ctr.getDB();
@@ -71,11 +74,11 @@ public class UserServlet extends HttpServlet {
 					stmnt.setString(1, user.getName());
 					ResultSet r = stmnt.executeQuery();
 					r.next();
-					userinfo.add(new DataEntry("Wünsche:", new Integer(r.getInt(1)).toString(), false));
+					userinfo.add(new DataEntry("Wünsche:", new Integer(r.getInt(1)).toString(), false,""));
 					stmnt2.setString(1, user.getName());
 					ResultSet r2 = stmnt2.executeQuery();
 					r2.next();
-					userinfo.add(new DataEntry("Davon übersprungen:", new Integer(r2.getInt(1)).toString(), false));
+					userinfo.add(new DataEntry("Davon übersprungen:", new Integer(r2.getInt(1)).toString(), false,""));
 					stmnt3.setString(1, user.getName());
 					ResultSet r3 = stmnt3.executeQuery();
 					ArrayList<TopEntry> list = new ArrayList<>(10);
@@ -123,13 +126,15 @@ public class UserServlet extends HttpServlet {
 	}
 
 	public class DataEntry {
-		public DataEntry(String name, String value, boolean change) {
+		public DataEntry(String name, String value, boolean change, String urlname) {
 			this.name = name;
 			this.value = value;
 			this.changeable = change;
+			this.urlname = urlname;
 		}
 
 		public String name;
+		public String urlname;
 		public String value;
 		public boolean changeable;
 	}

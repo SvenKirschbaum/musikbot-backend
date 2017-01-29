@@ -152,7 +152,7 @@ public class Userservice {
     }
     
     public User createUser(String username, String password, String email) throws SQLException {
-        User u = new User(username, password, email, false);
+        User u = new User(username, this.argon2.hash(2, 65536, 1, password), email, false);
         try (
                 Connection c = this.getControl().getDB();
                 PreparedStatement statement = c.prepareStatement(
@@ -184,5 +184,9 @@ public class Userservice {
         } else {
             return this.argon2.verify(user.getPassword(), password);
         }
+    }
+    
+    public String hashPW(String pw) {
+    	return this.argon2.hash(2, 65536, 1, pw);
     }
 }

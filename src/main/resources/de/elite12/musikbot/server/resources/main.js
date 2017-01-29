@@ -739,3 +739,38 @@ function handleAPIResponse(data,textStatus,jqXHR) {
 	
 }
 setInterval(function(){updatetime()},30000);
+
+var formtarget = "";
+function showform(name) {
+	formtarget = name;
+	$("#changedialog form #value").val($("#"+name+" td:last-child span").html());
+	if(name == "password") {
+		$("#value").hide();
+		$("#pvalue").show();
+	}
+	else {
+		$("#value").show();
+		$("#pvalue").hide();
+	}
+	$("#changedialog").dialog('option', 'title', 'Ändern: '+name);
+	$("#changedialog").dialog("open");
+}
+$(document).ready(function() {
+    $(function() {
+        $("#changedialog").dialog({
+            autoOpen: false,
+            modal: true
+        });
+    });
+    $("#changedialog form #submit").click(function(e) {
+    	var value = (formtarget == "password"?$("#pvalue").val():$("#value").val());
+        e.preventDefault();
+        $.ajax({
+        	url: "/api/user/"+$("#id td:last-child span").html()+"/"+formtarget,	
+        	method: "POST",	
+        	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},
+        	contentType: false,
+        	data: value
+        }).done(function( data, textStatus, jqXHR ) {location.reload();});
+    });
+});

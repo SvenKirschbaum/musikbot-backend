@@ -15,8 +15,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
@@ -24,6 +22,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+
+import de.elite12.musikbot.shared.Util;
 
 public class Weblet extends HttpServlet {
 
@@ -214,7 +214,7 @@ public class Weblet extends HttpServlet {
 								UserMessage.TYPE_ERROR);
 						resp.sendRedirect("/register/");
 					} else {
-						if (!this.isValidEmailAddress(req.getParameter("mail"))) {
+						if (!Util.isValidEmailAddress(req.getParameter("mail"))) {
 							this.getControl().addmessage(req, "Die eingegebene Email-Adresse ist ung�ltig!",
 									UserMessage.TYPE_ERROR);
 							resp.sendRedirect("/register/");
@@ -356,17 +356,6 @@ public class Weblet extends HttpServlet {
 
 	private Controller getControl() {
 		return control;
-	}
-
-	private boolean isValidEmailAddress(String email) {
-		boolean result = true;
-		try {
-			InternetAddress emailAddr = new InternetAddress(email);
-			emailAddr.validate();
-		} catch (AddressException ex) {
-			result = false;
-		}
-		return result;
 	}
 
 	private void updatelastseen(User u) {

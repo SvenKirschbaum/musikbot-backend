@@ -1197,3 +1197,6 @@ body.error {
 #usercontainer table {
 	width:100%;
 }
+#changedialog {
+	display: none;
+}

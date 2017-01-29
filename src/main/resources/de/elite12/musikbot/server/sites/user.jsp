@@ -12,8 +12,18 @@
 <title><%= ((User) request.getAttribute("viewuser")).getName() %> - Elite12 - Musikbot</title>
 </head>
 <body>
+	<div id="backlink" class="link">
+		<a href="/">Zurück</a>
+	</div>
+	<div id="changedialog" title="Dialog Form">
+		<form action="" method="post">
+			<label>Wert:</label>
+			<input class="value" id="value" name="value" type="text">
+			<input class="value" id="pvalue" name="pvalue" type="password">
+			<input id="submit" type="submit" value="Ändern">
+		</form>
+	</div>
 	<div id="topic"></div>
-
 	<div id="usercontainer">
 		<div id="pbild" class="bordered">
 			<img alt="profilbild"
@@ -27,9 +37,9 @@
 					<%
 					for(DataEntry e:((DataEntry[])request.getAttribute("userinfo"))) {
 				%>
-					<tr>
+					<tr id="<%=e.urlname%>">
 						<td><%= e.name %></td>
-						<td><%= e.value %></td>
+						<td><span><%= e.value %></span><% if(e.changeable){ %>    <a href="#" onclick='showform("<%=e.urlname%>")'>(Ändern)</a><% } %></td>
 					</tr>
 					<%
 					}

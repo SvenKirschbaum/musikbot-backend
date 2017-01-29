@@ -40,7 +40,9 @@
 <meta name="description" content="Website des Elite12-Musikbots">
 <link rel="stylesheet" type="text/css" href="/res/styles/<%= style %>.css" />
 <link rel="shortcut icon" href="/res/favicon.png">
-<script defer type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+<script defer type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+<script defer src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <% if(session.getAttribute("user") != null) { %>
 <script type="text/javascript">
 	var authtoken = "<%= ((User)session.getAttribute("user")).getToken() %>";
