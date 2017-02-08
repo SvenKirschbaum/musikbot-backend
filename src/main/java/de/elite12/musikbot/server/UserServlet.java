@@ -5,7 +5,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.UUID;
 
 import javax.servlet.ServletException;
@@ -18,18 +20,18 @@ import org.apache.log4j.Logger;
 import de.elite12.musikbot.server.Weblet.TopEntry;
 
 public class UserServlet extends HttpServlet {
-    
+
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 2212625943054480381L;
     @SuppressWarnings("unused")
     private Controller ctr;
-    
+
     public UserServlet(Controller con) {
         this.ctr = con;
     }
-    
+
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Weblet.handleGuest(req);
@@ -41,7 +43,7 @@ public class UserServlet extends HttpServlet {
                 user = new User(UUID.fromString(path[path.length - 1]).toString(), null, "gast@elite12.de", false);
                 guest = true;
             } catch (IllegalArgumentException e) {
-                
+
             }
             if (user != null) {
                 req.setAttribute("viewuser", user);
@@ -60,7 +62,7 @@ public class UserServlet extends HttpServlet {
                     userinfo.add(new DataEntry("Passwort:", "****", true, "password"));
                 }
                 userinfo.add(new DataEntry("Admin: ", user.isAdmin() ? "Ja" : "Nein", admin && !guest, "admin"));
-                
+
                 try (
                         Connection c = this.ctr.getDB();
                         PreparedStatement stmnt = c
@@ -73,7 +75,14 @@ public class UserServlet extends HttpServlet {
                                 "SELECT SONG_NAME,SONG_LINK,COUNT(*) AS anzahl FROM PLAYLIST WHERE AUTOR = ? AND SONG_SKIPPED = TRUE GROUP BY SONG_LINK ORDER BY COUNT(*) DESC LIMIT 10");
                         PreparedStatement stmnt5 = c.prepareStatement(
                                 "SELECT SONG_NAME,SONG_LINK,SONG_ID FROM PLAYLIST WHERE AUTOR = ? ORDER BY SONG_ID DESC LIMIT 10");
+                        PreparedStatement stmnt6 = c.prepareStatement("SELECT LASTSEEN FROM USER WHERE ID = ?");
                 ) {
+                    stmnt6.setInt(1, user.getId());
+                    ResultSet r6 = stmnt6.executeQuery();
+                    r6.next();
+                    SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    userinfo.add(new DataEntry("Zuletzt aktiv:", f.format(new Date(r6.getInt(1) * 1000)), false, ""));
+
                     stmnt.setString(1, user.getName());
                     ResultSet r = stmnt.executeQuery();
                     r.next();
@@ -108,7 +117,7 @@ public class UserServlet extends HttpServlet {
                     resp.sendError(500);
                     return;
                 }
-                
+
                 req.setAttribute("userinfo", userinfo.toArray(new DataEntry[0]));
                 req.getRequestDispatcher("/user.jsp").forward(req, resp);
                 return;
@@ -119,15 +128,15 @@ public class UserServlet extends HttpServlet {
             resp.sendError(404);
         }
     }
-    
+
     private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
         throw new java.io.NotSerializableException(getClass().getName());
     }
-    
+
     private void readObject(java.io.ObjectInputStream stream) throws java.io.IOException, ClassNotFoundException {
         throw new java.io.NotSerializableException(getClass().getName());
     }
-    
+
     public class DataEntry {
         public DataEntry(String name, String value, boolean change, String urlname) {
             this.name = name;
@@ -135,7 +144,7 @@ public class UserServlet extends HttpServlet {
             this.changeable = change;
             this.urlname = urlname;
         }
-        
+
         public String name;
         public String urlname;
         public String value;
