@@ -81,7 +81,7 @@ public class UserServlet extends HttpServlet {
                     ResultSet r6 = stmnt6.executeQuery();
                     r6.next();
                     SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    userinfo.add(new DataEntry("Zuletzt aktiv:", f.format(new Date(r6.getInt(1) * 1000)), false, ""));
+                    userinfo.add(new DataEntry("Zuletzt aktiv:", f.format(new Date(r6.getLong(1) * 1000L)), false, ""));
 
                     stmnt.setString(1, user.getName());
                     ResultSet r = stmnt.executeQuery();
