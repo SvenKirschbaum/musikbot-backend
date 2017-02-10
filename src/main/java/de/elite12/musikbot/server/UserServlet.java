@@ -77,11 +77,13 @@ public class UserServlet extends HttpServlet {
                                 "SELECT SONG_NAME,SONG_LINK,SONG_ID FROM PLAYLIST WHERE AUTOR = ? ORDER BY SONG_ID DESC LIMIT 10");
                         PreparedStatement stmnt6 = c.prepareStatement("SELECT LASTSEEN FROM USER WHERE ID = ?");
                 ) {
-                    stmnt6.setInt(1, user.getId());
-                    ResultSet r6 = stmnt6.executeQuery();
-                    r6.next();
-                    SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    userinfo.add(new DataEntry("Zuletzt aktiv:", f.format(new Date(r6.getLong(1) * 1000L)), false, ""));
+                	if (!guest) {
+	                	stmnt6.setInt(1, user.getId());
+	                    ResultSet r6 = stmnt6.executeQuery();
+	                    r6.next();
+	                    SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	                    userinfo.add(new DataEntry("Zuletzt aktiv:", f.format(new Date(r6.getLong(1) * 1000L)), false, ""));
+                	}
 
                     stmnt.setString(1, user.getName());
                     ResultSet r = stmnt.executeQuery();
