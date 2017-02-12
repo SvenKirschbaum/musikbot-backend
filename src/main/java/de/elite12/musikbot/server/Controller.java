@@ -396,7 +396,7 @@ public class Controller {
             ResultSet rs = stmnt.executeQuery();
             rs.next();
             if (rs.getInt(1) < 24) {
-                stmnt2.setString(1, "http://open.spotify.com/track/" + SID);
+                stmnt2.setString(1, "https://open.spotify.com/track/" + SID);
                 ResultSet rs2 = stmnt2.executeQuery();
                 rs2.next();
                 if (rs2.getInt(1) == 0) {
@@ -419,7 +419,7 @@ public class Controller {
                         }
 
                         stmnt4.setBoolean(1, false);
-                        stmnt4.setString(2, "http://open.spotify.com/track/" + SID);
+                        stmnt4.setString(2, "https://open.spotify.com/track/" + SID);
                         stmnt4.setString(3, "[" + track.getArtists().get(0).getName() + "] " + track.getName());
                         if (user != null) {
                             stmnt4.setString(4, user.getName());
