@@ -66,5 +66,6 @@
   ga('set', 'anonymizeIp', true);
   ga('send', 'pageview');
 </script>
-<script async type="text/javascript" src="/res/cookiechoices.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.js"></script>
 <link rel="alternate" type="application/rss+xml" title="RSS" href="https://musikbot.elite12.de/feed/" />

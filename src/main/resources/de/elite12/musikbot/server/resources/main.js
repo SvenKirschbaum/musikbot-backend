@@ -773,4 +773,16 @@ $(document).ready(function() {
         	data: value
         }).done(function( data, textStatus, jqXHR ) {location.reload();});
     });
+    window.cookieconsent.initialise({
+	  "palette": {
+	    "popup": {
+	      "background": "#000"
+	    },
+	    "button": {
+	      "background": "#f1d600"
+	    }
+	  },
+	  "position": "top",
+	  "static": true
+	})
 });

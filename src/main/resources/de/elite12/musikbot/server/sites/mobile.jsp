@@ -36,17 +36,27 @@
 		<%}%>
 			ga('send', 'pageview');
 		</script>
-		<script async src="/res/cookiechoices.js"></script>
 		<link rel="alternate" type="application/rss+xml" title="RSS"
 			href="https://musikbot.elite12.de/feed/" />
+		<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css" />
+		<script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.js"></script>
+		<script>
+			window.addEventListener("load", function(){
+			window.cookieconsent.initialise({
+			  "palette": {
+			    "popup": {
+			      "background": "#000"
+			    },
+			    "button": {
+			      "background": "#f1d600"
+			    }
+			  },
+			  "position": "top",
+			  "static": true
+			})});
+		</script>
 	</head>
 	<body>
-		<script>
-		  document.addEventListener('DOMContentLoaded', function(event) {
-		    cookieChoices.showCookieConsentBar('Cookies erleichtern die Bereitstellung unserer Dienste. Mit der Nutzung unserer Dienste erklären Sie sich damit einverstanden, dass wir Cookies verwenden.',
-		      'Schließen', 'Weitere Informationen', '/impressum/');
-		  });
-		</script>
 		<div class="currentsong"><%= HtmlUtils.htmlEscape(((Controller)request.getAttribute("control")).getSongtitle())%></div>
 		<div class="playlist">
 			<table>
