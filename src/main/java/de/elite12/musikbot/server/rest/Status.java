@@ -51,15 +51,6 @@ public class Status {
             while (rs.next()) {
                 Song s = new Song(rs);
                 dauer += s.getDauer();
-                User u = SessionHelper.getUserFromSession(req.getSession());
-                if (!(u != null
-                        && u.isAdmin())) {
-                    try {
-                        UUID.fromString(s.getAutor());
-                        s.setAutor("Gast");
-                    } catch (IllegalArgumentException e) {
-                    }
-                }
                 User user = Controller.getInstance().getUserservice().getUserbyName(s.getAutor());
                 s.setGravatarid(
                         user == null ? Util.md5Hex("null") : Util.md5Hex(user.getEmail().toLowerCase(Locale.GERMAN)));
