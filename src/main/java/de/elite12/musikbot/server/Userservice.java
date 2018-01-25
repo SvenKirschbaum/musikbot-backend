@@ -159,7 +159,7 @@ public class Userservice {
                         "INSERT INTO USER (NAME, PASSWORD, EMAIL, ADMIN, TOKEN) VALUES (?, ?, ?, ?, ?)");
         ) {
             statement.setString(1, u.getName());
-            statement.setString(2, this.argon2.hash(2, 65536, 1, u.getPassword()));
+            statement.setString(2, u.getPassword());
             statement.setString(3, u.getEmail());
             statement.setBoolean(4, u.isAdmin());
             statement.setString(5, u.getToken());
