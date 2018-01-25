@@ -244,6 +244,7 @@ public class Weblet extends HttpServlet {
                                                 ((UUID) req.getSession().getAttribute("guest_id")).toString());
                                         stmnt.executeUpdate();
                                         SessionHelper.attachUserToSession(req.getSession(), u);
+                                        req.getSession().removeAttribute("guest_id");
                                         resp.sendRedirect("/");
                                         Logger.getLogger(this.getClass()).debug("Succesfull registration");
                                     } catch (SQLException e) {
