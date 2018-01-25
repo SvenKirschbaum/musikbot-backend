@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.apache.log4j.Logger;
 
@@ -156,14 +157,18 @@ public class Userservice {
         try (
                 Connection c = this.getControl().getDB();
                 PreparedStatement statement = c.prepareStatement(
-                        "INSERT INTO USER (NAME, PASSWORD, EMAIL, ADMIN, TOKEN) VALUES (?, ?, ?, ?, ?)");
+                        "INSERT INTO USER (NAME, PASSWORD, EMAIL, ADMIN, TOKEN) VALUES (?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
         ) {
             statement.setString(1, u.getName());
             statement.setString(2, u.getPassword());
             statement.setString(3, u.getEmail());
             statement.setBoolean(4, u.isAdmin());
             statement.setString(5, u.getToken());
-            statement.execute();
+            statement.executeUpdate();
+            ResultSet rs = statement.getGeneratedKeys();
+            if(rs.next()) {
+            	u.setId(rs.getInt(1));
+            }
             Logger.getLogger(this.getClass()).info("User created: " + u);
         } catch (SQLException e) {
             Logger.getLogger(this.getClass()).error("Error changing User: " + u.getName(), e);
