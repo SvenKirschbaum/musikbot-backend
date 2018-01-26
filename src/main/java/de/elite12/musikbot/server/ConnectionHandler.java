@@ -1,5 +1,6 @@
 package de.elite12.musikbot.server;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -116,7 +117,7 @@ public class ConnectionHandler {
                     break;
                 }
                 }
-            } catch (SocketException e) {
+            } catch (SocketException | EOFException e) {
                 Logger.getLogger(ConnectionHandler.class).debug("Die Verbindung wurde vom Client getrennt!", e);
                 break;
             } catch (ClassNotFoundException | IOException e) {

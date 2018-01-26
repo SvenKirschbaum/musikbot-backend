@@ -341,8 +341,10 @@ public class Controller {
             logger.debug("Interrupting Listener Thread...");
             this.getConnectionListener().interrupt();
             if (this.getConnectionListener().getHandle() != null) {
-                logger.debug("Closing Existing Connection...");
-                this.getConnectionListener().getHandle().getsocket().close();
+            	if(this.getConnectionListener().getHandle().getsocket() != null) {
+	                logger.debug("Closing Existing Connection...");
+	                this.getConnectionListener().getHandle().getsocket().close();
+	            }
             }
             logger.debug("Closing Server Socket...");
             this.getConnectionListener().getSocket().close();
