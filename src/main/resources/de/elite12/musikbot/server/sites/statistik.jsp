@@ -88,7 +88,7 @@
 				%>
 					<tr>
 						<td><%= i %>.</td>
-						<td><a href="/user/<%=e.getName()%>">
+						<td><a href="/user/<%=URLEncoder.encode(e.getName()).replace("+","%20")%>">
 							<% 
 								try {
 									UUID id = UUID.fromString(e.getName()); 

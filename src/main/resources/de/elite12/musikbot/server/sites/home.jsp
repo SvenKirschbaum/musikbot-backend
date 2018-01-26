@@ -52,7 +52,7 @@
 					id="songtitle">
 					<% if(((Controller)request.getAttribute("control")).getSonglink() != null) { %>
 					<a
-						href="<%= HtmlUtils.htmlEscape(((Controller)request.getAttribute("control")).getSonglink()) %>">
+						href="<%= URLEncoder.encode(((Controller)request.getAttribute("control")).getSonglink()).replace("+","%20") %>">
 						<%= HtmlUtils.htmlEscape(((Controller)request.getAttribute("control")).getSongtitle()) %>
 					</a>
 					<% } else { %>Kein Song!<% } %>
@@ -120,9 +120,9 @@
 							     String gravatarid = luser==null?Util.md5Hex("null"):Util.md5Hex(luser.getEmail().toLowerCase(Locale.GERMAN));
 								%>
 								<% if(user != null && user.isAdmin()) {%>
-								title="<%= rs.getString("AUTOR") %>" <% } %>>
+								title="<%= HtmlUtils.htmlEscape(rs.getString("AUTOR")) %>" <% } %>>
 								<img alt="pb_playlist" src="https://www.gravatar.com/avatar/<%= gravatarid %>?s=20&d=<%=URLEncoder.encode("https://musikbot.elite12.de/res/favicon_small.png","UTF-8") %>" />
-								<a href="/user/<%= rs.getString("AUTOR") %>"><% 
+								<a href="/user/<%= URLEncoder.encode(rs.getString("AUTOR")).replace("+","%20") %>"><% 
 								try {
 									UUID id = UUID.fromString(rs.getString("AUTOR")); 
 									%>Gast<%

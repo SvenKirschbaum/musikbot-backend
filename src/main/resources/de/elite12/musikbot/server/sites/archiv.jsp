@@ -55,8 +55,8 @@
 						<td style="text-align: center"><%=rs.getInt("SONG_ID")%></td>
 						<td><%=timeformat.format(rs.getObject("SONG_PLAYED_AT"))%></td>
 						<td <% if(user != null && user.isAdmin()) {%>
-								title="<%= rs.getString("AUTOR") %>" <% } %>>
-							<a href="/user/<%=rs.getString("AUTOR")%>"><%
+								title="<%= HtmlUtils.htmlEscape(rs.getString("AUTOR")) %>" <% } %>>
+							<a href="/user/<%=URLEncoder.encode(rs.getString("AUTOR")).replace("+","%20")%>"><%
 								try {
 											UUID id = UUID.fromString(rs.getString("AUTOR"));
 							%>Gast<%
