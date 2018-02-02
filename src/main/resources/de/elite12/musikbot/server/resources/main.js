@@ -666,14 +666,15 @@ function parseupdate(data) {
 		}
 		
 		row.hide();
-		$('#playlist').append(row);
-		$("#song_"+e.id+" td:eq(2) a").attr("href","/user/"+encodeURIComponent(e.autor));
-		$("#song_"+e.id+" td:eq(2) a").text(guestname(e.autor));
-		$("#song_"+e.id+" td:eq(3)").attr("title", e.title);
-		$("#song_"+e.id+" td:eq(3)").text(shorttitle);
+		
+		row.find("td:eq(2) a").attr("href","/user/"+encodeURIComponent(e.autor));
+		row.find("td:eq(2) a").text(guestname(e.autor));
+		row.find("td:eq(3)").attr("title", e.title);
+		row.find("td:eq(3)").text(shorttitle);
 		if(!$(".admin").length == 0) {
-			$("#song_"+e.id+" td:eq(2)").attr("title",e.autor);
+			row.find("td:eq(2)").attr("title",e.autor);
 		}
+		$('#playlist').append(row);
 		row.fadeIn("slow");
 	});
 	initdnd();
