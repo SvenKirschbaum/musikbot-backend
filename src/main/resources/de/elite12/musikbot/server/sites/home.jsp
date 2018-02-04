@@ -52,7 +52,7 @@
 					id="songtitle">
 					<% if(((Controller)request.getAttribute("control")).getSonglink() != null) { %>
 					<a
-						href="<%= URLEncoder.encode(((Controller)request.getAttribute("control")).getSonglink()).replace("+","%20") %>">
+						href="<%= HtmlUtils.htmlEscape(((Controller)request.getAttribute("control")).getSonglink()) %>">
 						<%= HtmlUtils.htmlEscape(((Controller)request.getAttribute("control")).getSongtitle()) %>
 					</a>
 					<% } else { %>Kein Song!<% } %>
