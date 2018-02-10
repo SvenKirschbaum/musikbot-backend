@@ -412,7 +412,7 @@ public class Controller {
                     if (rs3.getInt(1) < 2 || user != null && user.isAdmin()) {
                         Track track = Util.getTrack(SID);
                         if (track != null) {
-                            if (track.getDuration() > 390000 && !(user != null && user.isAdmin())) {
+                            if (track.getDuration() > 600000 && !(user != null && user.isAdmin())) {
                                 return Response.status(409).entity("Dieses Video ist leider zu lang!").build();
                             }
                         } else {
@@ -538,7 +538,7 @@ public class Controller {
                                 throw new IOException("Video not available: " + vID);
                             }
 
-                            if (Duration.parse(v.getContentDetails().getDuration()).getSeconds() > 390
+                            if (Duration.parse(v.getContentDetails().getDuration()).getSeconds() > 600
                                     && !(user != null && user.isAdmin())) {
                                 return Response.status(409).entity("Dieses Video ist leider zu lang!").build();
                             }
