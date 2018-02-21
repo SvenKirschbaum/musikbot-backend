@@ -101,9 +101,21 @@ public class Song {
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     public Response createSong(String url) {
-        return Controller.getInstance().addSong(url, (User) sc.getUserPrincipal(),
-                (UUID) req.getSession().getAttribute("guest_id") != null
-                        ? ((UUID) req.getSession().getAttribute("guest_id")).toString() : UUID.randomUUID().toString());
+    	String uuid = null;
+    	if(req.getSession().getAttribute("guest_id") != null) {
+    		uuid = req.getSession().getAttribute("guest_id").toString();
+    	}
+    	
+    	if(req.getHeader("User-Agent") != null && req.getHeader("User") != null) {
+    		if(req.getHeader("User-Agent").equals("ContestBot") && !req.getHeader("User").isEmpty()) {
+    			uuid = UUID.nameUUIDFromBytes(req.getHeader("User").getBytes()).toString();
+    		}
+    	}
+    	
+    	if(uuid==null) {
+    		uuid = UUID.randomUUID().toString();
+    	}
+        return Controller.getInstance().addSong(url, (User) sc.getUserPrincipal(), uuid);
     }
     
     @PUT
