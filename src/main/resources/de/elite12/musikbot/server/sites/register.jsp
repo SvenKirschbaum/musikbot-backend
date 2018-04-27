@@ -37,7 +37,7 @@
 								<td><input type="text" name="mail" /></td>
 							</tr>
 							<tr>
-								<td colspan="2"><input type="checkbox" name="datenschutz">Ich habe die <a href="/impressum/">Datenschutzbestimmungen</a> gelesen und akzeptiert</td>
+								<td colspan="2"><input type="checkbox" name="datenschutz">Ich habe die <a href="https://datenschutz.elite12.de/">Datenschutzbestimmungen</a> gelesen und akzeptiert</td>
 							</tr>
 							<tr>
 								<td colspan="2"><input type="submit" name="submit"

@@ -120,7 +120,7 @@
 	
 	<span id="stats" class="link"><a href="/statistik/">Statistik</a></span>
 	
-	<span id="impressum" class="link"><a href="/impressum/">Impressum/Disclaimer/Datenschutz</a></span>
+	<span id="impressum" class="link"><a href="https://datenschutz.elite12.de/">Impressum/Disclaimer/Datenschutz</a></span>
 
 	<div id="time"><%=time.format(new java.util.Date())%></div>
 

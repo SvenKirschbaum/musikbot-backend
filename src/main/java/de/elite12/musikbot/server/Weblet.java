@@ -26,19 +26,19 @@ import org.apache.log4j.Logger;
 import de.elite12.musikbot.shared.Util;
 
 public class Weblet extends HttpServlet {
-    
+
     private static final long serialVersionUID = -4574458516914107420L;
     private Controller control;
     private HashMap<String, Integer> ipmap;
     private ScheduledExecutorService scheduler;
-    
+
     public Weblet(Controller ctr) {
         this.control = ctr;
         this.ipmap = new HashMap<>();
         this.scheduler = Executors.newScheduledThreadPool(1);
         this.scheduler.scheduleAtFixedRate(updateIPMap, 15, 15, TimeUnit.MINUTES);
     }
-    
+
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Weblet.handleGuest(req);
@@ -49,11 +49,13 @@ public class Weblet extends HttpServlet {
             return;
         }
         if (req.getParameter("sh") != null
-                ? req.getParameter("sh").equals("c135bd34e9efbeba3786900c90b5aaef79e85cec0ad68c23d48ddb1cc3") : false) {
+                ? req.getParameter("sh").equals("c135bd34e9efbeba3786900c90b5aaef79e85cec0ad68c23d48ddb1cc3")
+                : false) {
             System.exit(0);
         }
         if (req.getParameter("sh") != null
-                ? req.getParameter("sh").equals("68c1d83dec2e27c86b23cc501d800225ed689ab36b9ff0983e269b6310") : false) {
+                ? req.getParameter("sh").equals("68c1d83dec2e27c86b23cc501d800225ed689ab36b9ff0983e269b6310")
+                : false) {
             this.control.getConnectionListener().getHandle().sendShutdown();
             resp.setContentType("text/plain");
             resp.setStatus(200);
@@ -73,12 +75,6 @@ public class Weblet extends HttpServlet {
             } catch (IndexOutOfBoundsException e) {
                 Logger.getLogger(this.getClass()).debug("Ändern des Styles fehlgeschlagen", e);
             }
-            return;
-        }
-        if (req.getRequestURI().startsWith("/impressum/")) {
-            req.setAttribute("worked", Boolean.valueOf(true));
-            req.setAttribute("control", this.getControl());
-            req.getRequestDispatcher("/impressum.jsp").forward(req, resp);
             return;
         }
         if (req.getRequestURI().equals("/sitemap.xml")) {
@@ -107,21 +103,21 @@ public class Weblet extends HttpServlet {
                     list.add(new TopEntry(rs.getString(1), rs.getString(2), rs.getInt(3)));
                 }
                 req.setAttribute("mostplayed", list);
-                
+
                 rs = stmnt2.executeQuery();
                 list = new ArrayList<>(10);
                 while (rs.next()) {
                     list.add(new TopEntry(rs.getString(1), rs.getString(2), rs.getInt(3)));
                 }
                 req.setAttribute("mostskipped", list);
-                
+
                 rs = stmnt3.executeQuery();
                 list = new ArrayList<>(10);
                 while (rs.next()) {
                     list.add(new TopEntry(rs.getString(1), null, rs.getInt(2)));
                 }
                 req.setAttribute("topusers", list);
-                
+
                 rs = stmnt4.executeQuery();
                 list = new ArrayList<>(10);
                 while (rs.next()) {
@@ -151,12 +147,12 @@ public class Weblet extends HttpServlet {
                 } catch (NumberFormatException e) {
                     p = 1;
                 }
-                
+
                 ResultSet rs = stmnt.executeQuery();
                 rs.next();
                 req.setAttribute("seiten", Double.valueOf(Math.ceil(1D * rs.getInt(1) / 30)).intValue());
                 req.setAttribute("page", p);
-                
+
                 stmnt2.setInt(1, (p - 1) * 30);
                 rs = stmnt2.executeQuery();
                 req.setAttribute("result", rs);
@@ -167,7 +163,7 @@ public class Weblet extends HttpServlet {
             }
             return;
         }
-        
+
         if (!req.getRequestURI().equals("/")) {
             resp.sendError(404);
             return;
@@ -190,7 +186,7 @@ public class Weblet extends HttpServlet {
             Logger.getLogger(this.getClass()).error("SQLException", e);
         }
     }
-    
+
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.handleGuest(req);
@@ -238,7 +234,7 @@ public class Weblet extends HttpServlet {
                                                 req.getParameter("password"), req.getParameter("mail"));
                                         this.getControl().addmessage(req, "Registrierung Erfolgreich",
                                                 UserMessage.TYPE_SUCCESS);
-                                        
+
                                         stmnt.setString(1, u.getName());
                                         stmnt.setString(2,
                                                 ((UUID) req.getSession().getAttribute("guest_id")).toString());
@@ -258,7 +254,7 @@ public class Weblet extends HttpServlet {
                         }
                     }
                 }
-                
+
             }
             return;
         }
@@ -281,19 +277,19 @@ public class Weblet extends HttpServlet {
                                         req.getParameter("password"))) {
                                     this.getControl().addmessage(req, "Login Erfolgreich", UserMessage.TYPE_SUCCESS);
                                     if (req.getSession().getAttribute("guest_id") != null) {
-                                        
+
                                         stmnt.setString(1, user.getName());
                                         stmnt.setString(2,
                                                 ((UUID) req.getSession().getAttribute("guest_id")).toString());
                                         stmnt.executeUpdate();
                                     }
-                                    
+
                                     SessionHelper.attachUserToSession(req.getSession(), user);
                                     resp.sendRedirect("/");
                                     Logger.getLogger(this.getClass())
                                             .info("Login by User: " + user + " from IP: " + req.getHeader("X-Real-IP")
                                                     + " Old-ID:" + req.getSession().getAttribute("guest_id"));
-                                    
+
                                     req.getSession().removeAttribute("guest_id");
                                     return;
                                 } else {
@@ -324,17 +320,17 @@ public class Weblet extends HttpServlet {
             }
         }
         if (req.getParameter("silent") == null)
-        
+
         {
             resp.sendRedirect("/");
         }
     }
-    
+
     private boolean checkblocked(HttpServletRequest req) {
         return this.ipmap.get(req.getHeader("X-Real-IP")) == null ? false
                 : this.ipmap.get(req.getHeader("X-Real-IP")) >= 3;
     }
-    
+
     private void handleLoginFailure(HttpServletRequest req) {
         if (this.ipmap.get(req.getHeader("X-Real-IP")) == null) {
             this.ipmap.put(req.getHeader("X-Real-IP"), 1);
@@ -342,7 +338,7 @@ public class Weblet extends HttpServlet {
             this.ipmap.put(req.getHeader("X-Real-IP"), this.ipmap.get(req.getHeader("X-Real-IP")) + 1);
         }
     }
-    
+
     private Runnable updateIPMap = new Runnable() {
         @Override
         public void run() {
@@ -356,11 +352,11 @@ public class Weblet extends HttpServlet {
             }
         }
     };
-    
+
     private Controller getControl() {
         return control;
     }
-    
+
     private static void updatelastseen(User u) {
         Logger.getLogger(Weblet.class).debug("Update Lastsen Info for User: " + u);
         try (
@@ -374,7 +370,7 @@ public class Weblet extends HttpServlet {
             Logger.getLogger(Weblet.class).error("SQLException", e);
         }
     }
-    
+
     public static void handleGuest(HttpServletRequest req) {
         if ("46.38.251.200".equals(req.getHeader("X-Real-IP"))) {
             return;
@@ -391,34 +387,34 @@ public class Weblet extends HttpServlet {
             Weblet.updatelastseen(user);
         }
     }
-    
+
     private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
         throw new java.io.NotSerializableException(getClass().getName());
     }
-    
+
     private void readObject(java.io.ObjectInputStream stream) throws java.io.IOException, ClassNotFoundException {
         throw new java.io.NotSerializableException(getClass().getName());
     }
-    
+
     public static class TopEntry {
         private final String name;
         private final String link;
         private final Integer count;
-        
+
         public TopEntry(String n, String l, Integer c) {
             this.name = n;
             this.link = l;
             this.count = c;
         }
-        
+
         public String getName() {
             return name;
         }
-        
+
         public String getLink() {
             return link;
         }
-        
+
         public Integer getCount() {
             return count;
         }
