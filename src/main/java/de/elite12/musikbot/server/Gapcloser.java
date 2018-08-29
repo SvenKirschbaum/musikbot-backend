@@ -413,7 +413,7 @@ public class Gapcloser extends HttpServlet {
         SpotifyPlaylistHelper spid = Util.getSPID(this.getPlaylist());
         if (pid != null) {
             try {
-                PlaylistItemListResponse r = Controller.getInstance().getYouTube().playlistItems().list("snippet")
+                PlaylistItemListResponse r = this.getControl().getYouTube().playlistItems().list("snippet")
                         .setKey(Controller.key).setPlaylistId(pid).setMaxResults(1L).setFields("pageInfo/totalResults")
                         .execute();
                 this.permutation = new Permutationhelper(r.getPageInfo().getTotalResults());
