@@ -109,11 +109,12 @@ public class Gapcloser extends HttpServlet {
                     break;
                 }
             }
-            if (Util.getPID(req.getParameter("playlist")) != null
-                    || Util.getSPID(req.getParameter("playlist")) != null) {
-                String link = Util.getSPID(req.getParameter("playlist")) == null
+            //if (Util.getPID(req.getParameter("playlist")) != null || Util.getSPID(req.getParameter("playlist")) != null) {
+            if (Util.getPID(req.getParameter("playlist")) != null) {
+                /*String link = Util.getSPID(req.getParameter("playlist")) == null
                         ? "https://www.youtube.com/playlist?list=" + Util.getPID(req.getParameter("playlist"))
-                        : Util.getSPID(req.getParameter("playlist")).toString();
+                        : Util.getSPID(req.getParameter("playlist")).toString();*/
+            	String link = "https://www.youtube.com/playlist?list=" + Util.getPID(req.getParameter("playlist"));
                 this.setPlaylist(link);
             }
 
@@ -186,7 +187,7 @@ public class Gapcloser extends HttpServlet {
                 try (
                         Connection c = this.getControl().getDB();
                         PreparedStatement stmnt = c.prepareStatement(
-                                "SELECT SONG_NAME,SONG_LINK,SONG_DAUER FROM (SELECT SONG_NAME,SONG_LINK,SONG_DAUER FROM PLAYLIST WHERE AUTOR != 'Automatisch' GROUP BY SONG_NAME,SONG_LINK,SONG_DAUER ORDER BY COUNT(*) DESC LIMIT 100) ORDER BY RAND() LIMIT 1");
+                                "SELECT SONG_NAME,SONG_LINK,SONG_DAUER FROM (SELECT SONG_NAME,SONG_LINK,SONG_DAUER FROM PLAYLIST WHERE AUTOR != 'Automatisch' GROUP BY SONG_NAME,SONG_LINK,SONG_DAUER ORDER BY COUNT(*) DESC LIMIT 100) WHERE SONG_LINK NOT LIKE '%spotify%' ORDER BY RAND() LIMIT 1");
                 ) {
                     ResultSet rs = stmnt.executeQuery();
                     rs.next();
@@ -245,7 +246,7 @@ public class Gapcloser extends HttpServlet {
             case RANDOM: {
                 try (
                         Connection c = this.getControl().getDB();
-                        PreparedStatement stmnt = c.prepareStatement("select * from PLAYLIST ORDER BY RAND() LIMIT 1");
+                        PreparedStatement stmnt = c.prepareStatement("select * from PLAYLIST WHERE SONG_LINK NOT LIKE '%spotify%' ORDER BY RAND() LIMIT 1");
                 ) {
                     ResultSet rs = stmnt.executeQuery();
                     Song s = new Song(rs);

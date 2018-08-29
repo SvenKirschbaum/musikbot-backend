@@ -366,7 +366,8 @@ public class Controller {
             return this.addYSong(VID, user, gid);
         }
         if (SID != null) {
-            return this.addSSong(SID, user, gid);
+        	return Response.status(400).entity("Spotify wird aktuell leider nicht unterstützt").build();
+            //return this.addSSong(SID, user, gid);
         }
         return Response.status(400).entity("URL ungültig").build();
     }
