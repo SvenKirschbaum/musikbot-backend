@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Scanner;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
@@ -63,7 +62,6 @@ public class Controller {
     private Userservice userservice;
     private String songtitle = "Kein Song";
     private String state = "Keine Verbindung zum BOT";
-    private Thread t;
     private Gapcloser g;
 
     private static List<Integer> allowed = Arrays.asList(new Integer[] { 1, 10, 18, 20, 24, 30, 44 });
@@ -182,8 +180,6 @@ public class Controller {
             Runtime.getRuntime().addShutdownHook(new Shutdown());
             logger.debug("Added Shutdown Hook");
             logger.info("Musikbot Controller started, System is ready");
-
-            t = new Thread(new R());
         } catch (Exception e) {
             logger.fatal("Error starting Controller, System will Exit!", e);
             Runtime.getRuntime().exit(-1);
@@ -193,7 +189,6 @@ public class Controller {
 
     public void start() {
         this.connectionListener.start();
-        t.start();
     }
 
     public ConnectionListener getConnectionListener() {
@@ -645,25 +640,6 @@ public class Controller {
         @Override
         public void run() {
             Controller.getInstance().shutdown();
-        }
-    };
-
-    private static class R implements Runnable {
-
-        @Override
-        public void run() {
-            Thread.currentThread().setName("Exit");
-            Scanner sc = new Scanner(System.in, "UTF-8");
-            String s;
-            while (!Thread.currentThread().isInterrupted()) {
-                s = sc.next();
-                if (s.equalsIgnoreCase("exit")) {
-                    sc.close();
-                    Controller.getInstance().shutdown();
-                    Runtime.getRuntime().exit(0);
-                    break;
-                }
-            }
         }
     };
 }
