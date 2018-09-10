@@ -105,17 +105,22 @@ public class ConnectionHandler {
                     }
                     break;
                 }
-                case Command.PLAYBACK_ERROR: {
-                    /*
-                     * Logger.getLogger(ConnectionHandler.class).error(
-                     * "Client reported PLAYBACK_ERROR: "+(String)cmd.getdata()); Song song =
-                     * this.getController().getnextSong(); if (song != null) { this.sendSong(song); } else {
-                     * this.waitforsong = true; this.out.writeObject(new Command( Command.NO_SONG_AVAILABLE));
-                     * this.getController().setState("Warte auf neue Lieder"); this.getController().setSongtitle(null);
-                     * this.getController().setSonglink(null); this.out.flush(); }
-                     */
-                    break;
-                }
+				case Command.PLAYBACK_ERROR: {
+					Logger.getLogger(ConnectionHandler.class)
+							.error("Client reported PLAYBACK_ERROR: " + (String) cmd.getdata());
+					Song song = this.getController().getnextSong();
+					if (song != null) {
+						this.sendSong(song);
+					} else {
+						this.waitforsong = true;
+						this.out.writeObject(new Command(Command.NO_SONG_AVAILABLE));
+						this.getController().setState("Warte auf neue Lieder");
+						this.getController().setSongtitle(null);
+						this.getController().setSonglink(null);
+						this.out.flush();
+					}
+					break;
+				}
                 }
             } catch (SocketException | EOFException e) {
                 Logger.getLogger(ConnectionHandler.class).debug("Die Verbindung wurde vom Client getrennt!", e);
