@@ -357,7 +357,7 @@ public class Weblet extends HttpServlet {
         return control;
     }
 
-    private static void updatelastseen(User u) {
+    public static void updatelastseen(User u) {
         Logger.getLogger(Weblet.class).debug("Update Lastsen Info for User: " + u);
         try (
                 Connection c = Controller.getInstance().getDB();
