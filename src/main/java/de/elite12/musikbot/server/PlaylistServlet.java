@@ -65,11 +65,6 @@ public class PlaylistServlet extends HttpServlet {
                 resp.sendError(400);
                 return;
             }
-            
-            if(spid != null || said != null) {
-            	resp.sendError(400);
-            	return;
-            }
 
             Playlist p = spid == null
                     ? said == null ? PlaylistImporter.getyoutubePlaylist(pid) : PlaylistImporter.getspotifyAlbum(said)
