@@ -81,12 +81,6 @@ public class Weblet extends HttpServlet {
             }
             return;
         }
-        if (req.getRequestURI().equals("/sitemap.xml")) {
-            req.setAttribute("worked", Boolean.valueOf(true));
-            req.setAttribute("control", this.getControl());
-            req.getRequestDispatcher("/sitemap.jsp").forward(req, resp);
-            return;
-        }
         if (req.getRequestURI().startsWith("/statistik/")) {
             req.setAttribute("worked", Boolean.valueOf(true));
             req.setAttribute("control", this.getControl());
