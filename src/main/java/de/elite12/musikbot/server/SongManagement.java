@@ -20,6 +20,8 @@ import com.google.api.services.youtube.model.Video;
 import com.google.common.base.Ascii;
 import com.wrapper.spotify.model_objects.specification.Track;
 
+import de.elite12.musikbot.server.UnifiedTrack.InvalidURLException;
+import de.elite12.musikbot.server.UnifiedTrack.TrackNotAvailableException;
 import de.elite12.musikbot.shared.Util;
 
 public class SongManagement extends HttpServlet {
@@ -72,69 +74,27 @@ public class SongManagement extends HttpServlet {
                                 PreparedStatement stmnt = c
                                         .prepareStatement("INSERT INTO LOCKED_SONGS (YTID, SONG_NAME) VALUES  (?, ?)");
                         ) {
-                            String vid = Util.getVID(req.getParameter("song"));
-                            String sid = Util.getSID(req.getParameter("song"));
-                            if (vid != null) {
-                                List<Video> list = this.getControl().getYouTube().videos()
-                                        .list("status,snippet,contentDetails").setKey(Controller.key).setId(vid)
-                                        .setFields(
-                                                "items/status/uploadStatus,items/status/privacyStatus,items/snippet/title,items/contentDetails/regionRestriction")
-                                        .execute().getItems();
-                                Video v;
-                                if (list != null) {
-                                    v = list.get(0);
-                                    if (!v.getStatus().getUploadStatus().equals("processed")
-                                            || v.getStatus().getUploadStatus().equals("private")) {
-                                        throw new IOException("Video not available: " + vid);
-                                    }
-                                    if (v.getContentDetails() != null) {
-                                        if (v.getContentDetails().getRegionRestriction() != null) {
-                                            if (v.getContentDetails().getRegionRestriction().getBlocked() != null) {
-                                                if (v.getContentDetails().getRegionRestriction().getBlocked()
-                                                        .contains("DE")) {
-                                                    throw new IOException("Video not available: " + vid);
-                                                }
-                                            }
-                                            if (v.getContentDetails().getRegionRestriction().getAllowed() != null) {
-                                                if (!v.getContentDetails().getRegionRestriction().getAllowed()
-                                                        .contains("DE")) {
-                                                    throw new IOException("Video not available: " + vid);
-                                                }
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    throw new IOException("Video not available");
-                                }
-                                stmnt.setString(1, vid);
-                                stmnt.setString(2, Ascii.truncate(v.getSnippet().getTitle(), 350, "..."));
-                                stmnt.executeUpdate();
-                                Logger.getLogger(SongManagement.class).info("added Song to locklist: " + vid
-                                        + "by User: " + u);
-                            } else if (sid != null) {
-                                Track track = Util.getTrack(sid);
-                                if (track == null) {
-                                    throw new IOException("");
-                                }
-                                stmnt.setString(1, sid);
-                                stmnt.setString(2, Ascii.truncate(track.getName(), 350, "..."));
-                                stmnt.executeUpdate();
-                                Logger.getLogger(SongManagement.class).info("added Song to locklist: " + sid
-                                        + "by User: " + u);
-                            } else {
-                                throw new IOException("");
-                            }
-                        } catch (IndexOutOfBoundsException | IOException e) {
-                            Logger.getLogger(SongManagement.class).warn("Service Exception", e);
-                            this.getControl().addmessage(req, "Der eingegebene Link war ungültig!",
-                                    UserMessage.TYPE_ERROR);
+                        	UnifiedTrack ut = UnifiedTrack.fromURL(song);
+                            
+                            stmnt.setString(1, ut.getId());
+                            stmnt.setString(2, Ascii.truncate(ut.getTitle(), 350, "..."));
+                            stmnt.executeUpdate();
+                            Logger.getLogger(SongManagement.class).info("added Song to locklist: " + ut.getId()
+                                    + "by User: " + u);
                         } catch (SQLIntegrityConstraintViolationException e) {
-                            Logger.getLogger(SongManagement.class).warn("ConstraintViolation", e);
                             this.getControl().addmessage(req, "Dieser Song befindet sich bereits in der Liste!",
                                     UserMessage.TYPE_ERROR);
-                        } catch (SQLException e) {
-                            Logger.getLogger(SongManagement.class).error("Sql Exception", e);
-                        }
+                        } catch (IOException | SQLException e) {
+                            Logger.getLogger(SongManagement.class).warn("Service Exception", e);
+                            this.getControl().addmessage(req, "Fehler beim Sperren des Songs",
+                                    UserMessage.TYPE_ERROR);
+                        } catch (TrackNotAvailableException e) {
+                        	this.getControl().addmessage(req, "Der eingegebene Song existiert nicht",
+                                    UserMessage.TYPE_ERROR);
+						} catch (InvalidURLException e) {
+							this.getControl().addmessage(req, "Die eingegebene URL ist ungültig",
+                                    UserMessage.TYPE_ERROR);
+						}
                     } else {
                         this.getControl().addmessage(req, "Bitte gib einen Song an!", UserMessage.TYPE_ERROR);
                     }

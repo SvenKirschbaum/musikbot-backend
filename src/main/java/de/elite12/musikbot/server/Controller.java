@@ -44,6 +44,8 @@ import com.mchange.v2.c3p0.DataSources;
 import com.wrapper.spotify.model_objects.specification.Track;
 
 import de.elite12.musikbot.server.Gapcloser.Mode;
+import de.elite12.musikbot.server.UnifiedTrack.InvalidURLException;
+import de.elite12.musikbot.server.UnifiedTrack.TrackNotAvailableException;
 import de.elite12.musikbot.shared.Song;
 import de.elite12.musikbot.shared.Util;
 
@@ -209,11 +211,11 @@ public class Controller {
 
     public Song getnextSong() {
         try (
-                Connection c = this.getDB();
-                PreparedStatement stmnt = c.prepareStatement(
-                        "select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC LIMIT 0,1");
-                PreparedStatement stmnt2 = c.prepareStatement(
-                        "UPDATE PLAYLIST SET SONG_PLAYED = TRUE, SONG_PLAYED_AT = NOW() WHERE SONG_ID = ?");
+	        Connection c = this.getDB();
+	        PreparedStatement stmnt = c.prepareStatement(
+	            "select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC LIMIT 0,1");
+	        PreparedStatement stmnt2 = c.prepareStatement(
+	            "UPDATE PLAYLIST SET SONG_PLAYED = TRUE, SONG_PLAYED_AT = NOW() WHERE SONG_ID = ?");
         ) {
             ResultSet rs = stmnt.executeQuery();
             if (rs.next()) {
@@ -222,42 +224,20 @@ public class Controller {
                 stmnt2.setInt(1, rs.getInt("SONG_ID"));
                 stmnt2.execute();
                 Song s = new Song(rs);
-                if (s.gettype().equals("youtube")) {
-                    try {
-                        List<Video> list = this.getYouTube().videos().list("status,contentDetails").setKey(key)
-                                .setId(Util.getVID(s.getLink()))
-                                .setFields(
-                                        "items/status/uploadStatus,items/status/privacyStatus,items/contentDetails/regionRestriction")
-                                .execute().getItems();
-                        if (list != null) {
-                            if (!list.get(0).getStatus().getUploadStatus().equals("processed")
-                                    || list.get(0).getStatus().getUploadStatus().equals("private")) {
-                                throw new IOException("Video not available: " + s.getLink());
-                            }
-                            if (list.get(0).getContentDetails() != null) {
-                                if (list.get(0).getContentDetails().getRegionRestriction() != null) {
-                                    if (list.get(0).getContentDetails().getRegionRestriction().getBlocked() != null) {
-                                        if (list.get(0).getContentDetails().getRegionRestriction().getBlocked()
-                                                .contains("DE")) {
-                                            throw new IOException("Video not available: " + s.getLink());
-                                        }
-                                    }
-                                    if (list.get(0).getContentDetails().getRegionRestriction().getAllowed() != null) {
-                                        if (!list.get(0).getContentDetails().getRegionRestriction().getAllowed()
-                                                .contains("DE")) {
-                                            throw new IOException("Video not available: " + s.getLink());
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            throw new IOException("Video not available: " + s.getLink());
-                        }
-                    } catch (IndexOutOfBoundsException | IOException e) {
-                        logger.warn("Song seems to got deleted, skipping", e);
-                        return this.getnextSong();
-                    }
+                try {
+                	UnifiedTrack ut = UnifiedTrack.fromSong(s);
                 }
+                catch(IOException e) {
+                	logger.error("Error Loading Track", e);
+                    return null;
+                }
+                catch(TrackNotAvailableException e) {
+                	logger.warn("Song seems to got deleted, skipping", e);
+                    return this.getnextSong();
+                } catch (InvalidURLException e) {
+                	logger.fatal("Impossible Error",e);
+                	return this.getnextSong();
+				}
                 return s;
             } else {
                 logger.debug("No further Song found");
@@ -308,9 +288,9 @@ public class Controller {
 
     public void markskipped() {
         try (
-                Connection c = this.getDB();
-                PreparedStatement stmnt = c.prepareStatement(
-                        "select * from PLAYLIST WHERE SONG_PLAYED = TRUE ORDER BY SONG_ID DESC LIMIT 0,1");
+            Connection c = this.getDB();
+            PreparedStatement stmnt = c.prepareStatement(
+                "select * from PLAYLIST WHERE SONG_PLAYED = TRUE ORDER BY SONG_ID DESC LIMIT 0,1");
         ) {
             logger.debug("Marking last Song as skipped");
 
@@ -355,269 +335,106 @@ public class Controller {
     }
 
     public Response addSong(String url, User user, String gid) {
-        String VID = Util.getVID(url);
-        String SID = Util.getSID(url);
-        if (VID != null) {
-            return this.addYSong(VID, user, gid);
-        }
-        if (SID != null) {
-            return this.addSSong(SID, user, gid);
-        }
-        return Response.status(400).entity("URL ungültig").build();
-    }
-
-    private Response addSSong(String SID, User user, String gid) {
-        logger.debug("Adding new Song to Playlist... :" + SID);
-        String notice = null;
-        try (
-                Connection c = this.getDB();
-                PreparedStatement stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE");
-                PreparedStatement stmnt2 = c
-                        .prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND SONG_LINK = ?");
-                PreparedStatement stmnt3 = c
-                        .prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND AUTOR = ?");
-                PreparedStatement stmnt4 = c.prepareStatement(
-                        "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED) VALUES(?, ?, ?, NOW(), ?, ?, FALSE)",
-                        Statement.RETURN_GENERATED_KEYS);
-        ) {
-            if (this.islocked(SID)) {
-                if (user != null && user.isAdmin()) {
-                    logger.debug("Song is locked, but User is Admin, creating Notice");
-                    notice = "Hinweis: Dieser Song wurde gesperrt!";
-                } else {
-                    logger.debug("Song is locked, denying");
-                    return Response.status(403).entity("Dieser Song wurde leider gesperrt!").build();
-                }
-
-            }
-            ResultSet rs = stmnt.executeQuery();
+    	try (
+			Connection c = this.getDB();
+            PreparedStatement statusstmnt = c.prepareStatement(
+        		"SELECT s1.queued, s2.identical, s3.author, s4.locked\n" + 
+        		"FROM\n" + 
+        		"	(select COUNT(*) as queued from PLAYLIST WHERE SONG_PLAYED = FALSE) as s1\n" + 
+        		"JOIN\n" + 
+        		"	(select COUNT(*) as identical from PLAYLIST WHERE SONG_PLAYED = FALSE AND SONG_LINK = ?) as s2\n" + 
+        		"JOIN\n" + 
+        		"	(select COUNT(*) as author from PLAYLIST WHERE SONG_PLAYED = FALSE AND AUTOR = ?) as s3\n" + 
+        		"JOIN\n" +
+        		"	(select COUNT(*) as locked from LOCKED_SONGS WHERE ytid = ?) as s4"
+            );
+            PreparedStatement insertstmnt = c.prepareStatement(
+                    "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED) VALUES(?, ?, ?, NOW(), ?, ?, FALSE)",
+                    Statement.RETURN_GENERATED_KEYS);
+    	) {
+    		logger.debug("Trying to Add Song "+url);
+			UnifiedTrack ut = UnifiedTrack.fromURL(url);
+			String notice = null;
+			
+			statusstmnt.setString(1, ut.getLink());
+			statusstmnt.setString(2, user != null ? user.getName() : gid);
+			statusstmnt.setString(3, ut.getId());
+			
+			ResultSet rs = statusstmnt.executeQuery();
             rs.next();
-            if (rs.getInt(1) < 24) {
-                stmnt2.setString(1, "https://open.spotify.com/track/" + SID);
-                ResultSet rs2 = stmnt2.executeQuery();
-                rs2.next();
-                if (rs2.getInt(1) == 0) {
-                    if (user != null) {
-                        stmnt3.setString(1, user.getName());
-                    } else {
-                        stmnt3.setString(1, gid);
-                    }
-                    ResultSet rs3 = stmnt3.executeQuery();
-                    rs3.next();
-                    if (rs3.getInt(1) < 2 || user != null && user.isAdmin()) {
-                        Track track = Util.getTrack(SID);
-                        if (track != null) {
-                            if (track.getDurationMs() > 600000 && !(user != null && user.isAdmin())) {
-                                return Response.status(409).entity("Dieses Video ist leider zu lang!").build();
-                            }
-                        } else {
-                            logger.debug("Song not available");
-                            return Response.status(404).entity("URL ungültig").build();
-                        }
-
-                        stmnt4.setBoolean(1, false);
-                        stmnt4.setString(2, "https://open.spotify.com/track/" + SID);
-                        stmnt4.setString(3, "[" + track.getArtists()[0].getName() + "] " + track.getName());
-                        if (user != null) {
-                            stmnt4.setString(4, user.getName());
-                        } else {
-                            stmnt4.setString(4, gid);
-                        }
-                        stmnt4.setInt(5, (int) Math.round(track.getDurationMs().doubleValue() / 1000));
-                        stmnt4.executeUpdate();
-                        ResultSet key = stmnt4.getGeneratedKeys();
-                        key.next();
-                        try {
-                            logger.info("Succesfully added Song (ID: " + key.getLong(1) + ") to Playlist: " + SID
-                                    + " by User: " + user.getName());
-                        } catch (NullPointerException e) {
-                            logger.info("Succesfully added Song (ID: " + key.getLong(1) + ") to Playlist: " + SID
-                                    + " by Guest: " + gid);
-                        }
-
-                        if (this.getConnectionListener().getHandle() != null) {
-                            logger.debug("Notifing Client...");
-                            this.getConnectionListener().getHandle().notifynewSong();
-                        }
-                        return Response.status(201).entity(notice != null ? notice : "Song erfolgreich hinzugefügt")
-                                .build();
-                    } else {
-                        logger.debug("Adding Song aborted, User reached maximum");
-                        return Response.status(403).entity("Du hast bereits die maximale Anzahl an Songs eingestellt!")
-                                .build();
-                    }
-                } else {
-                    logger.debug("Adding Song aborted, Song allready in Playlist");
-                    return Response.status(403).entity("Dieser Song befindet sich bereits in der Playlist!").build();
-                }
-            } else {
-                logger.debug("Adding Song aborted, Playlist is full");
-                return Response.status(403).entity("Die Playlist ist leider voll!").build();
-            }
-        } catch (SQLException e) {
-            logger.error("Error adding Song \"" + SID + "\"", e);
-        }
-        return Response.status(500).entity("Unbekannter Fehler").build();
-    }
-
-    private Response addYSong(String vID, User user, String gid) {
-        logger.debug("Adding new Song to Playlist... :" + user);
-        String notice = null;
-        try (
-                Connection c = this.getDB();
-                PreparedStatement stmnt = c.prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE");
-                PreparedStatement stmnt2 = c
-                        .prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND SONG_LINK = ?");
-                PreparedStatement stmnt3 = c
-                        .prepareStatement("select COUNT(*) from PLAYLIST WHERE SONG_PLAYED = FALSE AND AUTOR = ?");
-                PreparedStatement stmnt4 = c.prepareStatement(
-                        "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED) VALUES(?, ?, ?, NOW(), ?, ?, FALSE)",
-                        Statement.RETURN_GENERATED_KEYS);
-        ) {
-            if (this.islocked(vID)) {
-                if (user != null && user.isAdmin()) {
-                    logger.debug("Song is locked, but User is Admin, creating Notice");
-                    notice = "Hinweis: Dieser Song wurde gesperrt!";
-                } else {
-                    logger.debug("Song is locked, denying");
-                    return Response.status(403).entity("Dieser Song wurde leider gesperrt!").build();
-                }
-
+            
+            if (rs.getInt("locked") > 0) {
+				if (user != null && user.isAdmin()) {
+					logger.debug("Song is locked, but User is Admin, creating Notice");
+					notice = "Hinweis: Dieser Song wurde gesperrt!";
+				} else {
+					logger.debug("Song is locked, denying");
+					return Response.status(403).entity("Dieser Song wurde leider gesperrt!").build();
+				}
             }
             
-            ResultSet rs = stmnt.executeQuery();
-            rs.next();
-            if (rs.getInt(1) < 24) {
-                stmnt2.setString(1, "https://www.youtube.com/watch?v=" + vID);
-                ResultSet rs2 = stmnt2.executeQuery();
-                rs2.next();
-                if (rs2.getInt(1) == 0) {
-                    if (user != null) {
-                        stmnt3.setString(1, user.getName());
-                    } else {
-                        stmnt3.setString(1, gid);
-                    }
-                    ResultSet rs3 = stmnt3.executeQuery();
-                    rs3.next();
-                    if (rs3.getInt(1) < 2 || user != null && user.isAdmin()) {
-                        Video v;
-                        try {
-                            List<Video> list = this.getYouTube().videos().list("status,snippet,contentDetails")
-                                    .setKey(key).setId(vID)
-                                    .setFields(
-                                            "items/status/uploadStatus,items/status/privacyStatus,items/contentDetails/duration,items/snippet/categoryId,items/snippet/title,items/contentDetails/regionRestriction")
-                                    .execute().getItems();
-                            if (list != null) {
-                                v = list.get(0);
-                                if (!v.getStatus().getUploadStatus().equals("processed")
-                                        || v.getStatus().getUploadStatus().equals("private")) {
-                                    throw new IOException("Video not available: " + vID);
-                                }
-                                if (v.getContentDetails() != null) {
-                                    if (v.getContentDetails().getRegionRestriction() != null) {
-                                        if (v.getContentDetails().getRegionRestriction().getBlocked() != null) {
-                                            if (v.getContentDetails().getRegionRestriction().getBlocked()
-                                                    .contains("DE")) {
-                                                throw new IOException("Video not available: " + vID);
-                                            }
-                                        }
-                                        if (v.getContentDetails().getRegionRestriction().getAllowed() != null) {
-                                            if (!v.getContentDetails().getRegionRestriction().getAllowed()
-                                                    .contains("DE")) {
-                                                throw new IOException("Video not available: " + vID);
-                                            }
-                                        }
-                                    }
-                                }
-                            } else {
-                                throw new IOException("Video not available: " + vID);
-                            }
-
-                            if (Duration.parse(v.getContentDetails().getDuration()).getSeconds() > 600
-                                    && !(user != null && user.isAdmin())) {
-                                return Response.status(409).entity("Dieses Video ist leider zu lang!").build();
-                            }
-                            if (!Controller.allowed.contains(Integer.parseInt(v.getSnippet().getCategoryId()))) {
-                                if (user != null && user.isAdmin()) {
-                                    logger.debug(
-                                            "Song is not in allowed Categorys, but User is Admin, creating Notice");
-                                    notice = "Hinweis: Dieser Song befindet sich nicht in einer der erlaubten Kategorien!";
-                                } else {
-                                    logger.debug("Song is not in allowed Categorys, denying");
-                                    return Response.status(403)
-                                            .entity("Dieses Video gehört nicht zu einer der erlaubten Kategorien!")
-                                            .build();
-                                }
-                            }
-                        } catch (IndexOutOfBoundsException | IOException e) {
-                            logger.debug("Video not available", e);
-                            return Response.status(404).entity("URL ungültig").build();
-                        }
-                        stmnt4.setBoolean(1, false);
-                        stmnt4.setString(2, "https://www.youtube.com/watch?v=" + vID);
-                        stmnt4.setString(3, v.getSnippet().getTitle());
-                        if (user != null) {
-                            stmnt4.setString(4, user.getName());
-                        } else {
-                            stmnt4.setString(4, gid);
-                        }
-                        stmnt4.setInt(5, (int) Duration.parse(v.getContentDetails().getDuration()).getSeconds());
-                        stmnt4.executeUpdate();
-                        ResultSet key = stmnt4.getGeneratedKeys();
-                        key.next();
-                        try {
-                            logger.info("Succesfully added Song (ID: " + key.getLong(1) + ") to Playlist: " + vID
-                                    + " by User: " + user.getName());
-                        } catch (NullPointerException e) {
-                            logger.info("Succesfully added Song (ID: " + key.getLong(1) + ") to Playlist: " + vID
-                                    + " by Guest: " + gid);
-                        }
-
-                        if (this.getConnectionListener().getHandle() != null) {
-                            logger.debug("Notifing Client...");
-                            this.getConnectionListener().getHandle().notifynewSong();
-                        }
-                        return Response.status(201).entity(notice != null ? notice : "Song erfolgreich hinzugefügt")
-                                .build();
-                    } else {
-                        logger.debug("Adding Song aborted, User reached maximum");
-                        return Response.status(403).entity("Du hast bereits die maximale Anzahl an Songs eingestellt!")
-                                .build();
-                    }
-                } else {
-                    logger.debug("Adding Song aborted, Song allready in Playlist");
-                    return Response.status(403).entity("Dieser Song befindet sich bereits in der Playlist!").build();
-                }
-            } else {
-                logger.debug("Adding Song aborted, Playlist is full");
+            if(rs.getInt("queued") >= 24) {
+            	logger.debug("Adding Song aborted, Playlist is full");
                 return Response.status(403).entity("Die Playlist ist leider voll!").build();
             }
-        } catch (SQLException e) {
-            logger.error("Error adding Song \"" + user + "\"", e);
-        }
-        return Response.status(500).entity("Unbekannter Fehler").build();
-    }
-
-    public boolean islocked(String VID) {
-        logger.debug("Checking if Song is locked: " + VID);
-        boolean result = false;
-        if (VID != null) {
-            try (
-                    Connection c = this.getDB();
-                    PreparedStatement stmnt = c.prepareStatement("SELECT * FROM LOCKED_SONGS WHERE ytid = ?");
-            ) {
-                stmnt.setString(1, VID);
-                ResultSet rs = stmnt.executeQuery();
-                if (rs.next()) {
-                    logger.debug("Song is locked");
-                    result = true;
-                }
-            } catch (SQLException e) {
-                logger.error("SQL Exception while checking Song Lock", e);
+            
+            if(rs.getInt("identical") > 0) {
+            	logger.debug("Adding Song aborted, Song allready in Playlist");
+                return Response.status(403).entity("Dieser Song befindet sich bereits in der Playlist!").build();
             }
-        }
-        logger.debug("Song not locked");
-        return result;
+            
+            if(rs.getInt("author") > 2 && (user == null || !user.isAdmin())) {
+            	logger.debug("Adding Song aborted, User reached maximum");
+                return Response.status(403).entity("Du hast bereits die maximale Anzahl an Songs eingestellt!").build();
+            }
+            
+            if(ut.getDuration() > 600 && (user == null || !user.isAdmin())) {
+	        	logger.debug("Adding Song aborted, Song to long");
+	        	return Response.status(409).entity("Dieses Video ist leider zu lang!").build();
+            }
+            
+            if (!Controller.allowed.contains(ut.getCategoryId())) {
+                if (user != null && user.isAdmin()) {
+                    logger.debug("Song is not in allowed Categorys, but User is Admin, creating Notice");
+                    notice = "Hinweis: Dieser Song befindet sich nicht in einer der erlaubten Kategorien!";
+                } else {
+                    logger.debug("Song is not in allowed Categorys, denying");
+                    return Response.status(403).entity("Dieses Song gehört nicht zu einer der erlaubten Kategorien!").build();
+                }
+            }
+                
+            insertstmnt.setBoolean(1, false);
+            insertstmnt.setString(2, ut.getLink());
+            insertstmnt.setString(3, ut.getTitle());
+            insertstmnt.setString(4, user != null ? user.getName() : gid);
+            insertstmnt.setInt(5, ut.getDuration());
+            insertstmnt.executeUpdate();
+            
+            ResultSet key = insertstmnt.getGeneratedKeys();
+            key.next();
+            
+            logger.info("Succesfully added Song (ID: " + key.getLong(1) + ") to Playlist: " + ut.getId()
+                    + " by " + user != null ? ("User: " + user.getName()) : ("Guest: " + gid));
+            
+            if (this.getConnectionListener().getHandle() != null) {
+                logger.debug("Notifing Client...");
+                this.getConnectionListener().getHandle().notifynewSong();
+            }
+            
+            return Response.status(201).entity(notice != null ? notice : "Song erfolgreich hinzugefügt").build();
+		} catch (IOException e) {
+			logger.error("Error adding Song" ,e);
+			return Response.status(500).entity("Unbekannter Fehler").build();
+		} catch (TrackNotAvailableException e) {
+			logger.debug("Track not found",e);
+			return Response.status(404).entity("Song nicht verfügbar: " + e.getMessage()).build();
+		} catch (InvalidURLException e) {
+			logger.debug("Invalid URL",e);
+			return Response.status(400).entity("URL ungültig").build();
+		} catch (SQLException e) {
+			logger.error("Error adding Song " + url, e);
+			return Response.status(500).entity("Unbekannter Fehler").build();
+		}
     }
 
     public void addmessage(HttpServletRequest req, String message, String type) {

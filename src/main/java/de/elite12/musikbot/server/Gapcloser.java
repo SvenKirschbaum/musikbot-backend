@@ -22,9 +22,12 @@ import com.google.api.services.youtube.model.PlaylistItemListResponse;
 import com.google.api.services.youtube.model.Video;
 import com.wrapper.spotify.model_objects.specification.Track;
 
+import de.elite12.musikbot.server.UnifiedTrack.InvalidURLException;
+import de.elite12.musikbot.server.UnifiedTrack.TrackNotAvailableException;
 import de.elite12.musikbot.shared.Song;
 import de.elite12.musikbot.shared.Util;
 import de.elite12.musikbot.shared.Util.SpotifyPlaylistHelper;
+import javassist.bytecode.stackmap.BasicBlock.Catch;
 
 public class Gapcloser extends HttpServlet {
 
@@ -146,241 +149,105 @@ public class Gapcloser extends HttpServlet {
     }
 
     public Song getnextSong() {
-        Song s = null;
-        try {
-            s = findnextSong();
-        } catch (Exception e) {
+        try (
+    		Connection c = this.getControl().getDB();
+            PreparedStatement insertstmnt = c.prepareStatement(
+                "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED, SONG_PLAYED_AT) VALUES(?, ?, ?, NOW(), ?, ?, FALSE, NOW())",
+                Statement.RETURN_GENERATED_KEYS
+            );
+        ) {
+        	for(int i = 0; i < 3; i++) {
+        		String url = selectCandidate();
+        		if(url == null) {
+    				return null;
+    			}
+        		
+        		UnifiedTrack ut;
+        		
+        		try {
+        			ut = UnifiedTrack.fromURL(url);
+        		}
+        		catch(TrackNotAvailableException | InvalidURLException e) {
+        			Logger.getLogger(this.getClass()).debug("Generated invalid Song",e);
+        			continue;
+        		}
+        		
+    			insertstmnt.setBoolean(1, true);
+    			insertstmnt.setString(2, ut.getLink());
+    			insertstmnt.setString(3, ut.getTitle());
+    			insertstmnt.setString(4, "Automatisch");
+    			insertstmnt.setInt(5, ut.getDuration());
+    			insertstmnt.executeUpdate();
+    			
+                ResultSet key = insertstmnt.getGeneratedKeys();
+                key.next();
+                
+                Song s = new Song(0, null, "Automatisch", ut.getTitle(), ut.getLink(), true, false, null, (int) key.getLong(1), (int) ut.getDuration());
+                
+                Logger.getLogger(this.getClass())
+                    .info("Gapcloser generated Song (ID: " + key.getLong(1) + ")" + s.toString());
+                
+                return s;
+        	}
+        	
+        	Logger.getLogger(this.getClass()).error("Loading Song Failed three times");
+        	return null;
+        } catch (SQLException | IOException e) {
             Logger.getLogger(this.getClass()).error("Error loading Gapcloser Song", e);
         }
-        if (s != null) {
-            try (
-                    Connection c = this.getControl().getDB();
-                    PreparedStatement stmnt = c.prepareStatement(
-                            "INSERT INTO PLAYLIST (SONG_PLAYED, SONG_LINK, SONG_NAME, SONG_INSERT_AT, AUTOR, SONG_DAUER, SONG_SKIPPED, SONG_PLAYED_AT) VALUES(?, ?, ?, NOW(), ?, ?, FALSE, NOW())",
-                            Statement.RETURN_GENERATED_KEYS);
-            ) {
-                stmnt.setBoolean(1, true);
-                stmnt.setString(2, s.getLink());
-                stmnt.setString(3, s.getTitle());
-                stmnt.setString(4, "Automatisch");
-                stmnt.setInt(5, s.getDauer());
-                stmnt.executeUpdate();
-                ResultSet key = stmnt.getGeneratedKeys();
-                key.next();
-                Logger.getLogger(this.getClass())
-                        .info("Gapcloser generated Song (ID: " + key.getLong(1) + ")" + s.toString());
-            } catch (SQLException e) {
-                Logger.getLogger(Gapcloser.class).error("Error inserting Song", e);
-            }
-
-        }
-        return s;
+        return null;
     }
-
-    private Song findnextSong() {
-        switch (this.getMode()) {
-            case OFF: {
-                return null;
-            }
-            case RANDOM100: {
-                try (
-                        Connection c = this.getControl().getDB();
-                        PreparedStatement stmnt = c.prepareStatement(
-                                "SELECT SONG_NAME,SONG_LINK,SONG_DAUER FROM (SELECT SONG_NAME,SONG_LINK,SONG_DAUER FROM PLAYLIST WHERE AUTOR != 'Automatisch' GROUP BY SONG_NAME,SONG_LINK,SONG_DAUER ORDER BY COUNT(*) DESC LIMIT 100) ORDER BY RAND() LIMIT 1");
-                ) {
-                    ResultSet rs = stmnt.executeQuery();
+    
+    private String selectCandidate() throws SQLException, IOException {
+    	try (
+                Connection c = this.getControl().getDB();
+                PreparedStatement randomstmnt = c.prepareStatement("select SONG_LINK from PLAYLIST ORDER BY RAND() LIMIT 1");
+    			PreparedStatement random100stmnt = c.prepareStatement(
+                    "SELECT SONG_NAME,SONG_LINK,SONG_DAUER FROM (SELECT SONG_LINK FROM PLAYLIST WHERE AUTOR != 'Automatisch' GROUP BY SONG_LINK ORDER BY COUNT(*) DESC LIMIT 100) ORDER BY RAND() LIMIT 1"
+    			);
+        ) {
+	    	switch (this.getMode()) {
+				case OFF: {
+					return null;
+				}
+				case RANDOM: {
+                    ResultSet rs = randomstmnt.executeQuery();
                     rs.next();
-                    Song s = new Song(0, null, null, rs.getString(1), rs.getString(2), false, false, null, 0,
-                            rs.getInt(3));
-                    if (s.gettype().equals("youtube")) {
-                        try {
-                            List<Video> list = this.getControl().getYouTube().videos().list("status,contentDetails")
-                                    .setKey(Controller.key).setId(Util.getVID(s.getLink()))
-                                    .setFields(
-                                            "items/status/uploadStatus,items/status/privacyStatus,items/contentDetails/regionRestriction")
-                                    .execute().getItems();
-                            if (list != null) {
-                                if (!list.get(0).getStatus().getUploadStatus().equals("processed")
-                                        || list.get(0).getStatus().getUploadStatus().equals("private")) {
-                                    throw new IOException("Video not available: " + s.getLink());
-                                }
-                                if (list.get(0).getContentDetails() != null) {
-                                    if (list.get(0).getContentDetails().getRegionRestriction() != null) {
-                                        if (list.get(0).getContentDetails().getRegionRestriction()
-                                                .getBlocked() != null) {
-                                            if (list.get(0).getContentDetails().getRegionRestriction().getBlocked()
-                                                    .contains("DE")) {
-                                                throw new IOException("Video not available: " + s.getLink());
-                                            }
-                                        }
-                                        if (list.get(0).getContentDetails().getRegionRestriction()
-                                                .getAllowed() != null) {
-                                            if (!list.get(0).getContentDetails().getRegionRestriction().getAllowed()
-                                                    .contains("DE")) {
-                                                throw new IOException("Video not available: " + s.getLink());
-                                            }
-                                        }
-                                    }
-                                }
-                            } else {
-                                throw new IOException("Video not available: " + s.getLink());
-                            }
-                        } catch (IndexOutOfBoundsException | IOException e) {
-                            Logger.getLogger(this.getClass()).warn("Song seems to got deleted, skipping", e);
-                            return this.findnextSong();
-                        }
-                    } else {
-                        Track t = Util.getTrack(Util.getSID(s.getLink()));
-                        if (t == null) {
-                            Logger.getLogger(this.getClass()).warn("Track invalid");
-                            return this.findnextSong();
-                        }
-                    }
-                    return s;
-                } catch (SQLException e) {
-                    Logger.getLogger(this.getClass()).error("SQLException", e);
-                }
-                break;
-            }
-            case RANDOM: {
-                try (
-                        Connection c = this.getControl().getDB();
-                        PreparedStatement stmnt = c.prepareStatement("select * from PLAYLIST ORDER BY RAND() LIMIT 1");
-                ) {
-                    ResultSet rs = stmnt.executeQuery();
-                    Song s = new Song(rs);
-                    if (s.gettype().equals("youtube")) {
-                        try {
-                            List<Video> list = this.getControl().getYouTube().videos().list("status,contentDetails")
-                                    .setKey(Controller.key).setId(Util.getVID(s.getLink()))
-                                    .setFields(
-                                            "items/status/uploadStatus,items/status/privacyStatus,items/contentDetails/regionRestriction")
-                                    .execute().getItems();
-                            if (list != null) {
-                                if (!list.get(0).getStatus().getUploadStatus().equals("processed")
-                                        || list.get(0).getStatus().getUploadStatus().equals("private")) {
-                                    throw new IOException("Video not available: " + s.getLink());
-                                }
-                                if (list.get(0).getContentDetails() != null) {
-                                    if (list.get(0).getContentDetails().getRegionRestriction() != null) {
-                                        if (list.get(0).getContentDetails().getRegionRestriction()
-                                                .getBlocked() != null) {
-                                            if (list.get(0).getContentDetails().getRegionRestriction().getBlocked()
-                                                    .contains("DE")) {
-                                                throw new IOException("Video not available: " + s.getLink());
-                                            }
-                                        }
-                                        if (list.get(0).getContentDetails().getRegionRestriction()
-                                                .getAllowed() != null) {
-                                            if (!list.get(0).getContentDetails().getRegionRestriction().getAllowed()
-                                                    .contains("DE")) {
-                                                throw new IOException("Video not available: " + s.getLink());
-                                            }
-                                        }
-                                    }
-                                }
-                            } else {
-                                throw new IOException("Video not available: " + s.getLink());
-                            }
-                        } catch (IndexOutOfBoundsException | IOException e) {
-                            Logger.getLogger(this.getClass()).warn("Song seems to got deleted, skipping", e);
-                            return this.findnextSong();
-                        }
-                    } else {
-                        Track t = Util.getTrack(Util.getSID(s.getLink()));
-                        if (t == null) {
-                            Logger.getLogger(this.getClass()).warn("Track invalid");
-                            return this.findnextSong();
-                        }
-                    }
-                    return s;
-                } catch (SQLException e) {
-                    Logger.getLogger(this.getClass()).error("SQLException", e);
-                }
-                break;
-            }
-            case PLAYLIST: {
-                String pid = Util.getPID(this.getPlaylist());
-                SpotifyPlaylistHelper spid = Util.getSPID(this.getPlaylist());
-                int id = this.permutation.getNext();
+                    return rs.getString("SONG_LINK");
+				}
+				case RANDOM100: {
+					ResultSet rs = random100stmnt.executeQuery();
+                    rs.next();
+                    return rs.getString("SONG_LINK");
+				}
+				case PLAYLIST: {
+					String pid = Util.getPID(this.getPlaylist());
+	                SpotifyPlaylistHelper spid = Util.getSPID(this.getPlaylist());
+	                int id = this.permutation.getNext();
 
-                if (pid != null) {
-                    int page = (int) Math.floor(id / 50.0);
-                    try {
+	                if (pid != null) {
+	                    int page = (int) Math.floor(id / 50.0);
                         PlaylistItemListResponse r = Controller.getInstance().getYouTube().playlistItems()
-                                .list("snippet,status").setKey(Controller.key).setPlaylistId(pid).setMaxResults(50L)
-                                .setFields(
-                                        "items/snippet/title,items/snippet/resourceId/videoId,items/snippet/position,nextPageToken,pageInfo")
-                                .execute();
+                            .list("snippet,status").setKey(Controller.key).setPlaylistId(pid).setMaxResults(50L)
+                            .setFields("items/snippet/resourceId/videoId,items/snippet/position,nextPageToken,pageInfo")
+                            .execute();
                         for (int i = 0; i < page; i++) {
                             r = Controller.getInstance().getYouTube().playlistItems().list("snippet,status")
-                                    .setKey(Controller.key).setPlaylistId(pid).setMaxResults(50L)
-                                    .setPageToken(r.getNextPageToken())
-                                    .setFields(
-                                            "items/snippet/title,items/snippet/resourceId/videoId,items/snippet/position,nextPageToken,pageInfo")
-                                    .execute();
+                                .setKey(Controller.key).setPlaylistId(pid).setMaxResults(50L)
+                                .setPageToken(r.getNextPageToken())
+                                .setFields("items/snippet/resourceId/videoId,items/snippet/position,nextPageToken,pageInfo")
+                                .execute();
                         }
                         PlaylistItem item = r.getItems().get(id % 50);
-                        Song s = new Song(0, null, null, item.getSnippet().getTitle(),
-                                "https://www.youtube.com/watch?v=" + item.getSnippet().getResourceId().getVideoId(),
-                                false, false, null, 0, 0);
-
-                        Video v;
-                        List<Video> vlist = this.getControl().getYouTube().videos()
-                                .list("status,snippet,contentDetails").setKey(Controller.key)
-                                .setId(Util.getVID(s.getLink()))
-                                .setFields(
-                                        "items/status/uploadStatus,items/status/privacyStatus,items/contentDetails/duration,items/snippet/categoryId,items/snippet/title,items/contentDetails/regionRestriction")
-                                .execute().getItems();
-                        if (vlist != null) {
-                            v = vlist.get(0);
-                            if (!v.getStatus().getUploadStatus().equals("processed")
-                                    || v.getStatus().getUploadStatus().equals("private")) {
-                                throw new IOException("Video not available: " + s.getLink());
-                            }
-                            if (v.getContentDetails() != null) {
-                                if (v.getContentDetails().getRegionRestriction() != null) {
-                                    if (v.getContentDetails().getRegionRestriction().getBlocked() != null) {
-                                        if (v.getContentDetails().getRegionRestriction().getBlocked().contains("DE")) {
-                                            throw new IOException("Video not available: " + s.getLink());
-                                        }
-                                    }
-                                    if (v.getContentDetails().getRegionRestriction().getAllowed() != null) {
-                                        if (!v.getContentDetails().getRegionRestriction().getAllowed().contains("DE")) {
-                                            throw new IOException("Video not available: " + s.getLink());
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            throw new IOException("Video not available: " + s.getLink());
-                        }
-
-                        return s;
-                    } catch (IndexOutOfBoundsException | IllegalArgumentException | IOException
-                            | StackOverflowError e1) {
-                        Logger.getLogger(this.getClass()).warn("Song invalid, skipping", e1);
-                        return this.findnextSong();
-                    }
-                } else if (spid != null) {
-                    Track t = Util.getTrackfromPlaylist(spid.user, spid.pid, id);
-                    if (t == null) {
-                        Logger.getLogger(this.getClass()).warn("Track invalid");
-                        return this.findnextSong();
-                    }
-                    Song s = new Song(0, null, null, "[" + t.getArtists()[0].getName() + "] " + t.getName(),
-                            "https://open.spotify.com/track/" + t.getId(), false, false, null, 0, 0);
-                    return s;
-                } else {
-                    return null;
-                }
-
-            }
-            default: {
-                return null;
-            }
-        }
-        return null;
+                        return "https://www.youtube.com/watch?v=" + item.getSnippet().getResourceId().getVideoId();
+	                } else if (spid != null) {
+	                    Track t = Util.getTrackfromPlaylist(spid.user, spid.pid, id);
+	                    return "https://open.spotify.com/track/" + t.getId();
+	                }
+				}
+	    	}
+    	}
+    	return null;
     }
 
     private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
