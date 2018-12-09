@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 import com.google.api.services.youtube.model.Video;
 import com.google.common.base.Ascii;
-import com.wrapper.spotify.models.Track;
+import com.wrapper.spotify.model_objects.specification.Track;
 
 import de.elite12.musikbot.shared.Util;
 

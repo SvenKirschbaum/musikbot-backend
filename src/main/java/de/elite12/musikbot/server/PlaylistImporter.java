@@ -6,9 +6,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.google.api.services.youtube.model.PlaylistItem;
-import com.wrapper.spotify.models.Album;
-import com.wrapper.spotify.models.PlaylistTrack;
-import com.wrapper.spotify.models.SimpleTrack;
+import com.wrapper.spotify.model_objects.specification.Album;
+import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
+import com.wrapper.spotify.model_objects.specification.TrackSimplified;
 
 import de.elite12.musikbot.server.PlaylistImporter.Playlist.Entry;
 import de.elite12.musikbot.shared.Util;
@@ -62,7 +62,7 @@ public class PlaylistImporter {
     }
 
     public static Playlist getspotifyPlaylist(String uid, String pid) {
-        com.wrapper.spotify.models.Playlist sp = Util.getPlaylist(uid, pid);
+        com.wrapper.spotify.model_objects.specification.Playlist sp = Util.getPlaylist(uid, pid);
         if (sp == null) {
             return null;
         }
@@ -71,12 +71,12 @@ public class PlaylistImporter {
         p.typ = "spotifyplaylist";
         p.name = sp.getName();
         p.link = "https://open.spotify.com/user/" + uid + "/playlist/" + pid;
-        p.entrys = new Entry[sp.getTracks().getItems().size()];
-        for (int i = 0; i < sp.getTracks().getItems().size(); i++) {
-            PlaylistTrack t = sp.getTracks().getItems().get(i);
+        p.entrys = new Entry[sp.getTracks().getTotal()];
+        for (int i = 0; i < sp.getTracks().getTotal(); i++) {
+            PlaylistTrack t = sp.getTracks().getItems()[i];
             Entry e = new Entry();
             e.link = "https://open.spotify.com/track/" + t.getTrack().getId();
-            e.name = "[" + t.getTrack().getArtists().get(0).getName() + "] " + t.getTrack().getName();
+            e.name = "[" + t.getTrack().getArtists()[0].getName() + "] " + t.getTrack().getName();
             p.entrys[i] = e;
         }
         return p;
@@ -92,12 +92,12 @@ public class PlaylistImporter {
         p.typ = "spotifyalbum";
         p.name = a.getName();
         p.link = "https://open.spotify.com/album/" + said;
-        p.entrys = new Entry[a.getTracks().getItems().size()];
-        for (int i = 0; i < a.getTracks().getItems().size(); i++) {
-            SimpleTrack t = a.getTracks().getItems().get(i);
+        p.entrys = new Entry[a.getTracks().getTotal()];
+        for (int i = 0; i < a.getTracks().getTotal(); i++) {
+            TrackSimplified t = a.getTracks().getItems()[i];
             Entry e = new Entry();
             e.link = "https://open.spotify.com/track/" + t.getId();
-            e.name = "[" + t.getArtists().get(0).getName() + "] " + t.getName();
+            e.name = "[" + t.getArtists()[0].getName() + "] " + t.getName();
             p.entrys[i] = e;
         }
         return p;

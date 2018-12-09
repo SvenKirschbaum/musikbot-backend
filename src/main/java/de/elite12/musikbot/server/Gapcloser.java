@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
 import com.google.api.services.youtube.model.Video;
-import com.wrapper.spotify.models.Track;
+import com.wrapper.spotify.model_objects.specification.Track;
 
 import de.elite12.musikbot.shared.Song;
 import de.elite12.musikbot.shared.Util;
@@ -368,7 +368,7 @@ public class Gapcloser extends HttpServlet {
                         Logger.getLogger(this.getClass()).warn("Track invalid");
                         return this.findnextSong();
                     }
-                    Song s = new Song(0, null, null, "[" + t.getArtists().get(0).getName() + "] " + t.getName(),
+                    Song s = new Song(0, null, null, "[" + t.getArtists()[0].getName() + "] " + t.getName(),
                             "https://open.spotify.com/track/" + t.getId(), false, false, null, 0, 0);
                     return s;
                 } else {

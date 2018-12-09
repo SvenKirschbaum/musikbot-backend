@@ -41,7 +41,7 @@ import com.google.api.services.youtube.model.Video;
 import com.google.common.io.Closeables;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.mchange.v2.c3p0.DataSources;
-import com.wrapper.spotify.models.Track;
+import com.wrapper.spotify.model_objects.specification.Track;
 
 import de.elite12.musikbot.server.Gapcloser.Mode;
 import de.elite12.musikbot.shared.Song;
@@ -407,7 +407,7 @@ public class Controller {
                     if (rs3.getInt(1) < 2 || user != null && user.isAdmin()) {
                         Track track = Util.getTrack(SID);
                         if (track != null) {
-                            if (track.getDuration() > 600000 && !(user != null && user.isAdmin())) {
+                            if (track.getDurationMs() > 600000 && !(user != null && user.isAdmin())) {
                                 return Response.status(409).entity("Dieses Video ist leider zu lang!").build();
                             }
                         } else {
@@ -417,13 +417,13 @@ public class Controller {
 
                         stmnt4.setBoolean(1, false);
                         stmnt4.setString(2, "https://open.spotify.com/track/" + SID);
-                        stmnt4.setString(3, "[" + track.getArtists().get(0).getName() + "] " + track.getName());
+                        stmnt4.setString(3, "[" + track.getArtists()[0].getName() + "] " + track.getName());
                         if (user != null) {
                             stmnt4.setString(4, user.getName());
                         } else {
                             stmnt4.setString(4, gid);
                         }
-                        stmnt4.setInt(5, (int) Math.round(new Integer(track.getDuration()).doubleValue() / 1000));
+                        stmnt4.setInt(5, (int) Math.round(track.getDurationMs().doubleValue() / 1000));
                         stmnt4.executeUpdate();
                         ResultSet key = stmnt4.getGeneratedKeys();
                         key.next();
