@@ -426,7 +426,7 @@ public class Controller {
             key.next();
             
             logger.info("Succesfully added Song (ID: " + key.getLong(1) + ") to Playlist: " + ut.getId()
-                    + " by " + user != null ? ("User: " + user.getName()) : ("Guest: " + gid));
+                    + " by " + (user != null ? ("User: " + user.getName()) : ("Guest: " + gid)));
             
             if (this.getConnectionListener().getHandle() != null) {
                 logger.debug("Notifing Client...");
