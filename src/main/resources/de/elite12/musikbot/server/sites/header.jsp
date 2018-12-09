@@ -9,7 +9,10 @@
 <%@ page import="java.sql.*"%>
 <%@ page import="java.text.SimpleDateFormat"%>
 <%@ page import="java.util.TimeZone"%>
-<%@ page import="de.elite12.musikbot.server.*"%>
+<%@ page import="de.elite12.musikbot.server.core.*"%>
+<%@ page import="de.elite12.musikbot.server.util.*"%>
+<%@ page import="de.elite12.musikbot.server.model.*"%>
+<%@ page import="de.elite12.musikbot.server.servlets.*"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.LinkedList"%>
 <%@ page import="java.util.UUID"%>

@@ -5,7 +5,7 @@
 	}
 %>
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
-<%@ page import="de.elite12.musikbot.server.*"%>
+<%@ page import="de.elite12.musikbot.server.model.*"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.LinkedList"%>
 <div id="messages">

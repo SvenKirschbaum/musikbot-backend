@@ -5,7 +5,9 @@
 	}
 %>
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
-<%@ page import="de.elite12.musikbot.server.*"%>
+<%@ page import="de.elite12.musikbot.server.core.*"%>
+<%@ page import="de.elite12.musikbot.server.model.*"%>
+<%@ page import="de.elite12.musikbot.server.util.*"%>
 <%@ page import="java.sql.*"%>
 <%@ page import="org.springframework.web.util.HtmlUtils"%>
 <%@ page import="java.util.UUID"%>

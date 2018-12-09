@@ -10,7 +10,7 @@
 <%@ page import="java.net.URL"%>
 <%@ page import="sun.net.www.content.text.PlainTextInputStream"%>
 <%@ page import="java.io.InputStream"%>
-<%@ page import="de.elite12.musikbot.shared.Util"%>
+<%@ page import="de.elite12.musikbot.server.util.Util"%>
 
 <%
 	if (request.getAttribute("worked") == null) {

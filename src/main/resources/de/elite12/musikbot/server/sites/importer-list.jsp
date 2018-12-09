@@ -5,8 +5,8 @@
 	}
 %>
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
-<%@page import="de.elite12.musikbot.server.PlaylistImporter.Playlist"%>
-<%@page import="de.elite12.musikbot.server.PlaylistImporter.Playlist.Entry"%>
+<%@page import="de.elite12.musikbot.server.util.PlaylistImporter.Playlist"%>
+<%@page import="de.elite12.musikbot.server.util.PlaylistImporter.Playlist.Entry"%>
 <%@ include file="header.jsp"%>
 <title>Elite12 - Musikbot</title>
 </head>
