@@ -71,8 +71,8 @@ public class PlaylistImporter {
         p.typ = "spotifyplaylist";
         p.name = sp.getName();
         p.link = "https://open.spotify.com/user/" + uid + "/playlist/" + pid;
-        p.entrys = new Entry[sp.getTracks().getTotal()];
-        for (int i = 0; i < sp.getTracks().getTotal(); i++) {
+        p.entrys = new Entry[sp.getTracks().getItems().length];
+        for (int i = 0; i < sp.getTracks().getItems().length; i++) {
             PlaylistTrack t = sp.getTracks().getItems()[i];
             Entry e = new Entry();
             e.link = "https://open.spotify.com/track/" + t.getTrack().getId();
@@ -92,8 +92,8 @@ public class PlaylistImporter {
         p.typ = "spotifyalbum";
         p.name = a.getName();
         p.link = "https://open.spotify.com/album/" + said;
-        p.entrys = new Entry[a.getTracks().getTotal()];
-        for (int i = 0; i < a.getTracks().getTotal(); i++) {
+        p.entrys = new Entry[a.getTracks().getItems().length];
+        for (int i = 0; i < a.getTracks().getItems().length; i++) {
             TrackSimplified t = a.getTracks().getItems()[i];
             Entry e = new Entry();
             e.link = "https://open.spotify.com/track/" + t.getId();

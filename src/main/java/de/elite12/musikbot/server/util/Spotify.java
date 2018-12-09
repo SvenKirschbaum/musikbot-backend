@@ -135,6 +135,6 @@ public class Spotify {
         }
         check();
         
-        return Spotify.getPlaylist(uid, sid).getTracks().getTotal();
+        return Spotify.getPlaylist(uid, sid).getTracks().getItems().length;
     }
 }
