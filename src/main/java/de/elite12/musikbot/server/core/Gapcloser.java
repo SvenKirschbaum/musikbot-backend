@@ -121,7 +121,7 @@ public class Gapcloser {
                 Song s = new Song(0, null, "Automatisch", ut.getTitle(), ut.getLink(), true, false, null, (int) key.getLong(1), ut.getDuration());
                 
                 Logger.getLogger(this.getClass())
-                    .info("Gapcloser generated Song (ID: " + key.getLong(1) + ")" + s.toString());
+                    .info("Gapcloser generated Song (ID: " + key.getLong(1) + ") " + s.toString());
                 
                 return s;
         	}
