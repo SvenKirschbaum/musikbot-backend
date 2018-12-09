@@ -39,7 +39,7 @@ public class PlaylistServlet extends HttpServlet {
     	User u = SessionHelper.getUserFromSession(req.getSession());
         if (u != null && u.isAdmin()) {
             req.setAttribute("worked", Boolean.valueOf(true));
-            this.getControl().addmessage(req, "Hinweis: Es werden nur die ersten 50 Videos einer Playlist angezeigt!",
+            this.getControl().addmessage(req, "Hinweis: Es werden nur die ersten 400 Videos einer Playlist angezeigt!",
                     UserMessage.TYPE_NOTIFY);
             req.setAttribute("control", this.getControl());
             req.getRequestDispatcher("/importer.jsp").forward(req, resp);
@@ -64,16 +64,24 @@ public class PlaylistServlet extends HttpServlet {
             String pid = SongIDParser.getPID(req.getParameter("playlist"));
             SpotifyPlaylistHelper spid = SongIDParser.getSPID(req.getParameter("playlist"));
             String said = SongIDParser.getSAID(req.getParameter("playlist"));
-
+            
+            
+            Playlist p = null;
+            if(pid != null) {
+            	p = PlaylistImporter.getyoutubePlaylist(pid);
+            }
+            if(spid != null) {
+            	p = PlaylistImporter.getspotifyPlaylist(spid.user,spid.pid);
+            }
+            if(said != null) {
+            	p = PlaylistImporter.getspotifyAlbum(said);
+            }
+            
             if (pid == null && spid == null && said == null) {
                 Logger.getLogger(PlaylistServlet.class).warn("Invalid Playlist Link");
                 resp.sendError(400);
                 return;
             }
-
-            Playlist p = spid == null
-                    ? said == null ? PlaylistImporter.getyoutubePlaylist(pid) : PlaylistImporter.getspotifyAlbum(said)
-                    : PlaylistImporter.getspotifyPlaylist(spid.user, spid.pid);
 
             if (req.getParameter("pimport") == null) {
                 req.setAttribute("playlist", p);

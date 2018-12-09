@@ -1,12 +1,15 @@
 package de.elite12.musikbot.server.util;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import com.google.api.services.youtube.model.PlaylistItem;
+import com.google.api.services.youtube.model.PlaylistItemListResponse;
 import com.wrapper.spotify.model_objects.specification.Album;
+import com.wrapper.spotify.model_objects.specification.Paging;
 import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
 import com.wrapper.spotify.model_objects.specification.TrackSimplified;
 
@@ -30,30 +33,45 @@ public class PlaylistImporter {
     public static Playlist getyoutubePlaylist(String id) {
         try {
             Logger.getLogger(PlaylistImporter.class).debug("Querying Youtube...");
-            List<PlaylistItem> list = Controller.getInstance().getYouTube().playlistItems().list("snippet,status")
-                    .setKey(Controller.key).setPlaylistId(id).setMaxResults(50L)
-                    .setFields("items/snippet/title,items/snippet/resourceId/videoId,items/snippet/position").execute()
-                    .getItems();
-            if (list == null) {
-                throw new IOException("Playlist not available");
-            }
             Playlist p = new Playlist();
-            com.google.api.services.youtube.model.Playlist meta = Controller.getInstance().getYouTube().playlists()
-                    .list("snippet").setKey(Controller.key).setId(id).setFields("items/snippet/title,items/id")
-                    .execute().getItems().get(0);
-            p.id = id;
-            p.typ = "youtube";
-            p.name = meta.getSnippet().getTitle();
-            p.link = "http://www.youtube.com/playlist?list=" + p.id;
-            p.entrys = new Entry[list.size()];
-
-            for (int i = 0; i < list.size(); i++) {
-                PlaylistItem item = list.get(i);
-                Entry e = new Entry();
-                e.link = "https://www.youtube.com/watch?v=" + item.getSnippet().getResourceId().getVideoId();
-                e.name = item.getSnippet().getTitle();
-                p.entrys[i] = e;
+            List<com.google.api.services.youtube.model.Playlist> plist = Controller.getInstance().getYouTube().playlists()
+                    .list("snippet,contentDetails").setKey(Controller.key).setId(id).setFields("items/snippet/title,items/id,items/contentDetails/itemCount")
+                    .execute().getItems();
+            if(plist == null) {
+            	throw new IOException("Playlist not found");
             }
+            com.google.api.services.youtube.model.Playlist yl = plist.get(0);
+           	Long pages = Math.min(8, yl.getContentDetails().getItemCount());
+           	
+           	p.id = id;
+            p.typ = "youtube";
+            p.name = yl.getSnippet().getTitle();
+            p.link = "http://www.youtube.com/playlist?list=" + p.id;
+            
+            List<Entry> entries = new ArrayList<>();
+           	
+            PlaylistItemListResponse r = Controller.getInstance().getYouTube().playlistItems()
+                    .list("snippet,status").setKey(Controller.key).setPlaylistId(id).setMaxResults(50L)
+                    .setFields("items/snippet/title,items/snippet/resourceId/videoId,items/snippet/position,nextPageToken,pageInfo")
+                    .execute();
+            for(int page = 0; page < pages; page++) {
+            	List<PlaylistItem> list = r.getItems();
+           		for (int i = 0; i < list.size(); i++) {
+           			PlaylistItem item = list.get(i);
+           			Entry e = new Entry();
+                    e.link = "https://www.youtube.com/watch?v=" + item.getSnippet().getResourceId().getVideoId();
+                    e.name = item.getSnippet().getTitle();
+                    entries.add(e);
+           		}
+           		if(page!=pages-1) {
+           			r = Controller.getInstance().getYouTube().playlistItems().list("snippet,status")
+                            .setKey(Controller.key).setPlaylistId(id).setMaxResults(50L)
+                            .setPageToken(r.getNextPageToken())
+                            .setFields("items/snippet/title,items/snippet/resourceId/videoId,items/snippet/position,nextPageToken,pageInfo")
+                            .execute();
+           		}
+           	}
+            p.entrys = entries.toArray(new Entry[0]);
             return p;
         } catch (IOException e) {
             Logger.getLogger(PlaylistImporter.class).error("Error loading Playlist", e);
@@ -71,14 +89,21 @@ public class PlaylistImporter {
         p.typ = "spotifyplaylist";
         p.name = sp.getName();
         p.link = "https://open.spotify.com/user/" + uid + "/playlist/" + pid;
-        p.entrys = new Entry[sp.getTracks().getItems().length];
-        for (int i = 0; i < sp.getTracks().getItems().length; i++) {
-            PlaylistTrack t = sp.getTracks().getItems()[i];
-            Entry e = new Entry();
-            e.link = "https://open.spotify.com/track/" + t.getTrack().getId();
-            e.name = "[" + t.getTrack().getArtists()[0].getName() + "] " + t.getTrack().getName();
-            p.entrys[i] = e;
+        
+        List<Entry> entries = new ArrayList<>();
+        
+        for(int page = 0; page < Math.min(4,Math.ceil(sp.getTracks().getTotal()/100.0));page++) {
+        	Paging<PlaylistTrack> list = Spotify.getPlaylistTracks(sp, page);
+        	if(list == null) return null;
+        	for (int i = 0;i<list.getItems().length;i++) {
+        		PlaylistTrack t = list.getItems()[i];
+                Entry e = new Entry();
+                e.link = "https://open.spotify.com/track/" + t.getTrack().getId();
+                e.name = "[" + t.getTrack().getArtists()[0].getName() + "] " + t.getTrack().getName();
+                entries.add(e);
+            }
         }
+        p.entrys = entries.toArray(new Entry[0]);
         return p;
     }
 
@@ -92,14 +117,22 @@ public class PlaylistImporter {
         p.typ = "spotifyalbum";
         p.name = a.getName();
         p.link = "https://open.spotify.com/album/" + said;
-        p.entrys = new Entry[a.getTracks().getItems().length];
-        for (int i = 0; i < a.getTracks().getItems().length; i++) {
-            TrackSimplified t = a.getTracks().getItems()[i];
-            Entry e = new Entry();
-            e.link = "https://open.spotify.com/track/" + t.getId();
-            e.name = "[" + t.getArtists()[0].getName() + "] " + t.getName();
-            p.entrys[i] = e;
+        p.entrys = new Entry[Math.min(200,a.getTracks().getTotal())];
+        
+        List<Entry> entries = new ArrayList<>();
+        
+        for(int page = 0; page < Math.min(4,Math.ceil(a.getTracks().getTotal()/100.0));page++) {
+        	Paging<TrackSimplified> list = Spotify.getAlbumTracks(a, page);
+        	if(list == null) return null;
+        	for (int i = 0;i<list.getItems().length;i++) {
+        		TrackSimplified t = list.getItems()[i];
+                Entry e = new Entry();
+                e.link = "https://open.spotify.com/track/" + t.getId();
+                e.name = "[" + t.getArtists()[0].getName() + "] " + t.getName();
+                entries.add(e);
+            }
         }
+        p.entrys = entries.toArray(new Entry[0]);
         return p;
     }
 }

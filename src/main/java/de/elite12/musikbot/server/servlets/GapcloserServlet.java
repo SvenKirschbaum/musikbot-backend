@@ -13,6 +13,7 @@ import de.elite12.musikbot.server.core.Gapcloser.Mode;
 import de.elite12.musikbot.server.model.User;
 import de.elite12.musikbot.server.util.SessionHelper;
 import de.elite12.musikbot.shared.SongIDParser;
+import de.elite12.musikbot.shared.SongIDParser.SpotifyPlaylistHelper;
 
 public class GapcloserServlet extends HttpServlet {
 
@@ -70,12 +71,19 @@ public class GapcloserServlet extends HttpServlet {
                     break;
                 }
             }
-            if (SongIDParser.getPID(req.getParameter("playlist")) != null
-                    || SongIDParser.getSPID(req.getParameter("playlist")) != null) {
-                String link = SongIDParser.getSPID(req.getParameter("playlist")) == null
-                        ? "https://www.youtube.com/playlist?list=" + SongIDParser.getPID(req.getParameter("playlist"))
-                        : SongIDParser.getSPID(req.getParameter("playlist")).toString();
-                this.getControl().getGapcloser().setPlaylist(link);
+            if(req.getParameter("playlist") != null) {
+            	String pid = SongIDParser.getPID(req.getParameter("playlist"));
+            	String said = SongIDParser.getSAID(req.getParameter("playlist"));
+            	SpotifyPlaylistHelper spid = SongIDParser.getSPID(req.getParameter("playlist"));
+            	if(pid != null) {
+            		this.getControl().getGapcloser().setPlaylist("https://www.youtube.com/playlist?list="+pid);
+            	}
+            	if(said != null) {
+            		this.getControl().getGapcloser().setPlaylist("https://open.spotify.com/album/"+said);
+            	}
+            	if(spid != null) {
+            		this.getControl().getGapcloser().setPlaylist("https://open.spotify.com/user/"+spid.user+"/playlist/"+spid.pid);
+            	}
             }
 
             Logger.getLogger(this.getClass())

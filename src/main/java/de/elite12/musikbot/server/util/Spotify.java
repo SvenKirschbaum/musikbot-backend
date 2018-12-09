@@ -14,8 +14,10 @@ import com.wrapper.spotify.model_objects.specification.Paging;
 import com.wrapper.spotify.model_objects.specification.Playlist;
 import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
 import com.wrapper.spotify.model_objects.specification.Track;
+import com.wrapper.spotify.model_objects.specification.TrackSimplified;
 import com.wrapper.spotify.requests.authorization.client_credentials.ClientCredentialsRequest;
 import com.wrapper.spotify.requests.data.albums.GetAlbumRequest;
+import com.wrapper.spotify.requests.data.albums.GetAlbumsTracksRequest;
 import com.wrapper.spotify.requests.data.playlists.GetPlaylistRequest;
 import com.wrapper.spotify.requests.data.playlists.GetPlaylistsTracksRequest;
 import com.wrapper.spotify.requests.data.tracks.GetTrackRequest;
@@ -111,6 +113,24 @@ public class Spotify {
             return null;
         }
     }
+    
+    public static Paging<PlaylistTrack> getPlaylistTracks(Playlist p, int page) {
+    	try {
+    		return api.getPlaylistsTracks(p.getId()).offset(page*100).build().execute();
+    	} catch (IOException | SpotifyWebApiException e) {
+            Logger.getLogger(Spotify.class).error("Error reading Playlist", e);
+            return null;
+        }
+    }
+    
+    public static Paging<TrackSimplified> getAlbumTracks(Album p, int page) {
+    	try {
+    		return api.getAlbumsTracks(p.getId()).offset(page*100).build().execute();
+    	} catch (IOException | SpotifyWebApiException e) {
+            Logger.getLogger(Spotify.class).error("Error reading Playlist", e);
+            return null;
+        }
+    }
 
     public static Track getTrackfromPlaylist(String uid, String sid, int id) {
         if (sid == null || uid == null || sid.isEmpty() || uid.isEmpty()) {
@@ -135,6 +155,31 @@ public class Spotify {
         }
         check();
         
-        return Spotify.getPlaylist(uid, sid).getTracks().getItems().length;
+        return Spotify.getPlaylist(uid, sid).getTracks().getTotal();
     }
+
+	public static Integer getAlbumlength(String said) {
+		if (said == null || said.isEmpty()) {
+			return null;
+		}
+		check();
+		
+		return Spotify.getAlbum(said).getTracks().getTotal();
+	}
+
+	public static TrackSimplified getTrackfromAlbum(String said, int id) {
+		if (said == null || said.isEmpty()) {
+			return null;
+		}
+		check();
+		
+		GetAlbumsTracksRequest r = api.getAlbumsTracks(said).limit(1).offset(id).build();
+		try {
+        	Paging<TrackSimplified> t = r.execute();
+            return t.getItems()[0];
+        } catch (IOException | SpotifyWebApiException | ArrayIndexOutOfBoundsException e) {
+            Logger.getLogger(Spotify.class).error("Error reading Album", e);
+            return null;
+        }
+	}
 }

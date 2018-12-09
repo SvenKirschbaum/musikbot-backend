@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
 import com.wrapper.spotify.model_objects.specification.Track;
+import com.wrapper.spotify.model_objects.specification.TrackSimplified;
 
 import de.elite12.musikbot.server.model.UnifiedTrack;
 import de.elite12.musikbot.server.model.UnifiedTrack.InvalidURLException;
@@ -158,6 +159,7 @@ public class Gapcloser {
 				}
 				case PLAYLIST: {
 					String pid = SongIDParser.getPID(this.getPlaylist());
+					String said = SongIDParser.getSAID(this.getPlaylist());
 	                SpotifyPlaylistHelper spid = SongIDParser.getSPID(this.getPlaylist());
 	                int id = this.permutation.getNext();
 
@@ -178,6 +180,9 @@ public class Gapcloser {
                         return "https://www.youtube.com/watch?v=" + item.getSnippet().getResourceId().getVideoId();
 	                } else if (spid != null) {
 	                    Track t = Spotify.getTrackfromPlaylist(spid.user, spid.pid, id);
+	                    return "https://open.spotify.com/track/" + t.getId();
+	                } else if (said != null) {
+	                	TrackSimplified t = Spotify.getTrackfromAlbum(said, id);
 	                    return "https://open.spotify.com/track/" + t.getId();
 	                }
 				}
@@ -208,6 +213,7 @@ public class Gapcloser {
     private void createPermutation() {
         String pid = SongIDParser.getPID(this.getPlaylist());
         SpotifyPlaylistHelper spid = SongIDParser.getSPID(this.getPlaylist());
+        String said = SongIDParser.getSAID(this.getPlaylist());
         if (pid != null) {
             try {
             	PlaylistItemListResponse r = this.getControl().getYouTube().playlistItems().list("snippet")
@@ -219,6 +225,8 @@ public class Gapcloser {
             }
         } else if (spid != null) {
             this.permutation = new Permutationhelper(Spotify.getPlaylistlength(spid.user, spid.pid));
+        } else if (said != null) {
+        	this.permutation = new Permutationhelper(Spotify.getAlbumlength(said));
         } else {
             Logger.getLogger(Gapcloser.class).fatal("Playlist invalid");
         }
