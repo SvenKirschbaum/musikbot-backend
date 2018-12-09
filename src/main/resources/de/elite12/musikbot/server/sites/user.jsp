@@ -7,8 +7,8 @@
 %>
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
 <%@ include file="header.jsp"%>
-<%@ page import="de.elite12.musikbot.server.Weblet.TopEntry"%>
-<%@ page import="de.elite12.musikbot.server.UserServlet.DataEntry"%>
+<%@ page import="de.elite12.musikbot.server.servlets.Weblet.TopEntry"%>
+<%@ page import="de.elite12.musikbot.server.servlets.UserServlet.DataEntry"%>
 <title><%= ((User) request.getAttribute("viewuser")).getName() %> - Elite12 - Musikbot</title>
 </head>
 <body>
