@@ -99,7 +99,7 @@
 							<th>Eingefügt von</th>
 							<th>Titel</th>
 							<th>Link</th>
-							<% if(user != null && user.isAdmin()) { %><th>Löschen?</th>
+							<% if(user != null && user.isAdmin()) { %><th onclick="$('INPUT[type=\'checkbox\']').each( function() {$(this).attr('checked', !$(this).attr('checked'));});">Löschen?</th>
 							<% } %>
 						</tr>
 					</thead>
@@ -156,9 +156,10 @@
 					<a href="/archiv/">Zum Archiv</a>
 				</div>
 				<% if(user != null && user.isAdmin()) { %>
-				    <input id="deletebutton" type="button" value="Löschen" onclick='var a = "";$("input[type=checkbox]:checked").each(function (data){a=a+"/"+$(this).val()});$.ajax({url: "/api/songs"+a,	method: "DELETE",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
+					<input id="deletebutton" type="button" value="Löschen" onclick='var a = "";$("input[type=checkbox]:checked").each(function (data){a=a+"/"+$(this).val()});$.ajax({url: "/api/songs"+a,	method: "DELETE",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
 				    <input id="deleteandlockbutton" type="button" value="Löschen und Sperren" onclick='var a = "";$("input[type=checkbox]:checked").each(function (data){a=a+"/"+$(this).val()});$.ajax({url: "/api/songs"+a+"?lock=true",  method: "DELETE",   headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
-			<% } %>
+					<input id="shufflebutton" type="button" name="action" value="Shuffle" onclick='$.ajax({url: "/api/control/shuffle",	method: "POST",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});' />
+				<% } %>
 			</form>
 		</div>
 	</div>

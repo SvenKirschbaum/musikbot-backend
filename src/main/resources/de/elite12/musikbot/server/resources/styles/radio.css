@@ -217,6 +217,7 @@ table.bordered th:last-child {
 	width: 100%;
 	padding: 0 16px;
 	box-sizing: border-box;
+	margin-bottom: 50px;
 }
 
 #currentsong {
@@ -388,11 +389,11 @@ table.bordered th:last-child {
 	text-shadow: 0 -1px 0 #111;
 }
 
-#deletebutton,#deleteandlockbutton {
+#deletebutton,#deleteandlockbutton,#shufflebutton {
 	width: 150px;
 	float: right;
 }
-#deletebutton,#deleteandlockbutton {
+#deletebutton,#deleteandlockbutton,#shufflebutton {
 	margin-left: 1%;
 	margin-top: 1%;
 }
