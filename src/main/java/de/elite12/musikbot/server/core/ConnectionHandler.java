@@ -200,6 +200,7 @@ public class ConnectionHandler {
     private void sendSong(Song song) {
         Logger.getLogger(ConnectionHandler.class).debug("Sending Song...");
         try {
+        	this.waitforsong = false;
             this.getController().setState("Playing");
             this.getController().setSongtitle(song.getTitle());
             this.getController().setSonglink(song.getLink());
