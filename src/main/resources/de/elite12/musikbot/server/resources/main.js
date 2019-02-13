@@ -798,20 +798,26 @@ $(document).ready(function() {
 });
 
 //Autocomplete
+var ac-cache = {};
 $(document).ready(function() {
 	$("input[name=link]").autocomplete({
 		source: function( request, response ) {
+		  if(request.term in ac-cache) {
+			  return ac-cache[request.term];
+		  }
 		  $.ajax({
 		    url: "api/home",
 		    data: {
 		      term: request.term
 		    },
 		    success: function( data ) {
+		      ac-cache[request.term] = data;
 		      response( data );
 		    }
 		  });
 		},
-    	minLength: 3
+    	minLength: 3,
+    	delay: 100,
 	}).autocomplete( "instance" )._renderItem = function( ul, item ) {
       return $( "<li>" )
         .append( "<div class=\"ac-entry\"><span class=\"ac-title\">" + item.label + "</span><br><span class=\"ac-link\">" + item.value + "</span></div>" )
