@@ -28,7 +28,7 @@ public class Home {
     public SearchEntry[] autocomplete(@QueryParam("term") String term) {
     	try (
 			Connection c = Controller.getInstance().getDB();
-	        PreparedStatement stmnt = c.prepareStatement("select SONG_NAME,SONG_LINK from PLAYLIST WHERE SONG_LINK LIKE ? ESCAPE '$' OR SONG_NAME LIKE ? ESCAPE '$' GROUP BY SONG_LINK ORDER BY count(*) DESC LIMIT 10");
+	        PreparedStatement stmnt = c.prepareStatement("select SONG_NAME,SONG_LINK from PLAYLIST WHERE AUTOR != 'Automatisch' AND (SONG_LINK LIKE ? ESCAPE '$' OR SONG_NAME LIKE ? ESCAPE '$') GROUP BY SONG_LINK ORDER BY count(*) DESC LIMIT 10");
 		) {
     		term = term
 			    .replace("$", "$$")
