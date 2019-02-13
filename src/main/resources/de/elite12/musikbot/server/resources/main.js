@@ -798,12 +798,12 @@ $(document).ready(function() {
 });
 
 //Autocomplete
-var ac-cache = {};
+var accache = {};
 $(document).ready(function() {
 	$("input[name=link]").autocomplete({
 		source: function( request, response ) {
-		  if(request.term in ac-cache) {
-			  return ac-cache[request.term];
+		  if(request.term in accache) {
+			  return accache[request.term];
 		  }
 		  $.ajax({
 		    url: "api/home",
@@ -811,7 +811,7 @@ $(document).ready(function() {
 		      term: request.term
 		    },
 		    success: function( data ) {
-		      ac-cache[request.term] = data;
+		      accache[request.term] = data;
 		      response( data );
 		    }
 		  });
