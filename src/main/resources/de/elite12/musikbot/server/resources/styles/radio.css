@@ -1201,3 +1201,9 @@ body.error {
 #changedialog {
 	display: none;
 }
+.ac-title {
+    font-weight: bold;
+}
+.ac-link {
+    padding-left: 1em;
+}

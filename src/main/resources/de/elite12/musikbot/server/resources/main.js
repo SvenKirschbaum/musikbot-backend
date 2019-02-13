@@ -814,7 +814,7 @@ $(document).ready(function() {
     	minLength: 3
 	}).autocomplete( "instance" )._renderItem = function( ul, item ) {
       return $( "<li>" )
-        .append( "<div><span class=\"ac-title\">" + item.label + "</span><br><span class=\"ac-link\">" + item.value + "</span></div>" )
+        .append( "<div class=\"ac-entry\"><span class=\"ac-title\">" + item.label + "</span><br><span class=\"ac-link\">" + item.value + "</span></div>" )
         .appendTo( ul );
     };
 });
