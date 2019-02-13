@@ -179,16 +179,6 @@
 			<artifactId>jetty-jsp</artifactId>
 			<version>9.2.17.v20160517</version>
 		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-webapp</artifactId>
-			<version>9.2.17.v20160517</version>
-		</dependency>
-		<dependency>
-            <groupId>com.mchange</groupId>
-            <artifactId>c3p0</artifactId>
-            <version>0.9.5.2</version>
-        </dependency>
         <dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring</artifactId>
