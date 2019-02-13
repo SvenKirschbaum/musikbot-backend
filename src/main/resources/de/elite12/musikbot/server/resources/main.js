@@ -803,7 +803,7 @@ $(document).ready(function() {
 	$("input[name=link]").autocomplete({
 		source: function( request, response ) {
 		  if(request.term in accache) {
-			  return accache[request.term];
+			  return response(accache[request.term]);
 		  }
 		  $.ajax({
 		    url: "api/home",
