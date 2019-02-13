@@ -796,3 +796,25 @@ $(document).ready(function() {
 	  "static": true
 	})
 });
+
+//Autocomplete
+$(document).ready(function() {
+	$("input[name=link]").autocomplete({
+		source: function( request, response ) {
+		  $.ajax({
+		    url: "api/home",
+		    data: {
+		      term: request.term
+		    },
+		    success: function( data ) {
+		      response( data );
+		    }
+		  });
+		},
+    	minLength: 3
+	}).autocomplete( "instance" )._renderItem = function( ul, item ) {
+      return $( "<li>" )
+        .append( "<div><span class=\"ac-title\">" + item.label + "</span><br><span class=\"ac-link\">" + item.value + "</span></div>" )
+        .appendTo( ul );
+    };
+});
