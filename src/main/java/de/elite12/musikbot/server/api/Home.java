@@ -24,7 +24,6 @@ public class Home {
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/")
     public SearchEntry[] autocomplete(@QueryParam("term") String term) {
     	try (
 			Connection c = Controller.getInstance().getDB();
