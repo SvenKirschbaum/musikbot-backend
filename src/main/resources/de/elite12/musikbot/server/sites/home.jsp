@@ -171,7 +171,7 @@
 					<tr>
 						<td><input type="text" name="link"
 							onKeyPress='if(event.keyCode == 13){$("#submit").trigger("click");}return event.keyCode != 13;'
-							autocomplete="off" /></td>
+							autocomplete="off" autofocus /></td>
 						<td><input id="submit" type="button" name="Button"
 							value="Abschicken"
 							onclick='$.ajax({url: "/api/songs",	data:$("input[name=link]").val(),	method: "POST",	headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},contentType: false}).done(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()}).fail(function(data,textStatus,jqXHR) {handleAPIResponse(data,textStatus,jqXHR);update()});$("input[name=link]").val("");' />
