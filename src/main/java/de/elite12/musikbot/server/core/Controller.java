@@ -144,6 +144,7 @@ public class Controller {
             sm.setSavePeriod(60);
             sm.getSessionCookieConfig().setMaxAge(31536000);
             sm.getSessionCookieConfig().setHttpOnly(true);
+            sm.setMaxInactiveInterval(0);
             try {
                 sm.setStoreDirectory(new File("sessions"));
             } catch (IOException e1) {
