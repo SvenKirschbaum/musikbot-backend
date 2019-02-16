@@ -142,7 +142,8 @@ public class Controller {
             HashSessionManager sm = new HashSessionManager();
             sm.setLazyLoad(true);
             sm.setSavePeriod(60);
-            sm.getSessionCookieConfig().setMaxAge(604800);
+            sm.getSessionCookieConfig().setMaxAge(31536000);
+            sm.getSessionCookieConfig().setHttpOnly(true);
             try {
                 sm.setStoreDirectory(new File("sessions"));
             } catch (IOException e1) {
