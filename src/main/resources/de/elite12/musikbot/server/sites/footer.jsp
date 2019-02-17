@@ -85,27 +85,31 @@
 		</div>
 	</div>
 
-			<%
-				if (user.isAdmin()) {
-			%>
+			
 			<div id="amenu">
-				<span class="link" onclick="togglevis(amenubox)">Admin-Menü</span>
+				<span class="link" onclick="togglevis(amenubox)">Menü</span>
 				<div id="amenubox">
 					<ul>
 						<li><a href="/">Startseite</a></li>
 						<li><a href="/archiv/">Archiv</a></li>
 						<li><a href="/statistik/">Statistik</a></li>
-						<li><a href="/import/">Playlist Importieren</a></li>
-						<li><a href="/songs/">Gesperrte Songs</a></li>
-						<li><a href="/gapcloser/">Gapcloser</a></li>
-						<li><a href="/log/">Log</a></li>
-						<li><a href="/whoisonline/">Wer ist online?</a></li>
-						<li><a href="/debug/">Entwicklermenü</a></li>
+						<li><a href="tokens">Auth-Token</a></li>
+						<%
+							if (user.isAdmin()) {
+						%>
+							<li><a href="/import/">Playlist Importieren</a></li>
+							<li><a href="/songs/">Gesperrte Songs</a></li>
+							<li><a href="/gapcloser/">Gapcloser</a></li>
+							<li><a href="/log/">Log</a></li>
+							<li><a href="/whoisonline/">Wer ist online?</a></li>
+							<li><a href="/debug/">Entwicklermenü</a></li>
+						<%
+							}
+						%>
 					</ul>
 				</div>
 			</div>
 	<%
-				}
 		}
 	%>
 	
