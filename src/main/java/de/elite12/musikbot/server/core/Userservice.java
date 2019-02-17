@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.log4j.Logger;
+import org.springframework.jdbc.support.SQLExceptionSubclassTranslator;
 
 import de.elite12.musikbot.server.model.User;
 import de.mkammerer.argon2.Argon2;
@@ -23,11 +24,11 @@ public class Userservice {
     }
     
     public User getUserbyId(int id) {
-        Logger.getLogger(this.getClass()).debug("Quarring User by ID");
+        Logger.getLogger(this.getClass()).debug("Querying User by ID");
         User u = null;
         try (
                 Connection c = this.getControl().getDB();
-                PreparedStatement stmnt = c.prepareStatement("SELECT * FROM USER WHERE ID = ?");
+                PreparedStatement stmnt = c.prepareStatement("SELECT u.ID,u.NAME,u.PASSWORD,u.EMAIL,u.ADMIN,t.TOKEN FROM AUTHTOKENS t INNER JOIN USER u ON t.OWNER = u.ID AND t.TYPE = 'intern' WHERE u.id = ?");
         ) {
             stmnt.setInt(1, id);
             ResultSet rs = stmnt.executeQuery();
@@ -44,11 +45,11 @@ public class Userservice {
     }
     
     public User getUserbyName(String name) {
-        Logger.getLogger(this.getClass()).debug("Quarring User by Name");
+        Logger.getLogger(this.getClass()).debug("Querying User by Name");
         User u = null;
         try (
                 Connection c = this.getControl().getDB();
-                PreparedStatement stmnt = c.prepareStatement("SELECT * FROM USER WHERE Name = ?");
+                PreparedStatement stmnt = c.prepareStatement("SELECT u.ID,u.NAME,u.PASSWORD,u.EMAIL,u.ADMIN,t.TOKEN FROM AUTHTOKENS t INNER JOIN USER u ON t.OWNER = u.ID AND t.TYPE = 'intern' WHERE u.NAME = ?");
         ) {
             stmnt.setString(1, name);
             ResultSet rs = stmnt.executeQuery();
@@ -66,11 +67,11 @@ public class Userservice {
     }
     
     public User getUserbyMail(String mail) {
-        Logger.getLogger(this.getClass()).debug("Quarring User by ID");
+        Logger.getLogger(this.getClass()).debug("Querying User by ID");
         User u = null;
         try (
                 Connection c = this.getControl().getDB();
-                PreparedStatement stmnt = c.prepareStatement("SELECT * FROM USER WHERE EMAIL = ?");
+                PreparedStatement stmnt = c.prepareStatement("SELECT u.ID,u.NAME,u.PASSWORD,u.EMAIL,u.ADMIN,t.TOKEN FROM AUTHTOKENS t INNER JOIN USER u ON t.OWNER = u.ID AND t.TYPE = 'intern' WHERE u.EMAIL = ?");
         ) {
             stmnt.setString(1, mail);
             ResultSet rs = stmnt.executeQuery();
@@ -87,11 +88,11 @@ public class Userservice {
     }
     
     public User getUserbyToken(String token) {
-        Logger.getLogger(this.getClass()).debug("Quarring User by TOKEN");
+        Logger.getLogger(this.getClass()).debug("Querying User by TOKEN");
         User u = null;
         try (
                 Connection c = this.getControl().getDB();
-                PreparedStatement stmnt = c.prepareStatement("SELECT * FROM USER WHERE TOKEN = ?");
+                PreparedStatement stmnt = c.prepareStatement("SELECT u.ID,u.NAME,u.PASSWORD,u.EMAIL,u.ADMIN,t2.TOKEN FROM AUTHTOKENS t1 INNER JOIN USER u ON t1.OWNER = u.ID INNER JOIN AUTHTOKENS t2 ON t2.OWNER = u.ID AND t2.TYPE = 'intern' WHERE t1.TOKEN = ?");
         ) {
             stmnt.setString(1, token);
             ResultSet rs = stmnt.executeQuery();
@@ -109,27 +110,65 @@ public class Userservice {
     
     public Integer changeUser(User u) {
         Integer r = null;
-        try (
-                Connection c = this.getControl().getDB();
-                PreparedStatement statement = c.prepareStatement(
-                        "UPDATE USER SET NAME = ?, PASSWORD = ?, EMAIL = ?, ADMIN = ?, TOKEN = ? WHERE ID = ?");
-        ) {
+        PreparedStatement statement = null;
+        PreparedStatement statement2 = null;
+        Connection c = null;
+        try {
+            c = this.getControl().getDB();
+            c.setAutoCommit(false);
+    		statement = c.prepareStatement(
+                    "UPDATE USER SET NAME = ?, PASSWORD = ?, EMAIL = ?, ADMIN = ? WHERE ID = ?");
+    		statement2 = c.prepareStatement(
+                    "UPDATE AUTHTOKENS SET TOKEN = ? WHERE OWNER = ? AND TYPE = 'intern'");
             if (u.getId() != null) {
                 
                 statement.setString(1, u.getName());
                 statement.setString(2, u.getPassword());
                 statement.setString(3, u.getEmail());
                 statement.setBoolean(4, u.isAdmin());
-                statement.setString(5, u.getToken());
-                statement.setInt(6, u.getId());
+                statement.setInt(5, u.getId());
+                
+                statement2.setString(1, u.getToken());
+                statement2.setInt(2, u.getId());
                 Logger.getLogger(this.getClass()).info("User changed: " + u);
             } else {
                 Logger.getLogger(this.getClass()).error("Invalid call to changeUser: " + u);
                 return 0;
             }
             r = statement.executeUpdate();
+            statement2.executeUpdate();
+            c.commit();
         } catch (SQLException e) {
-            Logger.getLogger(this.getClass()).error("Error changing User: " + u.getName(), e);
+        	if(c != null) {
+        		try {
+        			Logger.getLogger(this.getClass()).error("Error changing User: " + u.getName() + ", rolling back",e);
+        			c.rollback();
+        		}
+        		catch(SQLException e2) {
+        			Logger.getLogger(this.getClass()).error("Error during rollback", e2);
+        		}
+        	}
+        } finally {
+        	try {
+        		if(statement != null) {
+            		statement.close();
+            	}
+        	} catch(SQLException e) {
+        		Logger.getLogger(this.getClass()).error("Error closing statement", e);
+        	}
+        	try {
+        		if(statement2 != null) {
+            		statement2.close();
+            	}
+        	} catch(SQLException e) {
+        		Logger.getLogger(this.getClass()).error("Error closing statement", e);
+        	}
+        	try {
+        		c.setAutoCommit(true);
+        	} catch(SQLException e) {
+        		Logger.getLogger(this.getClass()).fatal("Error restoring Autocommit", e);
+        	}
+        	
         }
         return r;
     }
@@ -155,25 +194,61 @@ public class Userservice {
     
     public User createUser(String username, String password, String email) throws SQLException {
         User u = new User(username, this.argon2.hash(2, 65536, 1, password), email, false);
-        try (
-                Connection c = this.getControl().getDB();
-                PreparedStatement statement = c.prepareStatement(
-                        "INSERT INTO USER (NAME, PASSWORD, EMAIL, ADMIN, TOKEN) VALUES (?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-        ) {
+        Connection c = null;
+        PreparedStatement statement = null;
+        PreparedStatement statement2 = null;
+        try {
+            c = this.getControl().getDB();
+            c.setAutoCommit(false);
+            statement = c.prepareStatement(
+                    "INSERT INTO USER (NAME, PASSWORD, EMAIL, ADMIN) VALUES (?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            statement2 = c.prepareStatement(
+                    "INSERT INTO AUTHTOKENS (OWNER, TOKEN) VALUES (?, ?)");
             statement.setString(1, u.getName());
             statement.setString(2, u.getPassword());
             statement.setString(3, u.getEmail());
             statement.setBoolean(4, u.isAdmin());
-            statement.setString(5, u.getToken());
             statement.executeUpdate();
             ResultSet rs = statement.getGeneratedKeys();
             if(rs.next()) {
             	u.setId(rs.getInt(1));
             }
+            statement2.setInt(1, u.getId());
+            statement2.setString(2, u.getToken());
+            statement2.executeUpdate();
             Logger.getLogger(this.getClass()).info("User created: " + u);
         } catch (SQLException e) {
-            Logger.getLogger(this.getClass()).error("Error changing User: " + u.getName(), e);
-            throw e;
+        	if(c != null) {
+        		try {
+        			Logger.getLogger(this.getClass()).error("Error creating User: " + u.getName() + ", rolling back",e);
+        			c.rollback();
+        		}
+        		catch(SQLException e2) {
+        			Logger.getLogger(this.getClass()).error("Error during rollback", e2);
+        		}
+        		throw e;
+        	}
+        } finally {
+        	try {
+        		if(statement != null) {
+            		statement.close();
+            	}
+        	} catch(SQLException e) {
+        		Logger.getLogger(this.getClass()).error("Error closing statement", e);
+        	}
+        	try {
+        		if(statement2 != null) {
+            		statement2.close();
+            	}
+        	} catch(SQLException e) {
+        		Logger.getLogger(this.getClass()).error("Error closing statement", e);
+        	}
+        	try {
+        		c.setAutoCommit(true);
+        	} catch(SQLException e) {
+        		Logger.getLogger(this.getClass()).fatal("Error restoring Autocommit", e);
+        	}
+        	
         }
         return u;
     }
