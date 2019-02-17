@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.support.SQLExceptionSubclassTranslator;
@@ -39,7 +40,7 @@ public class Userservice {
                         rs.getBoolean("admin"), rs.getString("TOKEN"));
             }
         } catch (SQLException e) {
-            Logger.getLogger(this.getClass()).error("Error Quarrying User", e);
+            Logger.getLogger(this.getClass()).error("Error querrying User", e);
         }
         return u;
     }
@@ -61,7 +62,7 @@ public class Userservice {
                         rs.getBoolean("admin"), rs.getString("TOKEN"));
             }
         } catch (SQLException e) {
-            Logger.getLogger(this.getClass()).error("Error Quarrying User", e);
+            Logger.getLogger(this.getClass()).error("Error querrying User", e);
         }
         return u;
     }
@@ -82,7 +83,7 @@ public class Userservice {
                         rs.getBoolean("admin"), rs.getString("TOKEN"));
             }
         } catch (SQLException e) {
-            Logger.getLogger(this.getClass()).error("Error Quarrying User", e);
+            Logger.getLogger(this.getClass()).error("Error querrying User", e);
         }
         return u;
     }
@@ -103,7 +104,7 @@ public class Userservice {
                         rs.getBoolean("admin"), rs.getString("TOKEN"));
             }
         } catch (SQLException e) {
-            Logger.getLogger(this.getClass()).error("Error Quarrying User", e);
+            Logger.getLogger(this.getClass()).error("Error querrying User", e);
         }
         return u;
     }
@@ -251,6 +252,47 @@ public class Userservice {
         	
         }
         return u;
+    }
+    
+    public String getExternalToken(User u) {
+    	try (
+            Connection c = this.getControl().getDB();
+            PreparedStatement stmnt = c.prepareStatement("SELECT t.TOKEN FROM AUTHTOKENS t WHERE t.TYPE = 'extern' AND t.OWNER = ?");
+        ) {
+            stmnt.setInt(1, u.getId());
+            ResultSet rs = stmnt.executeQuery();
+            if(rs.next()) {
+            	return rs.getString("TOKEN");
+            }
+            else {
+            	return resetExternalToken(u);
+            }
+        } catch (SQLException e) {
+            Logger.getLogger(this.getClass()).error("Error querrying User", e);
+        }
+    	return null;
+    }
+    
+    public String resetExternalToken(User u) {
+    	try (
+            Connection c = this.getControl().getDB();
+			PreparedStatement stmnt = c.prepareStatement("DELETE FROM AUTHTOKENS WHERE TYPE = 'extern' AND OWNER = ?");
+			PreparedStatement stmnt2 = c.prepareStatement("INSERT INTO AUTHTOKENS (OWNER, TOKEN, TYPE) VALUES (?, ?, 'extern')");
+        ) {
+            stmnt.setInt(1, u.getId());
+            stmnt.executeUpdate();
+            
+            u.setToken(UUID.randomUUID().toString());
+            
+            stmnt2.setInt(1, u.getId());
+            stmnt2.setString(2, u.getToken());
+            stmnt2.executeUpdate();
+            
+            return u.getToken();
+        } catch (SQLException e) {
+            Logger.getLogger(this.getClass()).error("Error resetting Token", e);
+        }
+    	return null;
     }
     
     public boolean checkPassword(User user, String password) {

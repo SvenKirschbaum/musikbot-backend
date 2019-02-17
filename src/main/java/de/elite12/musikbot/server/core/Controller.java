@@ -52,6 +52,7 @@ import de.elite12.musikbot.server.servlets.LogServlet;
 import de.elite12.musikbot.server.servlets.OnlineServlet;
 import de.elite12.musikbot.server.servlets.PlaylistServlet;
 import de.elite12.musikbot.server.servlets.SongManagement;
+import de.elite12.musikbot.server.servlets.TokenManagement;
 import de.elite12.musikbot.server.servlets.UserServlet;
 import de.elite12.musikbot.server.servlets.Weblet;
 import de.elite12.musikbot.server.util.MBErrorHandler;
@@ -162,6 +163,7 @@ public class Controller {
             sites.addServlet(new ServletHolder(new OnlineServlet(this)), "/whoisonline/");
             sites.addServlet(new ServletHolder(new LogServlet(this)), "/log/");
             sites.addServlet(new ServletHolder(new DebugServlet(this)), "/debug/");
+            sites.addServlet(new ServletHolder(new TokenManagement(this)), "/tokens/");
 
             ResourceConfig config = new ResourceConfig().register(new RolesAllowedDynamicFeature())
                     .packages("de.elite12.musikbot.server.api");

@@ -17,6 +17,10 @@ public class User implements Serializable, Principal {
 	private String email;
 	private String token;
 
+	public void setToken(String token) {
+		this.token = token;
+	}
+
 	public User(String name, String password, String mail, boolean admin) {
 		this.name = name;
 		this.password = password;
