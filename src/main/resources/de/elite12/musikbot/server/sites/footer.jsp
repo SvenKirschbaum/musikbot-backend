@@ -93,7 +93,7 @@
 						<li><a href="/">Startseite</a></li>
 						<li><a href="/archiv/">Archiv</a></li>
 						<li><a href="/statistik/">Statistik</a></li>
-						<li><a href="tokens">Auth-Token</a></li>
+						<li><a href="/tokens/">Auth-Token</a></li>
 						<%
 							if (user.isAdmin()) {
 						%>
