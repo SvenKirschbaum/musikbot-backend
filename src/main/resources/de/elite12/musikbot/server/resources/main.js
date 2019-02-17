@@ -810,6 +810,7 @@ $(document).ready(function() {
 		    data: {
 		      term: request.term
 		    },
+		    headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""},
 		    success: function( data ) {
 		      accache[request.term] = data;
 		      response( data );
