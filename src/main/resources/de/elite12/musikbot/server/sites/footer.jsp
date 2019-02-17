@@ -113,14 +113,16 @@
 		}
 	%>
 	
-	<div id="styleselect">
-		<span class="link" onclick="togglevis(styleselectbox)">Style ändern</span>
-		<div id="styleselectbox">
-			<ul>
-				<li><a href="/setstyle/radio">radio</a></li>
-			</ul>
+	<!--
+		<div id="styleselect">
+			<span class="link" onclick="togglevis(styleselectbox)">Style ändern</span>
+			<div id="styleselectbox">
+				<ul>
+					<li><a href="/setstyle/radio">radio</a></li>
+				</ul>
+			</div>
 		</div>
-	</div>
+	 -->
 	
 	<span id="stats" class="link"><a href="/statistik/">Statistik</a></span>
 	
