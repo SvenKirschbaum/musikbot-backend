@@ -37,7 +37,6 @@ public class UserServlet extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Weblet.handleGuest(req);
         String[] path = req.getPathInfo().split("/", 2);
         if (path.length > 0) {
             User user = this.ctr.getUserservice().getUserbyName(path[path.length - 1]);

@@ -45,8 +45,6 @@ public class Weblet extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Weblet.handleGuest(req);
-        
         if (req.getRequestURI().startsWith("/register/")) {
             req.setAttribute("worked", Boolean.valueOf(true));
             req.setAttribute("control", this.getControl());
@@ -188,7 +186,6 @@ public class Weblet extends HttpServlet {
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Weblet.handleGuest(req);
         if (req.getRequestURI().equals("/register/")) {
             if (req.getParameter("username") == null || req.getParameter("mail") == null
                     || req.getParameter("password") == null || req.getParameter("username").equals("")
@@ -354,37 +351,6 @@ public class Weblet extends HttpServlet {
 
     private Controller getControl() {
         return control;
-    }
-
-    public static void updatelastseen(User u) {
-        Logger.getLogger(Weblet.class).debug("Update Lastsen Info for User: " + u);
-        try (
-                Connection c = Controller.getInstance().getDB();
-                PreparedStatement stmnt = c
-                        .prepareStatement("UPDATE USER SET LASTSEEN = UNIX_TIMESTAMP() WHERE NAME = ?");
-        ) {
-            stmnt.setString(1, u.getName());
-            stmnt.execute();
-        } catch (SQLException e) {
-            Logger.getLogger(Weblet.class).error("SQLException", e);
-        }
-    }
-
-    public static void handleGuest(HttpServletRequest req) {
-        if ("46.38.251.200".equals(req.getHeader("X-Real-IP"))) {
-            return;
-        }
-        Logger.getLogger(Weblet.class).debug("Handling Guest...");
-        UUID id = (UUID) req.getSession().getAttribute("guest_id");
-        User user = SessionHelper.getUserFromSession(req.getSession());
-        if (id == null && user == null) {
-            UUID u = UUID.randomUUID();
-            Logger.getLogger(Weblet.class).info("New Guest: IP: " + req.getHeader("X-Real-IP") + " Assigned ID: " + u);
-            req.getSession().setAttribute("guest_id", u);
-        }
-        if (user != null) {
-            Weblet.updatelastseen(user);
-        }
     }
 
     private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {

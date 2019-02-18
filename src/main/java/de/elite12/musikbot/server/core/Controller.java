@@ -56,6 +56,7 @@ import de.elite12.musikbot.server.servlets.TokenManagement;
 import de.elite12.musikbot.server.servlets.UserServlet;
 import de.elite12.musikbot.server.servlets.Weblet;
 import de.elite12.musikbot.server.util.MBErrorHandler;
+import de.elite12.musikbot.server.util.RequestListener;
 import de.elite12.musikbot.server.util.SessionListener;
 import de.elite12.musikbot.shared.Song;
 
@@ -173,6 +174,7 @@ public class Controller {
             sites.addServlet(sh, "/api/*");
             
             sites.addEventListener(new SessionListener());
+            sites.addEventListener(new RequestListener());
 
             ContextHandler ctx = new ContextHandler();
             ctx.setContextPath("/res");

@@ -10,7 +10,6 @@ import javax.ws.rs.ext.Provider;
 
 import de.elite12.musikbot.server.core.Controller;
 import de.elite12.musikbot.server.model.User;
-import de.elite12.musikbot.server.servlets.Weblet;
 
 @Provider
 @Priority(Priorities.AUTHENTICATION)
@@ -25,9 +24,6 @@ public class SecurityContextFilter implements ContainerRequestFilter {
 		String authToken = requestContext.getHeaderString("Authorization");
 		User u = Controller.getInstance().getUserservice().getUserbyToken(authToken);
 		
-		if(u != null) {
-			Weblet.updatelastseen(u);
-		}
 		requestContext.setSecurityContext(new SecurityContextImpl(u));
 	}
 

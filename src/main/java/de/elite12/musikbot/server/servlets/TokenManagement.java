@@ -21,8 +21,6 @@ public class TokenManagement extends HttpServlet {
 	}
 
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		Weblet.handleGuest(req);
-
 		User u = SessionHelper.getUserFromSession(req.getSession());
 
 		if (u == null) {
