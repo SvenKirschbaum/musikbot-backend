@@ -16,9 +16,16 @@ public class SessionHelper {
 	}
 	public static void attachUserToSession(HttpSession session, User user) {
 		session.setAttribute("userid", user.getId());
+		String token = Controller.getInstance().getUserservice().addToken(user);
+		session.setAttribute("token", token);
 	}
 	
 	public static void removeUserFromSession(HttpSession session) {
+		String token = (String) session.getAttribute("token");
+		if(token != null) {
+			Controller.getInstance().getUserservice().removeToken(token);
+		}
 		session.removeAttribute("userid");
+		session.removeAttribute("token");
 	}
 }

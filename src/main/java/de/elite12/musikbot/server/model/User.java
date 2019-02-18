@@ -15,28 +15,21 @@ public class User implements Serializable, Principal {
 	private boolean admin;
 	private String password;
 	private String email;
-	private String token;
-
-	public void setToken(String token) {
-		this.token = token;
-	}
 
 	public User(String name, String password, String mail, boolean admin) {
 		this.name = name;
 		this.password = password;
 		this.email = mail;
 		this.admin = admin;
-		this.token = (UUID.randomUUID()).toString();
 	}
 
 	public User(Integer id, String name, String password, String mail,
-			boolean admin,String token) {
+			boolean admin) {
 		this.id = id;
 		this.name = name;
 		this.password = password;
 		this.email = mail;
 		this.admin = admin;
-		this.token = token;
 	}
 
 	@Override
@@ -78,10 +71,6 @@ public class User implements Serializable, Principal {
 
 	public void setEmail(String email) {
 		this.email = email;
-	}
-
-	public String getToken() {
-		return token;
 	}
 
 	@Override

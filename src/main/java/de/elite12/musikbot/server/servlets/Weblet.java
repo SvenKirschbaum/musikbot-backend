@@ -46,6 +46,7 @@ public class Weblet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Weblet.handleGuest(req);
+        
         if (req.getRequestURI().startsWith("/register/")) {
             req.setAttribute("worked", Boolean.valueOf(true));
             req.setAttribute("control", this.getControl());
@@ -281,9 +282,6 @@ public class Weblet extends HttpServlet {
                                                 ((UUID) req.getSession().getAttribute("guest_id")).toString());
                                         stmnt.executeUpdate();
                                     }
-                                    
-                                    //Generate new internal API Token
-                                    this.getControl().getUserservice().resetToken(user);
 
                                     SessionHelper.attachUserToSession(req.getSession(), user);
                                     resp.sendRedirect("/");

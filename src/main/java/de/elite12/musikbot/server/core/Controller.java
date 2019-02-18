@@ -56,6 +56,7 @@ import de.elite12.musikbot.server.servlets.TokenManagement;
 import de.elite12.musikbot.server.servlets.UserServlet;
 import de.elite12.musikbot.server.servlets.Weblet;
 import de.elite12.musikbot.server.util.MBErrorHandler;
+import de.elite12.musikbot.server.util.SessionListener;
 import de.elite12.musikbot.shared.Song;
 
 public class Controller {
@@ -145,7 +146,6 @@ public class Controller {
             sm.setSavePeriod(60);
             sm.getSessionCookieConfig().setMaxAge(31536000);
             sm.getSessionCookieConfig().setHttpOnly(true);
-            sm.setMaxInactiveInterval(0);
             try {
                 sm.setStoreDirectory(new File("sessions"));
             } catch (IOException e1) {
@@ -170,6 +170,8 @@ public class Controller {
             ServletHolder sh = new ServletHolder(new ServletContainer(config));
             sh.setInitOrder(0);
             sites.addServlet(sh, "/api/*");
+            
+            sites.addEventListener(new SessionListener());
 
             ContextHandler ctx = new ContextHandler();
             ctx.setContextPath("/res");
@@ -191,6 +193,10 @@ public class Controller {
                 logger.fatal("Error starting jetty, System will Exit!", e);
                 Runtime.getRuntime().exit(-1);
             }
+            
+            //Needs to be set after start so it wont get overwritten
+            sm.setMaxInactiveInterval(86400);
+            
             Runtime.getRuntime().addShutdownHook(new Shutdown());
             logger.debug("Added Shutdown Hook");
             logger.info("Musikbot Controller started, System is ready");

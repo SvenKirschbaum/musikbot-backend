@@ -51,7 +51,7 @@
 <script defer src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <% if(user != null) { %>
 <script type="text/javascript">
-	var authtoken = "<%= user.getToken() %>";
+	var authtoken = "<%= (String) session.getAttribute("token") %>";
 </script>
 <% } %>
 <script defer type="text/javascript" src="/res/main.js"></script>
