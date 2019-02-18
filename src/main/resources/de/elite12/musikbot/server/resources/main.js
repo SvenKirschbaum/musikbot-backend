@@ -617,8 +617,13 @@ function closemsg(id) {
 }
 
 function update() {
-	$.getJSON("/api/status/",function(data) {
-		parseupdate(data);
+	$.ajax({
+		dataType: "json",
+		url: "/api/status/",
+		success: function(data) {
+			parseupdate(data);
+		},
+		headers: {"Authorization": (typeof authtoken !== "undefined")?authtoken:""}
 	});
 }
 function parseupdate(data) {
