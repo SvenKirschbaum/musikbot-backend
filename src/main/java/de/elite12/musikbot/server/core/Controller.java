@@ -195,7 +195,7 @@ public class Controller {
             }
             
             //Needs to be set after start so it wont get overwritten
-            sm.setMaxInactiveInterval(86400);
+            sm.setMaxInactiveInterval(604800);
             
             Runtime.getRuntime().addShutdownHook(new Shutdown());
             logger.debug("Added Shutdown Hook");
