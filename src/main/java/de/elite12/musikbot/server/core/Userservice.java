@@ -282,17 +282,38 @@ public class Userservice {
             stmnt.setInt(1, u.getId());
             stmnt.executeUpdate();
             
-            u.setToken(UUID.randomUUID().toString());
+            String token = UUID.randomUUID().toString();
             
             stmnt2.setInt(1, u.getId());
-            stmnt2.setString(2, u.getToken());
+            stmnt2.setString(2, token);
             stmnt2.executeUpdate();
             
-            return u.getToken();
+            return token;
         } catch (SQLException e) {
             Logger.getLogger(this.getClass()).error("Error resetting Token", e);
         }
     	return null;
+    }
+    
+    public void resetToken(User u) {
+    	try (
+            Connection c = this.getControl().getDB();
+			PreparedStatement stmnt = c.prepareStatement("DELETE FROM AUTHTOKENS WHERE TYPE = 'intern' AND OWNER = ?");
+			PreparedStatement stmnt2 = c.prepareStatement("INSERT INTO AUTHTOKENS (OWNER, TOKEN, TYPE) VALUES (?, ?, 'intern')");
+        ) {
+            stmnt.setInt(1, u.getId());
+            stmnt.executeUpdate();
+            
+            String token = UUID.randomUUID().toString();
+            
+            stmnt2.setInt(1, u.getId());
+            stmnt2.setString(2, token);
+            stmnt2.executeUpdate();
+            
+            u.setToken(token);
+        } catch (SQLException e) {
+            Logger.getLogger(this.getClass()).error("Error resetting Token", e);
+        }
     }
     
     public boolean checkPassword(User user, String password) {

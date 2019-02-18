@@ -281,6 +281,9 @@ public class Weblet extends HttpServlet {
                                                 ((UUID) req.getSession().getAttribute("guest_id")).toString());
                                         stmnt.executeUpdate();
                                     }
+                                    
+                                    //Generate new internal API Token
+                                    this.getControl().getUserservice().resetToken(user);
 
                                     SessionHelper.attachUserToSession(req.getSession(), user);
                                     resp.sendRedirect("/");
