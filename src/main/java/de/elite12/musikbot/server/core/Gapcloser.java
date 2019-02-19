@@ -198,6 +198,8 @@ public class Gapcloser {
     public void setMode(Mode mode) {
         this.mode = mode;
         this.save();
+        if(mode != Mode.OFF)
+        	this.getControl().getConnectionListener().getHandle().notifynewSong();
     }
 
     public String getPlaylist() {
