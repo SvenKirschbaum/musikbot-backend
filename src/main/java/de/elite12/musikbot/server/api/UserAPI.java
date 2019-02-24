@@ -1,63 +1,83 @@
 package de.elite12.musikbot.server.api;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import org.apache.log4j.Logger;
+import de.elite12.musikbot.server.data.UserPrincipal;
+import de.elite12.musikbot.server.data.entity.User;
+import de.elite12.musikbot.server.services.UserService;
 
-import de.elite12.musikbot.server.core.Controller;
-import de.elite12.musikbot.server.model.User;
-import de.elite12.musikbot.server.util.Util;
-
-@Path("/user")
+@RequestMapping("/api/user")
+@RestController
 public class UserAPI {
     
-    @Context
+    @Autowired
     HttpServletRequest req;
-    @Context
-    SecurityContext sc;
     
-    @POST
-    @Consumes(MediaType.TEXT_PLAIN)
-    @Path("{userid}/{attribute}")
-    public Response updateUser(@PathParam("userid") int userid, @PathParam("attribute") String attr, String value) {
-        User user = (User) sc.getUserPrincipal();
-        User target = Controller.getInstance().getUserservice().getUserbyId(userid);
+    @Autowired
+    UserService userservice;
+    
+    @Autowired
+    private Validator validator;
+    
+    private static Logger logger = LoggerFactory.getLogger(UserAPI.class);
+    
+    @SuppressWarnings("unchecked")
+	@RequestMapping(path="{userid}/{attribute}",method = RequestMethod.POST, consumes = {"text/plain"})
+    public ResponseEntity<String> updateUser(@PathVariable("userid") Long userid, @PathVariable("attribute") String attr, @RequestBody String value) {
+        Object p = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = null;
+        if(p instanceof UserPrincipal) {
+        	user = ((UserPrincipal)p).getUser();
+        }
+        else {
+        	return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        User target = userservice.findUserbyId(userid);
+        if(target == null) {
+        	return new ResponseEntity<>("Userid ungültig",HttpStatus.NOT_FOUND);
+        }
         switch (attr) {
             case "email": {
                 if (selforadmin(user, target)) {
-                    if (Util.isValidEmailAddress(value)) {
-                        target.setEmail(value);
-                        Controller.getInstance().getUserservice().changeUser(target);
-                        Logger.getLogger(UserAPI.class)
-                                .info(user + " changed Email-Address of " + target + "to " + target.getEmail());
-                        return Response.status(200).build();
+                	Email e = new Email();
+                	e.v = value;
+                    Set<ConstraintViolation<Email>> violations = validator.validate(e);
+                    
+                    if(violations.isEmpty()) {
+                    	target.setEmail(value);
+                        userservice.saveUser(target);
+                        logger.info(user + " changed Email-Address of " + target + "to " + target.getEmail());
+                        return new ResponseEntity<>(HttpStatus.OK);
                     } else {
-                        return Response.status(400).build();
+                        return new ResponseEntity<>(((ConstraintViolation<Email>)violations.toArray()[0]).getMessage(),HttpStatus.BAD_REQUEST);
                     }
                 } else {
-                    return Response.status(401).build();
+                    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
                 }
             }
             case "password": {
                 if (selforadmin(user, target)) {
-                    target.setPassword(Controller.getInstance().getUserservice().hashPW(value));
-                    Controller.getInstance().getUserservice().changeUser(target);
-                    Logger.getLogger(UserAPI.class).info(user + " changed the Password of " + target);
-                    return Response.status(200).build();
+                    target.setPassword(userservice.hashPW(value));
+                    userservice.saveUser(target);
+                    logger.info(user + " changed the Password of " + target);
+                    return new ResponseEntity<>(HttpStatus.OK);
                 } else {
-                    return Response.status(401).build();
+                	return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
                 }
             }
             case "admin": {
@@ -65,42 +85,37 @@ public class UserAPI {
                     boolean admin = value.equalsIgnoreCase("ja") || value.equalsIgnoreCase("yes")
                             || value.equalsIgnoreCase("true");
                     target.setAdmin(admin);
-                    Controller.getInstance().getUserservice().changeUser(target);
-                    Logger.getLogger(UserAPI.class)
-                            .info(user + " changed the Admin-Status of " + target + " to " + target.isAdmin());
-                    return Response.status(200).build();
+                    userservice.saveUser(target);
+                    logger.info(user + " changed the Admin-Status of " + target + " to " + target.isAdmin());
+                    return new ResponseEntity<>(HttpStatus.OK);
                 } else {
-                    return Response.status(401).build();
+                	return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
                 }
             }
             case "username": {
                 if (user.isAdmin()) {
-                    if (Controller.getInstance().getUserservice().getUserbyName(value) == null) {
-                        try (
-                                Connection c = Controller.getInstance().getDB();
-                                PreparedStatement stmnt = c
-                                        .prepareStatement("UPDATE PLAYLIST SET AUTOR = ? WHERE AUTOR = ?");
-                        ) {
-                            stmnt.setString(1, value);
-                            stmnt.setString(2, target.getName());
-                            stmnt.executeUpdate();
-                            Logger.getLogger(UserAPI.class)
-                                    .info(user + " changed the Username of " + target + " to " + value);
-                            target.setName(value);
-                            Controller.getInstance().getUserservice().changeUser(target);
-                        } catch (SQLException e) {
-                            Logger.getLogger(this.getClass()).error("SQLException", e);
-                        }
-                        return Response.status(200).build();
+                    if (userservice.findUserbyName(value) == null) {
+                        logger.info(user + " changed the Username of " + target + " to " + value);
+                        target.setName(value);
+                        userservice.saveUser(target);
+                        return new ResponseEntity<>(HttpStatus.OK);
                     } else {
-                        return Response.status(409).build();
+                    	return new ResponseEntity<>(HttpStatus.CONFLICT);
                     }
+                }
+                else {
+                	return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
                 }
             }
             default: {
-                return Response.status(404).entity("Userid ungültig").build();
+            	return new ResponseEntity<>("Attribut ungültig",HttpStatus.BAD_REQUEST);
             }
         }
+    }
+    
+    private static class Email {
+    	@javax.validation.constraints.Email
+    	String v;
     }
     
     private boolean selforadmin(User user, User target) {

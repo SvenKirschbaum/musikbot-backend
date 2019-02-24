@@ -12,7 +12,7 @@
 <%@ page import="de.elite12.musikbot.server.core.*"%>
 <%@ page import="de.elite12.musikbot.server.util.*"%>
 <%@ page import="de.elite12.musikbot.server.model.*"%>
-<%@ page import="de.elite12.musikbot.server.servlets.*"%>
+<%@ page import="de.elite12.musikbot.server.controller.*"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.LinkedList"%>
 <%@ page import="java.util.UUID"%>

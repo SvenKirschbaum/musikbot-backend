@@ -1,61 +1,43 @@
 package de.elite12.musikbot.server.api;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
+import javax.persistence.Tuple;
 
-import de.elite12.musikbot.server.core.Controller;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@Path("/home")
+import de.elite12.musikbot.server.data.repository.SongRepository;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@RequestMapping("/api/home")
+@RestController
 public class Home {
-    @Context
-    private HttpServletRequest req;
+	
+	@Autowired SongRepository songrepository;
     
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public SearchEntry[] autocomplete(@QueryParam("term") String term) {
-    	try (
-			Connection c = Controller.getInstance().getDB();
-	        PreparedStatement stmnt = c.prepareStatement("select SONG_NAME,SONG_LINK from PLAYLIST WHERE AUTOR != 'Automatisch' AND SONG_NAME LIKE ? ESCAPE '$' GROUP BY SONG_LINK ORDER BY count(*) DESC LIMIT 10");
-		) {
-    		term = term
-			    .replace("$", "$$")
-			    .replace("%", "$%")
-			    .replace("_", "$_")
-			    .replace("[", "$[");
-    		stmnt.setString(1, "%"+term+"%");
-    		ResultSet rs = stmnt.executeQuery();
-    		ArrayList<SearchEntry> ret = new ArrayList<>();
-    		
-    		while(rs.next()) {
-    			ret.add(new SearchEntry(rs.getString(2), rs.getString(1)));
-    		}
-    		
-    		return ret.toArray(new SearchEntry[0]);
-    	}
-    	catch(SQLException e) {
-    		throw new WebApplicationException(e);
-    	}
-    }
-    
-    private class SearchEntry {
-    	String value;
-    	String label;
+    @RequestMapping(path="", method = RequestMethod.GET, produces = {"application/json"})
+    public SearchResult[] autocomplete(@RequestParam("term") String term) {
     	
-    	public SearchEntry(String value, String label) {
-    		this.value = value;
-    		this.label = label;
-    	}
+    		Iterable<Tuple> res = songrepository.findSearchResult(term);
+    		ArrayList<SearchResult> al = new ArrayList<>();
+    		res.forEach((Tuple t) -> {
+    			al.add(new SearchResult((String) t.get(0), (String) t.get(1)));
+    		});
+    		
+    		return al.toArray(new SearchResult[0]);
     }
+    
+    @Getter
+	@Setter
+	@AllArgsConstructor
+	public static class SearchResult {
+		private String value;
+		private String label;
+	}
 }
