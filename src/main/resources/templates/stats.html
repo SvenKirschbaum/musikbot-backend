@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorator="layouts/default">
+<body>
+	<div layout:fragment="content">
+		<div id="statistik">
+			<div class="statistik">
+				<div class="statsheadline">Am meisten gewünscht:</div>
+				<table>
+					<thead>
+						<tr>
+							<th>Nr.</th>
+							<th>Titel</th>
+							<th>Anzahl</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="entry,iterStat : ${mostplayed}">
+							<td th:text="${iterStat.count}+'.'"></td>
+							<td class="link" th:title="${entry.get(0)}"><a
+								th:href="${entry.get(1)}" th:text="${#strings.abbreviate(entry.get(0),120)}"></a></td>
+							<td th:text="${entry.get(2)}"></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="statistik">
+				<div class="statsheadline">Am meisten geskippt:</div>
+				<table>
+					<thead>
+						<tr>
+							<th>Nr.</th>
+							<th>Titel</th>
+							<th>Anzahl</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="entry,iterStat : ${mostskipped}">
+							<td th:text="${iterStat.count}+'.'"></td>
+							<td class="link" th:title="${entry.get(0)}"><a
+								th:href="${entry.get(1)}" th:text="${#strings.abbreviate(entry.get(0),120)}"></a></td>
+							<td th:text="${entry.get(2)}"></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="statistik">
+				<div class="statsheadline">Top Wünscher:</div>
+				<table>
+					<thead>
+						<tr>
+							<th>Nr.</th>
+							<th>Name</th>
+							<th>Anzahl</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="entry,iterStat : ${topusers}">
+							<td th:text="${iterStat.count}+'.'"></td>
+							<td><a
+								th:href="@{/user/{name}(name=${entry.get(0)})}" th:text="${entry.get(0)}"></a></td>
+							<td th:text="${entry.get(1)}"></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="statistik">
+				<div class="statsheadline">Allgemeines:</div>
+				<table>
+					<tbody>
+						<tr>
+							<td>User:</td>
+							<td th:text="${allgemein.get(0)}"></td>
+						</tr>
+						<tr>
+							<td>Admins:</td>
+							<td th:text="${allgemein.get(1)}"></td>
+						</tr>
+						<tr>
+							<td>Gäste:</td>
+							<td th:text="${allgemein.get(2)}"></td>
+						</tr>
+						<tr>
+							<td>Wünsche:</td>
+							<td th:text="${allgemein.get(3)}"></td>
+						</tr>
+						<tr>
+							<td>Skippes:</td>
+							<td th:text="${allgemein.get(4)}"></td>
+						</tr>
+						<tr>
+							<td>Gesamte Dauer:</td>
+							<td th:text="${#numbers.formatInteger(allgemein.get(5)/60/60,1)} + ' Stunden'"></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

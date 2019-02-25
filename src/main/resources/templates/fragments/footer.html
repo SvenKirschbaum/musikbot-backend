@@ -42,14 +42,14 @@
 	<th:block sec:authorize="isAuthenticated()">
 		<div id="login">
 			<div id="profilbild" class="tooltip">
-				<img alt="profilbild" th:src="@{https://www.gravatar.com/avatar/{authentication.getPrincipal().getUser().getGravatarId()}?s=20}" />
-				<div class="bordered"><img alt="profilbild" th:src="@{https://www.gravatar.com/avatar/{authentication.getPrincipal().getUser().getGravatarId()}?s=350}" /></div>
+				<img alt="profilbild" th:src="@{https://www.gravatar.com/avatar/{gid}(s=20,gid=${#authentication.principal.user.GravatarId},d='musikbot.elite12.de/res/favicon_small.png')}" />
+				<div class="bordered"><img alt="profilbild" th:src="@{https://www.gravatar.com/avatar/{gid}(s=350,gid=${#authentication.principal.user.GravatarId},d='musikbot.elite12.de/res/favicon.png')}" /></div>
 			</div>
 			<form id="logoutform" th:action="@{/logout}" method="post">
 			</form>
 			<div class="userbar">
 				Willkommen
-				<a th:href="@{/user/{authentication.getPrincipal().getUser().getName()}}" th:text="${authentication.getPrincipal().getUser().getName()}"></a><span
+				<a th:href="@{/user/{name}(name=${#authentication.principal.user.name})}" th:text="${#authentication.principal.user.name}"></a><span
 					onclick="document.getElementById('logoutform').submit()"
 					class="link">(Logout)</span>
 					

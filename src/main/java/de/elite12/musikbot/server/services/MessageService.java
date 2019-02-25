@@ -11,19 +11,15 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-
 import de.elite12.musikbot.server.data.UserMessage;
 
 @Service
@@ -63,7 +59,7 @@ public class MessageService implements WebMvcConfigurer {
 		
 		@Override
 		public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-			if(handler instanceof HandlerMethod) {
+			if(handler instanceof HandlerMethod && HttpStatus.valueOf(response.getStatus()).is2xxSuccessful()) {
 				HandlerMethod hm = (HandlerMethod) handler;
 				if(hm.getBeanType().getPackage().getName().startsWith("de.elite12.musikbot.server.controller")) {
 					@SuppressWarnings("unchecked")

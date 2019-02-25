@@ -23,13 +23,17 @@ import de.elite12.musikbot.server.services.GapcloserService.Mode;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
 @Service
 public class SongService {
 	
+	@Getter
+	@Setter
     private String songtitle = "Kein Song";
+	@Getter
+	@Setter
     private String state = "Keine Verbindung zum BOT";
+	@Getter
+	@Setter
     private String songlink;
     
     private static final Logger logger = LoggerFactory.getLogger(SongService.class);

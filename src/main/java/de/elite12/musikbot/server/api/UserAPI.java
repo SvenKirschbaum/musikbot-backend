@@ -72,7 +72,7 @@ public class UserAPI {
             }
             case "password": {
                 if (selforadmin(user, target)) {
-                    target.setPassword(userservice.hashPW(value));
+                    target.setPassword(userservice.encode(value));
                     userservice.saveUser(target);
                     logger.info(user + " changed the Password of " + target);
                     return new ResponseEntity<>(HttpStatus.OK);

@@ -67,11 +67,28 @@ public class MusikbotServiceConfig {
 	@Configuration
 	@Order(2)
 	public static class MainWebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
+		
 		@Override
 	    protected void configure(HttpSecurity http) throws Exception {
 			http
-				.sessionManagement().maximumSessions(1).and().sessionCreationPolicy(SessionCreationPolicy.ALWAYS).and()
-				.csrf().and();
+				.sessionManagement()
+					.maximumSessions(1)
+					.and()
+					.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+					.and()
+				.formLogin()
+					.loginPage("/")
+					.loginProcessingUrl("/login")
+					.defaultSuccessUrl("/")
+					.usernameParameter("user")
+					.passwordParameter("password")
+					.failureUrl("/")
+					.and()
+				.logout()
+					.logoutSuccessUrl("/")
+					.and()
+				.csrf()
+					.and();
 	    }
 	}
 	

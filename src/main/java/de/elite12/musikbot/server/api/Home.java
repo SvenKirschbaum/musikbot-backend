@@ -27,7 +27,7 @@ public class Home {
     		Iterable<Tuple> res = songrepository.findSearchResult(term);
     		ArrayList<SearchResult> al = new ArrayList<>();
     		res.forEach((Tuple t) -> {
-    			al.add(new SearchResult((String) t.get(0), (String) t.get(1)));
+    			al.add(new SearchResult((String) t.get(1), (String) t.get(0)));
     		});
     		
     		return al.toArray(new SearchResult[0]);

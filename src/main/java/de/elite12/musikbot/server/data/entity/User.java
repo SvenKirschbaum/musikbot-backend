@@ -33,10 +33,11 @@ public class User implements Principal, Serializable {
 	 */
 	private static final long serialVersionUID = -3629360425763011031L;
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id = null;
 	@NotBlank
 	@Size(max=64)
+	@NotBlank
 	private String name;
 	private boolean admin;
 	@ToString.Exclude

@@ -655,7 +655,7 @@ function parseupdate(data) {
 		}
 	});
 	data.playlist.forEach(function(e) {
-		date = new Date(e.insert);
+		date = new Date(e.insertedAt);
 		var shorttitle = "";
 		if(e.title.length > 50) {
 			shorttitle = e.title.substr(0,50)+"...";
@@ -664,20 +664,20 @@ function parseupdate(data) {
 			shorttitle = e.title;
 		}
 		if($(".admin").length == 0) {
-			var row = $('<tr style="display:none" class="songentry" id="song_'+e.id+'"><td style="text-align: center">'+e.id+'</td><td>'+("0" + date.getDate()).slice(-2)+'.'+("0" + (date.getMonth()+1)).slice(-2)+'.'+date.getFullYear()+' - '+("0" + date.getHours()).slice(-2)+':'+("0" + date.getMinutes()).slice(-2)+':'+("0" + date.getSeconds()).slice(-2)+'</td><td><img alt="pb_playlist" src="https://www.gravatar.com/avatar/'+e.gravatarid+'?s=20&d=https%3A%2F%2Fmusikbot.elite12.de%2Fres%2Ffavicon_small.png"> <a href=""></a></td><td title=""></td><td><a href="'+e.link+'" target="_blank">'+e.link+'</a></td></tr>');
+			var row = $('<tr style="display:none" class="songentry" id="song_'+e.id+'"><td style="text-align: center">'+e.id+'</td><td>'+("0" + date.getDate()).slice(-2)+'.'+("0" + (date.getMonth()+1)).slice(-2)+'.'+date.getFullYear()+' - '+("0" + date.getHours()).slice(-2)+':'+("0" + date.getMinutes()).slice(-2)+':'+("0" + date.getSeconds()).slice(-2)+'</td><td><img alt="pb_playlist" src="https://www.gravatar.com/avatar/'+e.gravatarId+'?s=20&d=https%3A%2F%2Fmusikbot.elite12.de%2Fres%2Ffavicon_small.png"> <a href=""></a></td><td title=""></td><td><a href="'+e.link+'" target="_blank">'+e.link+'</a></td></tr>');
 		}
 		else {
-			var row = $('<tr style="display:none" class="songentry" id="song_'+e.id+'"><td style="text-align: center" class="draghandle">'+e.id+'</td><td>'+("0" + date.getDate()).slice(-2)+'.'+("0" + (date.getMonth()+1)).slice(-2)+'.'+date.getFullYear()+' - '+("0" + date.getHours()).slice(-2)+':'+("0" + date.getMinutes()).slice(-2)+':'+("0" + date.getSeconds()).slice(-2)+'</td><td><img alt="pb_playlist" src="https://www.gravatar.com/avatar/'+e.gravatarid+'?s=20&d=https%3A%2F%2Fmusikbot.elite12.de%2Fres%2Ffavicon_small.png"> <a href=""></a></td><td title=""></td><td><a href="'+e.link+'" target="_blank">'+e.link+'</a></td><td><input type="checkbox" name="song" value="'+e.id+'"></td></tr>');
+			var row = $('<tr style="display:none" class="songentry" id="song_'+e.id+'"><td style="text-align: center" class="draghandle">'+e.id+'</td><td>'+("0" + date.getDate()).slice(-2)+'.'+("0" + (date.getMonth()+1)).slice(-2)+'.'+date.getFullYear()+' - '+("0" + date.getHours()).slice(-2)+':'+("0" + date.getMinutes()).slice(-2)+':'+("0" + date.getSeconds()).slice(-2)+'</td><td><img alt="pb_playlist" src="https://www.gravatar.com/avatar/'+e.gravatarId+'?s=20&d=https%3A%2F%2Fmusikbot.elite12.de%2Fres%2Ffavicon_small.png"> <a href=""></a></td><td title=""></td><td><a href="'+e.link+'" target="_blank">'+e.link+'</a></td><td><input type="checkbox" name="song" value="'+e.id+'"></td></tr>');
 		}
 		
 		row.hide();
 		
-		row.find("td:eq(2) a").attr("href","/user/"+encodeURIComponent(e.autor));
-		row.find("td:eq(2) a").text(guestname(e.autor));
+		row.find("td:eq(2) a").attr("href","/user/"+encodeURIComponent(e.author));
+		row.find("td:eq(2) a").text(guestname(e.author));
 		row.find("td:eq(3)").attr("title", e.title);
 		row.find("td:eq(3)").text(shorttitle);
 		if(!$(".admin").length == 0) {
-			row.find("td:eq(2)").attr("title",e.autor);
+			row.find("td:eq(2)").attr("title",e.author);
 		}
 		$('#playlist').append(row);
 		row.fadeIn("slow");
@@ -716,7 +716,7 @@ function savesort(id,prev) {
 		url: "/api/songs/"+id,
 		method: "PUT",
 		data: prev,
-		headers: {'Authorization':authtoken},
+		headers: {'Authorization': (typeof authtoken !== "undefined")?authtoken:""},
 		contentType: false
 	});
 }

@@ -21,7 +21,7 @@ import lombok.Setter;
 public class Token {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	public Long id;
 	@ManyToOne
 	@JoinColumn(name="OWNER_ID", nullable=false)

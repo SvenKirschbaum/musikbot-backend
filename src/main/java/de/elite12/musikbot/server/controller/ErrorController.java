@@ -27,7 +27,9 @@ public class ErrorController implements org.springframework.boot.web.servlet.err
 	    String errormsg = (String) request.getAttribute("javax.servlet.error.message");
 	    String path = (String) request.getAttribute("javax.servlet.forward.request_uri"); 
 	    
-		logger.warn("Error for User: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal() + 
+	    Object p = SecurityContextHolder.getContext().getAuthentication() != null ? SecurityContextHolder.getContext().getAuthentication().getPrincipal():null;
+	    
+		logger.warn("Error for User: " + p + 
 				", Error Code: " + statusCode + 
 				" Message: " + errormsg + 
 				" Path: " + path);

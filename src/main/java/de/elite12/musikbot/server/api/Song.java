@@ -2,7 +2,6 @@ package de.elite12.musikbot.server.api;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -26,9 +25,8 @@ import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.services.SongService;
-import de.elite12.musikbot.server.util.Util;
 
-@RequestMapping("/api/songs/")
+@RequestMapping("/api/songs")
 @RestController
 public class Song {
 	
@@ -55,10 +53,6 @@ public class Song {
             for (int i = 0; i < a.length; i++) {
                 long id = Long.parseLong(a[i]);
                 r[i] = songrepository.findById(id).get();
-                User user = r[i].getUserAuthor();
-                r[i].setGravatarid(
-                        user == null ? Util.md5Hex("null") : Util.md5Hex(user.getEmail().toLowerCase(Locale.GERMAN)));
-                r[i].setAuthor(user == null ? r[i].getGuestAuthor() : r[i].getUserAuthor().getName());
             }
         } catch (NumberFormatException e) {
         	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -106,8 +100,8 @@ public class Song {
     }
     
     @PreAuthorize("hasRole('admin')")
-    @RequestMapping(path="{ids}", method = RequestMethod.PUT, consumes = {"text/plain"})
-    public ResponseEntity<Object> sortsong(@PathVariable("ids") String sid, @RequestBody String prev) {
+    @RequestMapping(path="{ids}", method = RequestMethod.PUT)
+    public ResponseEntity<Object> sortsong(@PathVariable("ids") String sid, @RequestBody(required=false) String prev) {
         try {
         	long id = Long.parseLong(sid);
         	long pr = -1;
@@ -149,7 +143,7 @@ public class Song {
                 }
             } while (iterator.hasNext());
             if (SecurityContextHolder.getContext().getAuthentication() != null) {
-               logger.info("Playlist sorted by: " + (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+               logger.info("Playlist sorted by: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal());
             }
         } catch (NumberFormatException e) {
         	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import de.elite12.musikbot.server.data.entity.Token;
@@ -18,7 +19,7 @@ import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 
 @Service
-public class UserService {
+public class UserService implements PasswordEncoder{
     private Argon2 argon2;
     
     @Autowired
@@ -108,6 +109,7 @@ public class UserService {
         }
     }
     
+    @Deprecated
     public String hashPW(String pw) {
     	return this.argon2.hash(2, 65536, 1, pw);
     }
@@ -126,4 +128,22 @@ public class UserService {
         }
         return null;
     }
+
+	@Override
+	public String encode(CharSequence rawPassword) {
+		return this.argon2.hash(2, 65536, 1, rawPassword.toString());
+	}
+
+	@Override
+	public boolean matches(CharSequence rawPassword, String encodedPassword) {
+		if (rawPassword.length() == 32) {
+            if (encodedPassword.equals(this.MD5(rawPassword.toString()))) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return this.argon2.verify(encodedPassword, rawPassword.toString());
+        }
+	}
 }

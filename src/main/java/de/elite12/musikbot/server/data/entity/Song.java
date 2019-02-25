@@ -2,6 +2,7 @@ package de.elite12.musikbot.server.data.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Locale;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -20,6 +21,7 @@ import org.springframework.lang.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import de.elite12.musikbot.server.util.Util;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -64,7 +66,17 @@ public class Song implements Serializable {
     private int duration;
     
     @Transient
-    private String gravatarid;
+    public String getGravatarId() {
+    	return this.getUserAuthor()==null ? Util.md5Hex("null") : Util.md5Hex(this.getUserAuthor().getEmail().toLowerCase(Locale.GERMAN));
+    }
+    
     @Transient
-    private String author;
+    public String getAuthorLink() {
+    	return this.getUserAuthor()==null ? this.getGuestAuthor() : this.getUserAuthor().getName();
+    }
+    
+    @Transient
+    public String getAuthor() {
+    	return this.getUserAuthor()==null ? "Gast" : this.getUserAuthor().getName();
+    }
 }
