@@ -70,20 +70,20 @@ public class GapcloserService {
 
     @PostConstruct
     public void postConstruct() {
-    	boolean notfound = false;
-    	try {
-    		mode = Mode.valueOf(settings.findById("gapcloser").get().getValue());
-    	}
-    	catch(NoSuchElementException e) {notfound = true;}
-    	
-    	try {
-    		playlist = settings.findById("playlist").get().getValue();
-    	}
-    	catch(NoSuchElementException e) {notfound = true;}
-    	
-    	if(notfound) save();
-    	
-        createPermutation();
+//    	boolean notfound = false;
+//    	try {
+//    		mode = Mode.valueOf(settings.findById("gapcloser").get().getValue());
+//    	}
+//    	catch(NoSuchElementException e) {notfound = true;}
+//    	
+//    	try {
+//    		playlist = settings.findById("playlist").get().getValue();
+//    	}
+//    	catch(NoSuchElementException e) {notfound = true;}
+//    	
+//    	if(notfound) save();
+//    	
+//        createPermutation();
     }
 
     private void save() {

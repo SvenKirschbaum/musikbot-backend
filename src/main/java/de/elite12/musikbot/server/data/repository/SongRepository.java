@@ -38,6 +38,10 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>{
 	
 	Long countByGuestAuthor(String guest);
 	
+	Long countByUserAuthorAndSkipped(User author, boolean skipped);
+	
+	Long countByGuestAuthorAndSkipped(String guest, boolean skipped);
+	
 	Iterable<Song> findByPlayedOrderBySort(boolean played);
 	
 	@Query(value = "select title,link from song WHERE title LIKE concat('%', replace(replace(?1, '%', '\\\\%'), '_', '\\_'), '%') AND (USER_AUTHOR != 30 OR USER_AUTHOR IS NULL) GROUP BY link ORDER BY count(*) DESC LIMIT 10", nativeQuery = true)

@@ -16,61 +16,88 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-import de.elite12.musikbot.server.controller.Weblet.TopEntry;
-import de.elite12.musikbot.server.core.Controller;
+import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.data.entity.User;
-import de.elite12.musikbot.server.util.SessionHelper;
+import de.elite12.musikbot.server.data.repository.SongRepository;
+import de.elite12.musikbot.server.services.UserService;
+import de.elite12.musikbot.server.util.NotFoundException;
 
-public class UserServlet extends HttpServlet {
+@Controller
+@RequestMapping("/user")
+public class UserController {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 2212625943054480381L;
-    @SuppressWarnings("unused")
-    private Controller ctr;
+	@Autowired
+	private UserService userservice;
+	
+	@Autowired
+	private SongRepository songs;
+	
+	@GetMapping("{user}")
+    public void getAction(@PathVariable String user, Model model) {
+		Object p = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User u = null;
+		boolean admin = false;
+		boolean self = false;
+		boolean guest = false;
+		if(p instanceof UserPrincipal) {
+			UserPrincipal t = (UserPrincipal) p;
+			u=t.getUser();
+			admin = u.isAdmin();
+		}
+        User target = userservice.findUserbyName(user);
+        if(target != null) {
+        	if(target.getId() == u.getId()) self = true;
+        }
+        
+        try {
+        	String name = UUID.fromString(user).toString();
+        	target = new User();
+        	target.setName(name);
+            guest = true;
+        } catch (IllegalArgumentException e) {
 
-    public UserServlet(Controller con) {
-        this.ctr = con;
-    }
-
-    @Override
-    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String[] path = req.getPathInfo().split("/", 2);
-        if (path.length > 0) {
-            User user = this.ctr.getUserservice().getUserbyName(path[path.length - 1]);
-            boolean guest = false;
-            try {
-                user = new User(UUID.fromString(path[path.length - 1]).toString(), null, "gast@elite12.de", false);
-                guest = true;
-            } catch (IllegalArgumentException e) {
-
-            }
-            if (user != null) {
-                req.setAttribute("viewuser", user);
-                req.setAttribute("worked", Boolean.valueOf(true));
-                req.setAttribute("control", this.ctr);
-                User u = SessionHelper.getUserFromSession(req.getSession());
-                boolean admin = u != null ? u.isAdmin() : false;
-                ArrayList<DataEntry> userinfo = new ArrayList<>();
+        }
+        
+        if(target==null) {
+        	throw new NotFoundException();
+        }
+		
+	            ArrayList<DataEntry> userinfo = new ArrayList<>();
                 if (!guest) {
                     userinfo.add(
-                            new DataEntry("ID:", user.getId() != null ? user.getId().toString() : "Null", false, "id"));
+                            new DataEntry("ID:", target.getId().toString(), false, "id"));
                 }
-                userinfo.add(new DataEntry("Username:", user.getName(), admin, "username"));
-                if ((user.equals(u) || admin) && !guest) {
-                    userinfo.add(new DataEntry("Email:", user.getEmail(), true, "email"));
+                userinfo.add(new DataEntry("Username:", target.getName(), admin&&(!guest), "username"));
+                if (!guest && (self || admin)) {
+                    userinfo.add(new DataEntry("Email:", target.getEmail(), true, "email"));
                     userinfo.add(new DataEntry("Passwort:", "****", true, "password"));
+                    userinfo.add(new DataEntry("Admin: ", target.isAdmin() ? "Ja" : "Nein", admin && !guest, "admin"));
                 }
-                userinfo.add(new DataEntry("Admin: ", user.isAdmin() ? "Ja" : "Nein", admin && !guest, "admin"));
-
-                try (
-                        Connection c = this.ctr.getDB();
-                        PreparedStatement stmnt = c
-                                .prepareStatement("SELECT COUNT(SONG_ID) FROM PLAYLIST WHERE AUTOR = ?");
-                        PreparedStatement stmnt2 = c.prepareStatement(
-                                "SELECT COUNT(SONG_ID) FROM PLAYLIST WHERE AUTOR = ? AND SONG_SKIPPED = TRUE");
+                
+                Long songcount;
+                if(guest) {
+                	songcount = songs.countByGuestAuthor(target.getName());
+                }
+                else {
+                	songcount = songs.countByUserAuthor(target);
+                }
+                
+                Long skippedcount;
+                if(guest) {
+                	skippedcount = songs.countByGuestAuthorAndSkipped(target.getName(),true);
+                }
+                else {
+                	skippedcount = songs.countByUserAuthorAndSkipped(target, true);
+                }
+                
                         PreparedStatement stmnt3 = c.prepareStatement(
                                 "SELECT SONG_NAME,SONG_LINK,COUNT(*) AS anzahl FROM PLAYLIST WHERE AUTOR = ? GROUP BY SONG_LINK ORDER BY COUNT(*) DESC LIMIT 10");
                         PreparedStatement stmnt4 = c.prepareStatement(
@@ -133,15 +160,7 @@ public class UserServlet extends HttpServlet {
         }
     }
 
-    private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
-        throw new java.io.NotSerializableException(getClass().getName());
-    }
-
-    private void readObject(java.io.ObjectInputStream stream) throws java.io.IOException, ClassNotFoundException {
-        throw new java.io.NotSerializableException(getClass().getName());
-    }
-
-    public class DataEntry {
+    private static class DataEntry {
         public DataEntry(String name, String value, boolean change, String urlname) {
             this.name = name;
             this.value = value;
