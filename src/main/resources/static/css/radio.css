@@ -907,6 +907,12 @@ a.currentpage:visited {
 		0px 2px 2px rgba(0, 0, 0, .5),
 		0px 1px 0px rgba(250, 250, 250, .2);
 	color: #D0D0D0;
+	margin-bottom: 10em;
+	padding-bottom: 3em;
+}
+
+.import-submit {
+	float: right;
 }
 
 #headline {
