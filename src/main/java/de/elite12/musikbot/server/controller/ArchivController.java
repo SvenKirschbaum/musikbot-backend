@@ -27,10 +27,10 @@ public class ArchivController {
 
 	@GetMapping
 	public ModelAndView getAction(@RequestParam(value="p", defaultValue="1", required=false) int page) {
-		Page<Song> archiv = songs.findByPlayedOrderBySortDesc(true, PageRequest.of(page, 30));
+		Page<Song> archiv = songs.findByPlayedOrderBySortDesc(true, PageRequest.of(page-1, 30));
 		ModelAndView r = new ModelAndView("archiv");
-		r.addObject("page",archiv.getNumber());
-		r.addObject("total",archiv.getTotalPages()-1);
+		r.addObject("page",archiv.getNumber()+1);
+		r.addObject("total",archiv.getTotalPages());
 		r.addObject("list",archiv);
 		
 		return r;
