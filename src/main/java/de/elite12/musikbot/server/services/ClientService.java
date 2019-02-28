@@ -288,6 +288,7 @@ public class ClientService implements Runnable {
         	de.elite12.musikbot.shared.Song tmp = new de.elite12.musikbot.shared.Song();
         	tmp.setLink(song.getLink());
         	tmp.setTitle(song.getTitle());
+        	tmp.settype(song.getLink().contains("spotify") ? "spotify" : "youtube");
         	
             Command c = new Command(Command.SONG, tmp);
             logger.debug("Sending Command: " + c);
