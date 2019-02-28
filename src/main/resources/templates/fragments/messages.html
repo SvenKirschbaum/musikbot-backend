@@ -1,0 +1,8 @@
+<div id="messages" xmlns:th="http://www.thymeleaf.org"
+	th:fragment="messages">
+	<div th:each="m,iterStat : ${messages}" th:id="'msg_'+${iterStat.index}"
+		th:class="'msg_'+${m.type}">
+		<span th:text="${m.msg}"></span>
+		<div class="close_button" th:onclick="'closemsg('+${iterStat.index}+')'"></div>
+	</div>
+</div>

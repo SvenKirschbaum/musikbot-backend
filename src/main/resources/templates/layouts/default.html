@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="fragments/header :: head"></head>
+<body>
+	<div id="topic"></div>
+	<div class="messages" th:replace="fragments/messages :: messages"></div>
+	<div id="content" layout:fragment="content"></div>
+	<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

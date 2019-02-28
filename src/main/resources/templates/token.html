@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorator="layouts/default">
+<body>
+    <div layout:fragment="content">
+        <div id="content">
+
+        <div id="content2">
+            <form id="tokenform" th:action="@{/tokens}" class="bordered" method="POST">
+                <input type="text" name="token" disabled th:value="${token}" />
+                <input type="submit" value="Token resetten" />
+            </form>
+        </div>
+    </div>
+    </div>
+</body>
+</html>

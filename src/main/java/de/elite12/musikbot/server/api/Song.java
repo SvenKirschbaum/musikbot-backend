@@ -1,204 +1,153 @@
 package de.elite12.musikbot.server.api;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
+import de.elite12.musikbot.server.data.GuestSession;
+import de.elite12.musikbot.server.data.UserPrincipal;
+import de.elite12.musikbot.server.data.entity.LockedSong;
+import de.elite12.musikbot.server.data.entity.User;
+import de.elite12.musikbot.server.data.repository.LockedSongRepository;
+import de.elite12.musikbot.server.data.repository.SongRepository;
+import de.elite12.musikbot.server.services.SongService;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.log4j.Logger;
-
-import de.elite12.musikbot.server.core.Controller;
-import de.elite12.musikbot.server.model.User;
-import de.elite12.musikbot.server.util.Util;
-import de.elite12.musikbot.shared.SongIDParser;
-
-@Path("/songs")
+@RequestMapping("/api/songs")
+@RestController
 public class Song {
+	
+	@Autowired
+	private SongService songservice;
+	
+	@Autowired
+	private SongRepository songrepository;
+	
+	@Autowired
+	private LockedSongRepository lockedsongrepository;
+	
+	@Autowired
+	private GuestSession guestinfo;
+	
+	private static Logger logger = LoggerFactory.getLogger(Song.class);
     
-    @Context
-    HttpServletRequest req;
-    @Context
-    SecurityContext sc;
     
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("{ids : .+}")
-    public de.elite12.musikbot.shared.Song[] getSong(@PathParam("ids") String sid) {
-        String[] a = sid.split("/");
-        de.elite12.musikbot.shared.Song[] r = new de.elite12.musikbot.shared.Song[a.length];
+    @RequestMapping(path="{ids}", method = RequestMethod.GET, produces = {"application/json"})
+    public ResponseEntity<de.elite12.musikbot.server.data.entity.Song[]> getSong(@PathVariable String ids) {
+        String[] a = ids.split(",");
+        de.elite12.musikbot.server.data.entity.Song[] r = new de.elite12.musikbot.server.data.entity.Song[a.length];
         try {
             for (int i = 0; i < a.length; i++) {
-                int id = Integer.parseInt(a[i]);
-                r[i] = getSongbyID(id);
+                long id = Long.parseLong(a[i]);
+                r[i] = songrepository.findById(id).get();
             }
         } catch (NumberFormatException e) {
-            throw new WebApplicationException(400);
+        	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch(NoSuchElementException e) {
+        	return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return r;
+        return new ResponseEntity<de.elite12.musikbot.server.data.entity.Song[]>(r, HttpStatus.OK);
     }
     
-    @DELETE
-    @RolesAllowed("admin")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("{ids : .+}")
-    public List<Integer> deleteSong(@PathParam("ids") String sid, @QueryParam("lock") boolean lock) {
-        String[] a = sid.split("/");
-        try (
-                Connection c = Controller.getInstance().getDB();
-                PreparedStatement stmnt = c
-                        .prepareStatement("DELETE FROM PLAYLIST WHERE SONG_ID = ? AND SONG_PLAYED = FALSE");
-                PreparedStatement stmnt2 = c
-                        .prepareStatement("INSERT INTO LOCKED_SONGS (YTID, SONG_NAME) VALUES (?, ?)");
-        ) {
+    @PreAuthorize("hasRole('admin')")
+    @RequestMapping(path="{ids}", method = RequestMethod.DELETE, produces = {"application/json"})
+    public ResponseEntity<Object> deleteSong(@PathVariable String ids, @RequestParam("lock") Optional<Boolean> lock) {
+        String[] a = ids.split("/");
+        try {
             for (String b : a) {
-                int id = Integer.parseInt(b);
-                stmnt.setInt(1, id);
-                stmnt.addBatch();
-                if (lock) {
-                    de.elite12.musikbot.shared.Song song = getSongbyID(id);
-                    stmnt2.setString(1, song.getLink().contains("spotify") ? SongIDParser.getSID(song.getLink())
-                            : SongIDParser.getVID(song.getLink()));
-                    stmnt2.setString(2, song.getTitle());
-                    stmnt2.addBatch();
+                long id = Long.parseLong(b);
+                Optional<de.elite12.musikbot.server.data.entity.Song> song = songrepository.findById(id);
+                if(!song.isPresent()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                
+                if (lock.isPresent() && lock.get()) {
+                    LockedSong ls = new LockedSong();
+                    ls.setTitle(song.get().getTitle());
+                    ls.setUrl(song.get().getLink());
+                    
+                    lockedsongrepository.save(ls);
                 }
+                
+                songrepository.delete(song.get());
             }
-            Logger.getLogger(this.getClass()).info("Songs (" + Arrays.toString(a) + ") deleted"
-                    + (lock ? " and locked " : " ") + "by User: " + sc.getUserPrincipal());
-            if (lock) {
-                stmnt2.executeBatch();
-            }
-            return Arrays.asList(ArrayUtils.toObject(stmnt.executeBatch()));
+            logger.info("Songs (" + Arrays.toString(a) + ") deleted"
+                    + (lock.orElseGet(() -> Boolean.FALSE) ? " and locked " : " ") + "by User: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+            return new ResponseEntity<>(HttpStatus.OK);
         } catch (NumberFormatException e) {
-            throw new WebApplicationException(400);
-        } catch (SQLException e) {
-            Logger.getLogger(this.getClass()).error("SQL Exception", e);
+        	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        throw new WebApplicationException(500);
     }
     
-    @POST
-    @Consumes(MediaType.TEXT_PLAIN)
-    public Response createSong(String url) {
-    	String uuid = null;
-    	if(req.getSession().getAttribute("guest_id") != null) {
-    		uuid = req.getSession().getAttribute("guest_id").toString();
-    	}
+    @RequestMapping(path="", method = RequestMethod.POST, consumes = {"text/plain"})
+    public ResponseEntity<String> createSong(@RequestBody String url) {
+    	Object p = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    	logger.info(SecurityContextHolder.getContext().getAuthentication().toString());
+    	User u = p instanceof UserPrincipal ? ((UserPrincipal) p).getUser() : null;
     	
-    	if(req.getHeader("User-Agent") != null && req.getHeader("User") != null) {
-    		if(req.getHeader("User-Agent").equals("ContestBot") && !req.getHeader("User").isEmpty()) {
-    			uuid = UUID.nameUUIDFromBytes(req.getHeader("User").getBytes()).toString();
-    		}
-    	}
-    	
-    	if(uuid==null) {
-    		uuid = UUID.randomUUID().toString();
-    	}
-        return Controller.getInstance().addSong(url, (User) sc.getUserPrincipal(), uuid);
+        return songservice.addSong(url, u, guestinfo);
     }
     
-    @PUT
-    @Path("{id : .+}")
-    @RolesAllowed("admin")
-    @Consumes(MediaType.TEXT_PLAIN)
-    public void sortsong(@PathParam("id") String sid, String prev) {
-        try (
-                Connection c = Controller.getInstance().getDB();
-                PreparedStatement stmnt = c
-                        .prepareStatement("select * from PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC");
-                PreparedStatement stmnt2 = c.prepareStatement("select * from PLAYLIST WHERE SONG_ID = ?");
-                PreparedStatement stmnt3 = c.prepareStatement("UPDATE PLAYLIST SET SONG_SORT = ? WHERE SONG_ID = ?");
-        ) {
-            int id = Integer.parseInt(sid);
-            int pr = -1;
+    @PreAuthorize("hasRole('admin')")
+    @RequestMapping(path="{ids}", method = RequestMethod.PUT)
+    public ResponseEntity<Object> sortsong(@PathVariable("ids") String sid, @RequestBody(required=false) String prev) {
+        try {
+        	long id = Long.parseLong(sid);
+        	long pr = -1;
             try {
-                pr = Integer.parseInt(prev);
+                pr = Long.parseLong(prev);
             } catch (NumberFormatException e) {
             }
-            int low = Integer.MAX_VALUE;
+            long low = Long.MAX_VALUE;
             
-            ResultSet rs = stmnt.executeQuery();
-            if (rs.next()) {
-                low = rs.getInt("SONG_SORT");
+            Iterable<de.elite12.musikbot.server.data.entity.Song> songs = songrepository.findByPlayedOrderBySort(false);
+            Iterator<de.elite12.musikbot.server.data.entity.Song> iterator = songs.iterator();
+            de.elite12.musikbot.server.data.entity.Song cs;
+            if (songs.iterator().hasNext()) {
+            	cs = songs.iterator().next();
+                low = cs.getSort();
             }
+            iterator = songs.iterator();
             if (pr == -1) {
                 pr = low - 1;
             } else {
-                
-                stmnt2.setInt(1, pr);
-                ResultSet rs2 = stmnt2.executeQuery();
-                rs2.next();
-                pr = rs2.getInt("SONG_SORT");
+                pr = songrepository.findById(pr).get().getSort();
             }
             
-            stmnt3.setInt(1, pr + 1);
-            stmnt3.setInt(2, id);
-            stmnt3.addBatch();
+            de.elite12.musikbot.server.data.entity.Song s = songrepository.findById(id).get();
+            s.setSort(pr +1);
+            songrepository.save(s);
             do {
-                if (rs.getInt("SONG_ID") != id) {
-                    if (rs.getInt("SONG_SORT") == pr + 1 && sc != null) {
+            	cs = iterator.next();
+                if (cs.getId() != id) {
+                    if (cs.getSort() == pr + 1) {
                         low++;
                     }
-                    if (rs.getInt("SONG_SORT") != low) {
-                        stmnt3.setInt(1, low);
-                        stmnt3.setInt(2, rs.getInt("Song_ID"));
-                        stmnt3.addBatch();
+                    if (cs.getSort() != low) {
+                    	s = songrepository.findById(cs.getId()).get();
+                        s.setSort(low);
+                        songrepository.save(s);
                     }
                     low++;
                 }
-            } while (rs.next());
-            stmnt3.executeBatch();
-            if (sc != null) {
-                Logger.getLogger(this.getClass()).info("Playlist sorted by: " + sc.getUserPrincipal());
+            } while (iterator.hasNext());
+            if (SecurityContextHolder.getContext().getAuthentication() != null) {
+               logger.info("Playlist sorted by: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal());
             }
         } catch (NumberFormatException e) {
-            throw new WebApplicationException(400);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new WebApplicationException(e);
+        	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-    }
-    
-    private de.elite12.musikbot.shared.Song getSongbyID(int id) {
-        try (
-                Connection c = Controller.getInstance().getDB();
-                PreparedStatement stmnt = c.prepareStatement("select * from PLAYLIST WHERE SONG_ID = ?");
-        ) {
-            stmnt.setInt(1, id);
-            ResultSet rs = stmnt.executeQuery();
-            if (rs.next()) {
-                de.elite12.musikbot.shared.Song s = new de.elite12.musikbot.shared.Song(rs);
-                User user = Controller.getInstance().getUserservice().getUserbyName(s.getAutor());
-                s.setGravatarid(
-                        user == null ? Util.md5Hex("null") : Util.md5Hex(user.getEmail().toLowerCase(Locale.GERMAN)));
-                return s;
-            } else {
-                throw new javax.ws.rs.NotFoundException();
-            }
-        } catch (SQLException e) {
-            Logger.getLogger(this.getClass()).error("SQL ERROR", e);
-        }
-        return null;
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

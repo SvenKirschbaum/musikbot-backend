@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorator="layouts/default">
+<body>
+	<div layout:fragment="content">
+		<div id="content">
+
+			<div id="content2">
+
+				<div id="registerform" class="bordered">
+					<form method="post" th:action="@{/register/}">
+						<table>
+							<tbody>
+								<tr>
+									<td>Username:</td>
+									<td><input type="text" name="username" /></td>
+								</tr>
+								<tr>
+									<td>Passwort:</td>
+									<td><input type="password" name="password" /></td>
+								</tr>
+								<tr>
+									<td>Passwort bestätigen:</td>
+									<td><input type="password" name="password2" /></td>
+								</tr>
+								<tr>
+									<td>Email:</td>
+									<td><input type="text" name="mail" /></td>
+								</tr>
+								<tr>
+									<td colspan="2"><input type="checkbox" name="datenschutz">Ich
+										habe die <a href="@{https://datenschutz.elite12.de/}">Datenschutzbestimmungen</a>
+										gelesen und akzeptiert</td>
+								</tr>
+								<tr>
+									<td colspan="2"><input type="submit" name="submit"
+										value="Registrieren" /></td>
+								</tr>
+							</tbody>
+						</table>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

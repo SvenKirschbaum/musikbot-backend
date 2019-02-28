@@ -1,61 +1,46 @@
 package de.elite12.musikbot.server.api;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Locale;
-
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import org.apache.log4j.Logger;
+import de.elite12.musikbot.server.data.entity.Song;
+import de.elite12.musikbot.server.data.repository.SongRepository;
+import de.elite12.musikbot.server.services.SongService;
+import lombok.Getter;
 
-import de.elite12.musikbot.server.core.Controller;
-import de.elite12.musikbot.server.model.User;
-import de.elite12.musikbot.server.util.Util;
-import de.elite12.musikbot.shared.Song;
-
-@Path("/status")
+@RestController
+@RequestMapping("/api/status")
 public class Status {
     @Context
     private HttpServletRequest req;
     
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
+    @Autowired
+    private SongService songservice;
+    
+    @Autowired
+    private SongRepository songrepository;
+    
+    @RequestMapping(path = "", produces = {"application/json"})
     public StatusUpdate getstatus() {
         StatusUpdate st = new StatusUpdate();
 
-        st.status = Controller.getInstance().getState();
-        st.songtitle = Controller.getInstance().getSongtitle();
-        st.songlink = Controller.getInstance().getSonglink();
+        st.status = songservice.getState();
+        st.songtitle = songservice.getSongtitle();
+        st.songlink = songservice.getSonglink();
         st.playlist = new ArrayList<>(30);
 
         int dauer = 0;
+        
+        Iterable<Song> songs = songrepository.findByPlayedOrderBySort(false);
 
-        try (
-                Connection c = Controller.getInstance().getDB();
-                PreparedStatement stmnt = c
-                        .prepareStatement("select * FROM PLAYLIST WHERE SONG_PLAYED = FALSE ORDER BY SONG_SORT ASC");
-        ) {
-            ResultSet rs = stmnt.executeQuery();
-            while (rs.next()) {
-                Song s = new Song(rs);
-                dauer += s.getDauer();
-                User user = Controller.getInstance().getUserservice().getUserbyName(s.getAutor());
-                s.setGravatarid(
-                        user == null ? Util.md5Hex("null") : Util.md5Hex(user.getEmail().toLowerCase(Locale.GERMAN)));
-                st.playlist.add(s);
-            }
-        } catch (SQLException e) {
-            Logger.getLogger(this.getClass()).error("SQL Exception", e);
+       
+        for (Song s: songs) {
+            dauer += s.getDuration();
+            st.playlist.add(s);
         }
 
         st.playlistdauer = dauer / 60;
@@ -64,16 +49,11 @@ public class Status {
     }
 }
 
-@XmlRootElement
+@Getter
 class StatusUpdate {
-    @XmlElement
     String status;
-    @XmlElement
     String songtitle;
-    @XmlElement
     String songlink;
-    @XmlElement
     int playlistdauer;
-    @XmlElement
     ArrayList<Song> playlist;
 }

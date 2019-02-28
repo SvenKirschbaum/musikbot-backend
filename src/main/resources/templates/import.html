@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorator="layouts/default">
+<body>
+	<div layout:fragment="content">
+		<div id="content">
+
+			<div id="content2">
+				<form id="import" class="bordered" method="post" th:action="@{/import/}">
+					Playlist: <input type="text" name="playlist" /><input id=""
+						type="submit" name="sub" />
+				</form>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

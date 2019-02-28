@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorator="layouts/default">
+<head>
+<th:block layout:fragment="script">
+    <script type="text/javascript">
+	    var updatelog = function ()
+	    {
+	        $.get("/api/log/",function(data) {
+	            
+	            $("#log").html(data);
+	        });
+	        window.setTimeout(update,6000);
+	    }
+	    function start() {
+	        if(typeof $=='function') {
+	            updatelog();
+	        }
+	        else {
+	            window.setTimeout(start,1000);
+	        }
+	    }
+	    start();
+</script>
+</th:block>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div id="log"></div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorator="layouts/default">
+<body>
+
+	<div layout:fragment="content">
+		<div id="changedialog" title="Dialog Form">
+			<form action="" method="post">
+				<label>Wert:</label> <input class="value" id="value" name="value"
+					type="text"> <input class="value" id="pvalue" name="pvalue"
+					type="password"> <input id="submit" type="submit"
+					value="Ändern">
+			</form>
+		</div>
+		<div id="usercontainer">
+			<div id="pbild" class="bordered">
+				<img alt="profilbild"
+					th:src="@{https://www.gravatar.com/avatar/{gid}(s=350,gid=${gravatarid},d='musikbot.elite12.de/res/favicon.png')}" />
+			</div>
+			<div class="listwrapper">
+				<div id="userstats" class="bordered">
+					<div class="statsheadline">Allgemein:</div>
+					<table>
+						<tbody>
+							<tr th:each="entry : ${userinfo}" th:id="${entry.urlname}">
+								<td th:text="${entry.name}"></td>
+								<td>
+									<span th:text="${entry.value}"></span>
+									<a th:if="${entry.changeable}" th:attr="onclick=|showform('${entry.urlname}')|" href="#">(Ändern)</a></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div id="recent" class="bordered">
+					<div class="statsheadline">Most recent:</div>
+					<table>
+						<thead>
+							<tr>
+								<th>Nr.</th>
+								<th>Titel</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="entry : ${recent}">
+								<td th:text="${entry.get(0)}"></td>
+								<td class="link"
+									th:title="${entry.get(1)}">
+									<a th:href="@{${entry.get(2)}}" th:text="${#strings.abbreviate(entry.get(1),60)}"></a></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="listwrapper">
+				<div id="topsongs" class="bordered">
+					<div class="statsheadline">Am meisten gewünscht:</div>
+					<table>
+						<thead>
+							<tr>
+								<th>Nr.</th>
+								<th>Titel</th>
+								<th>Anzahl</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="entry,iterStats : ${topsongs}">
+								<td th:text="${iterStats.count}+'.'"></td>
+								<td class="link"
+									th:title="${entry.get(0)}"><a
+									th:href="@{${entry.get(1)}}"
+									th:text="${#strings.abbreviate(entry.get(0),60)}"></a></td>
+								<td th:text="${entry.get(2)}"></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div id="topskipped" class="bordered">
+					<div class="statsheadline">Am meisten geskippt:</div>
+					<table>
+						<thead>
+							<tr>
+								<th>Nr.</th>
+								<th>Titel</th>
+								<th>Anzahl</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="entry,iterStats : ${topskipped}">
+								<td th:text="${iterStats.count}+'.'"></td>
+								<td class="link"
+									th:title="${entry.get(0)}"><a
+									th:href="@{${entry.get(1)}}"
+									th:text="${#strings.abbreviate(entry.get(0),60)}"></a></td>
+								<td th:text="${entry.get(2)}"></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
