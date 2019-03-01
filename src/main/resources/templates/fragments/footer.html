@@ -43,7 +43,7 @@
 		<div id="login">
 			<div id="profilbild" class="tooltip">
 				<img alt="profilbild" th:src="@{https://www.gravatar.com/avatar/{gid}(s=20,gid=${#authentication.principal.user.GravatarId},d='musikbot.elite12.de/res/img/favicon_small.png')}" />
-				<div class="bordered"><img alt="profilbild" th:src="@{https://www.gravatar.com/avatar/{gid}(s=350,gid=${#authentication.principal.user.GravatarId},d='musikbot.elite12.de/res/favicon.png')}" /></div>
+				<div class="bordered"><img alt="profilbild" th:src="@{https://www.gravatar.com/avatar/{gid}(s=350,gid=${#authentication.principal.user.GravatarId},d='musikbot.elite12.de/res/img/favicon.png')}" /></div>
 			</div>
 			<form id="logoutform" th:action="@{/logout}" method="post">
 			</form>
