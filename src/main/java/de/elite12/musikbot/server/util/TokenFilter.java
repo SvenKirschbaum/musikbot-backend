@@ -37,7 +37,7 @@ public class TokenFilter implements Filter{
 				UserPrincipal up = new UserPrincipal(u);
 				SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(up, "", up.getAuthorities()));
 			}
-			if(token != null && !token.isEmpty()) {
+			else if(token != null && !token.isEmpty()) {
 				throw new BadCredentialsException("Token invalid");
 			}
 			chain.doFilter(request, response);
