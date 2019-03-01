@@ -10,6 +10,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,9 @@ public class TokenFilter implements Filter{
 			if(u != null) {
 				UserPrincipal up = new UserPrincipal(u);
 				SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(up, "", up.getAuthorities()));
+			}
+			if(token != null && !token.isEmpty()) {
+				throw new BadCredentialsException("Token invalid");
 			}
 			chain.doFilter(request, response);
 		}

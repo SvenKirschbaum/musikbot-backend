@@ -1,10 +1,12 @@
 package de.elite12.musikbot.server.controller;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,9 +23,9 @@ public class ErrorController implements org.springframework.boot.web.servlet.err
 	}
 	
 	@RequestMapping("/error")
-    public String handleError(HttpServletRequest request, Model model) {
+    public String handleError(HttpServletRequest request, HttpServletResponse response, Model model) {
 		Integer statusCode = (Integer) request.getAttribute("javax.servlet.error.status_code");
-	    //Exception exception = (Exception) request.getAttribute("javax.servlet.error.exception");
+	    Exception exception = (Exception) request.getAttribute("javax.servlet.error.exception");
 	    String errormsg = (String) request.getAttribute("javax.servlet.error.message");
 	    String path = (String) request.getAttribute("javax.servlet.forward.request_uri"); 
 	    
@@ -33,6 +35,11 @@ public class ErrorController implements org.springframework.boot.web.servlet.err
 				", Error Code: " + statusCode + 
 				" Message: " + errormsg + 
 				" Path: " + path);
+		
+		if(exception instanceof BadCredentialsException) {
+			response.setStatus(401);
+			statusCode = 401;
+		}
 		
 		model.addAttribute("code", statusCode);
 		model.addAttribute("path", path);
