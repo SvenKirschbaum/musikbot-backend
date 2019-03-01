@@ -30,14 +30,15 @@ public class TokenFilter implements Filter{
 			throws IOException, ServletException {
 		if(request instanceof HttpServletRequest) {
 			HttpServletRequest req = (HttpServletRequest) request;
-			String token = getToken(req.getHeader("Authorization"));
+			String authheader = req.getHeader("Authorization");
+			String token = getToken(authheader);
 			
 			User u = userservice.findUserbyToken(token);
 			if(u != null) {
 				UserPrincipal up = new UserPrincipal(u);
 				SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(up, "", up.getAuthorities()));
 			}
-			else if(token != null && !token.isEmpty()) {
+			else if(authheader != null && !authheader.isEmpty()) {
 				throw new BadCredentialsException("Token invalid");
 			}
 			chain.doFilter(request, response);
