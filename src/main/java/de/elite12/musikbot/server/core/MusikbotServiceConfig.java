@@ -42,7 +42,15 @@ public class MusikbotServiceConfig {
 				.csrf().disable()
 				.cors().and()
 				.sessionManagement().maximumSessions(1).and().sessionCreationPolicy(SessionCreationPolicy.NEVER).and()
-				.addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
+				.addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class)
+				.headers()
+					.xssProtection()
+						.disable()
+					.contentTypeOptions()
+						.disable()
+					.frameOptions()
+						.disable()
+					.and();
 	    }
 		
 		@Bean
@@ -88,6 +96,14 @@ public class MusikbotServiceConfig {
 					.logoutSuccessUrl("/")
 					.and()
 				.csrf()
+					.and()
+				.headers()
+					.xssProtection()
+						.disable()
+					.contentTypeOptions()
+						.disable()
+					.frameOptions()
+						.disable()
 					.and();
 	    }
 	}
