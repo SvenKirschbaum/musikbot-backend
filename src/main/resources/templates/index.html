@@ -35,7 +35,7 @@
 						th:class="${link}? 'link'"
 						th:title="${title}" id="songtitle"
 						> 
-						<a th:if="${link}" th:href="${link}" th:text="${link}"></a> 
+						<a th:if="${link}" th:href="${link}" th:text="${title}"></a> 
 						<span th:unless="${link}">Kein Song!</span>
 					</div>
 				</div>
