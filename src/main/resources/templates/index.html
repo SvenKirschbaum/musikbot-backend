@@ -83,7 +83,7 @@
 								<td th:title="${#authorization.expression('hasRole(''ROLE_admin'')')} ? ${song.guestAuthor}">
 									<img
 										alt="pb_playlist"
-										th:src="@{https://www.gravatar.com/avatar/{gid}(gid=${song.GravatarId},s=20,d='musikbot.elite12.de/res/favicon_small.png')}"
+										th:src="@{https://www.gravatar.com/avatar/{gid}(gid=${song.GravatarId},s=20,d='musikbot.elite12.de/res/img/favicon_small.png')}"
 									/>
 									<a th:href="@{/user/{user}(user=${song.AuthorLink})}" th:text="${song.Author}"></a>
 								</td>
