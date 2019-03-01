@@ -18,8 +18,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import de.elite12.musikbot.server.util.CookieFilter;
-import de.elite12.musikbot.server.util.TokenFilter;
+import de.elite12.musikbot.server.filter.CookieFilter;
+import de.elite12.musikbot.server.filter.TokenFilter;
 
 @Configuration
 @EnableWebSecurity

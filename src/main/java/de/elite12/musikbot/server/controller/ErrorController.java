@@ -6,7 +6,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,7 +22,7 @@ public class ErrorController implements org.springframework.boot.web.servlet.err
 	}
 	
 	@RequestMapping("/error")
-    public String handleError(HttpServletRequest request, HttpServletResponse response, Model model) {
+    public String handleError(HttpServletRequest request, HttpServletResponse response, Model model) throws Exception {
 		Integer statusCode = (Integer) request.getAttribute("javax.servlet.error.status_code");
 	    Exception exception = (Exception) request.getAttribute("javax.servlet.error.exception");
 	    String errormsg = (String) request.getAttribute("javax.servlet.error.message");
@@ -36,9 +35,8 @@ public class ErrorController implements org.springframework.boot.web.servlet.err
 				" Message: " + errormsg + 
 				" Path: " + path);
 		
-		if(exception instanceof BadCredentialsException) {
-			response.setStatus(401);
-			statusCode = 401;
+		if(exception != null) {
+			throw exception;
 		}
 		
 		model.addAttribute("code", statusCode);

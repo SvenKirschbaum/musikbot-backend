@@ -1,4 +1,4 @@
-package de.elite12.musikbot.server.util;
+package de.elite12.musikbot.server.filter;
 
 import javax.servlet.http.HttpServletRequest;
 

@@ -1,4 +1,4 @@
-package de.elite12.musikbot.server.util;
+package de.elite12.musikbot.server.filter;
 
 import java.io.IOException;
 
@@ -10,13 +10,13 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.data.entity.User;
+import de.elite12.musikbot.server.exception.InvalidAuthorizationException;
 import de.elite12.musikbot.server.services.UserService;
 
 @Component
@@ -39,7 +39,7 @@ public class TokenFilter implements Filter{
 				SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(up, "", up.getAuthorities()));
 			}
 			else if(authheader != null && !authheader.isEmpty()) {
-				throw new BadCredentialsException("Token invalid");
+				throw new InvalidAuthorizationException("Authorization Header invalid");
 			}
 			chain.doFilter(request, response);
 		}
