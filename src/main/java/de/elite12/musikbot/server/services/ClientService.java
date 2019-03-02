@@ -100,7 +100,7 @@ public class ClientService implements Runnable {
 	            
 	            if (authcmd.getCmd() != Command.AUTH || !authcmd.getdata().equals(config.getClientkey())) {
 	                try {
-	                    logger.warn("Authentification Failure, clsing connection!");
+	                    logger.warn("Authentification Failure, closing connection!");
 	                    this.out.writeObject(new Command(Command.INVALID));
 	                    this.out.flush();
 	                    this.client.close();
@@ -117,6 +117,8 @@ public class ClientService implements Runnable {
 	                    logger.error("Unknown Exception", e);
 	                }
 	            }
+	            
+	            songservice.setState("Verbunden");
 	            
 	            while (!this.client.isClosed() && this.client.isConnected() && !thread.isInterrupted()) {
 	                try {
