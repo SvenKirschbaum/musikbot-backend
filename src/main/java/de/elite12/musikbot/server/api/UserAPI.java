@@ -1,5 +1,6 @@
 package de.elite12.musikbot.server.api;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +33,9 @@ public class UserAPI {
     
     @Autowired
     UserService userservice;
+    
+	@Autowired
+	private SessionRegistry sessionreg;
     
     @Autowired
     private Validator validator;
@@ -87,6 +93,7 @@ public class UserAPI {
                     target.setAdmin(admin);
                     userservice.saveUser(target);
                     logger.info(user + " changed the Admin-Status of " + target + " to " + target.isAdmin());
+                    updateSession(target);
                     return new ResponseEntity<>(HttpStatus.OK);
                 } else {
                 	return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -98,6 +105,7 @@ public class UserAPI {
                         logger.info(user + " changed the Username of " + target + " to " + value);
                         target.setName(value);
                         userservice.saveUser(target);
+                        updateSession(target);
                         return new ResponseEntity<>(HttpStatus.OK);
                     } else {
                     	return new ResponseEntity<>(HttpStatus.CONFLICT);
@@ -120,5 +128,20 @@ public class UserAPI {
     
     private boolean selforadmin(User user, User target) {
         return user.equals(target) || user.isAdmin();
+    }
+    
+    private void updateSession(User u) {
+    	List<Object> principals = sessionreg.getAllPrincipals();
+    	for(Object p:principals) {
+    		if(p instanceof UserPrincipal) {
+    			UserPrincipal up = (UserPrincipal) p;
+    			if(up.getUser().getId() == u.getId()) {
+    				List<SessionInformation> sessions = sessionreg.getAllSessions(p, true);
+    				for(SessionInformation s:sessions) {
+    					sessionreg.removeSessionInformation(s.getSessionId());
+    				}
+    			}
+    		}
+    	}
     }
 }
