@@ -72,7 +72,9 @@ public class UserController {
 		if (!guest && (self || admin)) {
 			userinfo.add(new DataEntry("Email:", target.getEmail(), true, "email"));
 			userinfo.add(new DataEntry("Passwort:", "****", true, "password"));
-			userinfo.add(new DataEntry("Admin: ", target.isAdmin() ? "Ja" : "Nein", admin && !guest, "admin"));
+		}
+		if(!guest) {
+			userinfo.add(new DataEntry("Admin: ", target.isAdmin() ? "Ja" : "Nein", admin, "admin"));
 		}
 
 		Long songcount;
