@@ -54,6 +54,7 @@ public class UserController {
 			String name = UUID.fromString(user).toString();
 			target = new User();
 			target.setName(name);
+			target.setEmail("gast@elite12.de");
 			guest = true;
 		} catch (IllegalArgumentException e) {
 
