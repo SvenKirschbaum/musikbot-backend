@@ -42,8 +42,8 @@
 	<th:block sec:authorize="isAuthenticated()">
 		<div id="login">
 			<div id="profilbild" class="tooltip">
-				<img alt="profilbild" th:src="@{https://www.gravatar.com/avatar/{gid}(s=20,gid=${#authentication.principal.user.GravatarId},d='musikbot.elite12.de/res/img/favicon_small.png')}" />
-				<div class="bordered"><img alt="profilbild" th:src="@{https://www.gravatar.com/avatar/{gid}(s=350,gid=${#authentication.principal.user.GravatarId},d='musikbot.elite12.de/res/img/favicon.png')}" /></div>
+				<img alt="profilbild" th:src="@{https://www.gravatar.com/avatar/{gid}(s=20,gid=${#authentication.principal.user.GravatarId},d='musikbot.elite12.de/img/favicon_small.png')}" />
+				<div class="bordered"><img alt="profilbild" th:src="@{https://www.gravatar.com/avatar/{gid}(s=350,gid=${#authentication.principal.user.GravatarId},d='musikbot.elite12.de/img/favicon.png')}" /></div>
 			</div>
 			<form id="logoutform" th:action="@{/logout}" method="post">
 			</form>
@@ -98,10 +98,10 @@
 	</div>
 
 	<div id="spotify">
-		<img alt="spotify Logo" th:src="@{/res/img/spotify.svg}">
+		<img alt="spotify Logo" th:src="@{/img/spotify.svg}">
 	</div>
 	<div id="html5">
-		<img alt="HTML5 Logo" th:src="@{/res/img/html5.svg}">
+		<img alt="HTML5 Logo" th:src="@{/img/html5.svg}">
 	</div>
 	<div class="version" th:text="'v'+${version}"></div>
 </div>
