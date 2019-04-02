@@ -52,3 +52,47 @@ footer a, footer a:hover {
 .clock {
     margin-left: 5px;
 }
+
+.LoginFooter > * {
+    margin-right: 6px;
+}
+
+.LoginFooter img {
+    margin-bottom: 0.25em;
+}
+
+.LoginBox {
+    position: fixed;
+    bottom: 30px;
+    left: 0px;
+    z-index: 3;
+    padding: 9px 12px 6px 12px;
+    border: 1px solid #181818;
+    border-bottom: 0;
+    border-radius: 0px 8px 0 0;
+    color: #E0E0E0;
+    background-color: #222;
+}
+.LoginSpinner {
+    margin-right: 10px;
+    margin-bottom: 2px;
+}
+
+.close {
+    color:white;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
+.NoMatch {
+    max-width: 400px;
+}
+
+.vertical-center {
+  min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
+  min-height: 100vh; /* These two lines are counted as one :-)       */
+
+  display: flex;
+  align-items: center;
+}
