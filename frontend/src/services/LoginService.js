@@ -3,7 +3,7 @@ class LoginService {
     constructor() {
         if(!LoginService.instance) {
             LoginService.instance = this;
-            this.loggedin = true;
+            this.loggedin = false;
         }
     }
 

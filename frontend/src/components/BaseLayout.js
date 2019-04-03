@@ -78,7 +78,7 @@ function LoginFooter(props) {
         return (
             <span className="LoginFooter">
                 <img alt="profilbild" src={LoginService.getPicture()}></img>
-                <span>Wilkommen <Link to={`/users/${LoginService.getName()}`}>{LoginService.getName()}</Link></span>
+                <span>Willkommen <Link to={`/users/${LoginService.getName()}`}>{LoginService.getName()}</Link></span>
                 <Link to="#" onClick={() => {LoginService.logout()}}>(Logout)</Link>
                 <Link to="#" onClick={props.onMenu}>Menü</Link>
             </span>
