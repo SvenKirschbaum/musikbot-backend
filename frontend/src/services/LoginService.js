@@ -19,9 +19,17 @@ class LoginService {
         return "sven";
     }
 
-    login(username, password) {
-        this.loggedin = true;
+    isAdmin() {
         return true;
+    }
+
+    login(username, password) {
+        return new Promise((resolve,reject) => {
+            setTimeout(() => {
+                this.loggedin = true;
+                resolve(true);
+            }, 2000);
+        });
     }
 
     logout() {

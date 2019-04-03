@@ -65,7 +65,7 @@ footer a, footer a:hover {
     position: fixed;
     bottom: 30px;
     left: 0px;
-    z-index: 3;
+    z-index: 40;
     padding: 9px 12px 6px 12px;
     border: 1px solid #181818;
     border-bottom: 0;
@@ -89,10 +89,69 @@ footer a, footer a:hover {
     max-width: 400px;
 }
 
-.vertical-center {
-  min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
-  min-height: 100vh; /* These two lines are counted as one :-)       */
-
-  display: flex;
-  align-items: center;
+.close:not(:disabled):not(.disabled):hover, .close:not(:disabled):not(.disabled):focus {
+    opacity: .75;
 }
+.close:hover {
+    color: white;
+    text-decoration: none;
+}
+
+.vertical-center {
+    min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
+    min-height: 100vh; /* These two lines are counted as one :-)       */
+
+    display: flex;
+    align-items: center;
+}
+
+/* LoginBox Animation */
+.slideright-enter {
+    transform: translateX(-100%);
+}
+.slideright-enter-active {
+    transform: translateX(0%);
+    transition: all 300ms;
+}
+.slideright-exit {
+    transform: translateX(0%);
+}
+.slideright-exit-active {
+    transform: translateX(-100%);
+    transition: all 300ms;
+}
+
+/* Menu Animation */
+.slideup-enter {
+    transform: translateY(100%);
+}
+.slideup-enter-active {
+    transform: translateY(0%);
+    transition: all 300ms;
+}
+.slideup-exit {
+    transform: translateY(0%);
+}
+.slideup-exit-active {
+    transform: translateY(100%);
+    transition: all 300ms;
+}
+
+.AMenu {
+    list-style: none;
+    position: fixed;
+    bottom: 30px;
+    margin-left: 13.6em;
+    margin-bottom: 0px;
+    z-index: 40;
+    padding: 9px 12px 6px 12px;
+    border: 1px solid #181818;
+    border-bottom: 0;
+    border-radius: 8px 8px 0 0;
+    color: #E0E0E0;
+    background-color: #222;
+}
+.AMenu a {
+    color: inherit;
+}
+

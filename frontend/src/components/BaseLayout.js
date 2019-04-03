@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import CookieConsent from 'react-cookie-consent';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import Spinner from 'react-bootstrap/Spinner'
+import Spinner from 'react-bootstrap/Spinner';
+import { CSSTransition } from 'react-transition-group';
 
 import LoginService from '../services/LoginService.js';
 
@@ -28,58 +29,68 @@ class BaseLayout extends Component {
     }
 }
 
-function Footer () {
-    return (
-        <div>
-            <img className="spotify-logo" alt="spotify Logo" src={spotifylogo} />
-            <img className="react-logo" alt="HTML5 Logo" src={reactlogo} />
-            <footer className="d-flex flex-row justify-content-between">
-                
-                <LoginFooter></LoginFooter>
-
-                <Link to="/statistik">Statistik</Link>
-        
-                <span>
-                    <a href="https://datenschutz.elite12.de/">Impressum/Disclaimer/Datenschutz</a>
-
-                    <Clock className="clock"></Clock>
-                </span>
-            </footer>
-        </div>
-    );
-}
-
-class LoginFooter extends Component {
-
+class Footer extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            isPaneOpen: false
+            isPaneOpen: false,
+            isMenuOpen: false
         };
     }
-
     render() {
-        if(LoginService.isLoggedIn()) {
-            return (
-                <span className="LoginFooter">
-                    <img alt="profilbild" src={LoginService.getPicture()}></img>
-                    <span>Wilkommen <Link to={`/users/${LoginService.getName()}`}>{LoginService.getName()}</Link></span>
-                    <Link to="#" onClick={() => {LoginService.logout()}}>(Logout)</Link>
-                    <span>Menü</span>
-                </span>
-            );
-        }
-        else {
-            return (
-                <span className="LoginFooter">
-                    {this.state.isPaneOpen &&
+        return (
+            <div>
+                <img className="spotify-logo" alt="spotify Logo" src={spotifylogo} />
+                <img className="react-logo" alt="HTML5 Logo" src={reactlogo} />
+                <CSSTransition
+                    classNames="slideright"
+                    timeout={300}
+                    unmountOnExit
+                    in={this.state.isPaneOpen}>
                         <LoginBox onClose={() => this.setState({ isPaneOpen: false })}></LoginBox>
-                    }
-                    <Link to="#" onClick={() => this.setState({ isPaneOpen: true })}>Login</Link>
-                    <Link to="/register">Registrieren</Link>
-                </span>
-            );
-        }
+                </CSSTransition>
+                <CSSTransition
+                    classNames="slideup"
+                    timeout={300}
+                    unmountOnExit
+                    in={this.state.isMenuOpen}>
+                    <AMenu onItemClick={() => this.setState({ isMenuOpen: false })}></AMenu>
+                </CSSTransition>
+                <footer className="d-flex flex-row justify-content-between">
+                    
+                    <LoginFooter onLogin={() => this.setState({isPaneOpen: true})} onMenu={() => this.setState({isMenuOpen: !this.state.isMenuOpen})}></LoginFooter>
+
+                    <Link to="/statistik">Statistik</Link>
+            
+                    <span>
+                        <a href="https://datenschutz.elite12.de/">Impressum/Disclaimer/Datenschutz</a>
+
+                        <Clock className="clock"></Clock>
+                    </span>
+                </footer>
+            </div>
+        );
+    }
+}
+
+function LoginFooter(props) {
+    if(LoginService.isLoggedIn()) {
+        return (
+            <span className="LoginFooter">
+                <img alt="profilbild" src={LoginService.getPicture()}></img>
+                <span>Wilkommen <Link to={`/users/${LoginService.getName()}`}>{LoginService.getName()}</Link></span>
+                <Link to="#" onClick={() => {LoginService.logout()}}>(Logout)</Link>
+                <Link to="#" onClick={props.onMenu}>Menü</Link>
+            </span>
+        );
+    }
+    else {
+        return (
+            <span className="LoginFooter">
+                <Link to="#" onClick={props.onLogin}>Login</Link>
+                <Link to="/register">Registrieren</Link>
+            </span>
+        );
     }
 }
 
@@ -92,15 +103,15 @@ class LoginBox extends React.Component {
             username: '',
             password: ''
         };
-
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
     handleSubmit(e) {
         this.setState({loading: true}, () => {
-            //TODO:
-            let result = LoginService.login(this.state.username,this.state.password);
-            if(result) this.props.onClose();
+            //TODO: Handle Errors after LoginService implementation
+            LoginService.login(this.state.username,this.state.password).then(() => {
+                this.props.onClose();
+            });
         });
         e.preventDefault();
     }
@@ -144,6 +155,26 @@ class LoginBox extends React.Component {
             </div>
         );
     }
+}
+
+function AMenu(props) {
+    return (
+        <ul className="AMenu">
+            <li><Link to="/" onClick={props.onItemClick}>Startseite</Link></li>
+			<li><Link to="/archiv" onClick={props.onItemClick}>Archiv</Link></li>
+			<li><Link to="/statistik" onClick={props.onItemClick}>Statistik</Link></li>
+			<li><Link to="/tokens" onClick={props.onItemClick}>Auth-Token</Link></li>
+            { LoginService.isAdmin() && 
+                <React.Fragment>
+                    <li><Link to="/import" onClick={props.onItemClick}>Playlist Importieren</Link></li>
+                    <li><Link to="/songs" onClick={props.onItemClick}>Gesperrte Songs</Link></li>
+                    <li><Link to="/gapcloser" onClick={props.onItemClick}>Gapcloser</Link></li>
+                    <li><Link to="/log" onClick={props.onItemClick}>Log</Link></li>
+                    <li><Link to="/debug" onClick={props.onItemClick}>Entwicklermenü</Link></li>
+                </React.Fragment>
+            }
+        </ul>
+    );
 }
 
 export default BaseLayout;
