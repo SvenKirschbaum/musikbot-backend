@@ -1,4 +1,4 @@
-package de.elite12.musikbot.server.api;
+package de.elite12.musikbot.server.api.v2;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;

@@ -1,0 +1,82 @@
+.Header {
+    line-height: 64px;
+    text-transform: uppercase;
+    font-size: 2.4em;
+    text-shadow: 0 -1px 0 #111;
+    padding: 16px 0;
+    font-family: "Open Sans", Arial, Helvetica, sans-serif;
+}
+.Header *:first-child {
+    color: rgb(128,93,55);
+}
+.Header *:last-child {
+    color: rgb(249,235,198);
+}
+.Status {
+    padding: 9px;
+    background-color: #FFAB40;
+    color: #965502;
+    font-family: monospace;
+    font-weight: bold;
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    box-shadow: inset 0px 2px 2px rgba(0, 0, 0, .5), 0px 1px 0px rgba(250, 250, 250, .2);
+    text-shadow: none;
+}
+.Control {
+    margin-top: 1em;
+    line-height: 1.5em;
+}
+.Control .col {
+    padding:0px;
+}
+.Control .col:first-child button {
+    border-radius: 4px 0 0 4px;
+}
+.Control .col:last-child button {
+    border-radius: 0 4px 4px 0;
+    border-right: 0;
+}
+.Control button {
+    width: 100%;
+    color: #333!important;
+    text-shadow: 0 1px 0 #eee;
+    display: inline-block;
+    margin: 0;
+    padding: 6px 0;
+    border-radius: 0;
+    border: none;
+    border-right: 1px solid #666;
+    box-shadow: none!important;
+    font-size: 1em!important;
+    background-color: #eee!important;
+    background-image: linear-gradient(#eee, #bbb 70%, #9f9f9f 100% );
+    background-position: 0 6px;
+    background-repeat: no-repeat;
+    box-shadow: rgba(0,0,0,.4) 0 3px 6px!important;
+    border-color: initial!important;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+}
+.Control button:hover {
+    background-position: 0;
+    color: #333!important;
+    transition: all .1s ease-in;
+    box-shadow: rgba(0,0,0,.4) 0 3px 6px!important;
+    border-color: initial!important;
+    background-color: #eee!important;
+}
+.Control button:focus {
+    box-shadow: rgba(0,0,0,.4) 0 3px 6px!important;
+    border-color: initial!important;
+    background-color: #eee!important;
+    color: #333!important;
+}
+.Control button:active {
+    box-shadow: inset rgba(0,0,0,.5) 0px 5px 10px!important;
+    border-color: initial!important;
+    background-color: #eee!important;
+    color: #333!important;
+    transition: none;
+}
