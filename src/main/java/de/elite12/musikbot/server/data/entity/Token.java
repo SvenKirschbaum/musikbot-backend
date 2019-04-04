@@ -19,14 +19,15 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Token {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	public Long id;
-	@ManyToOne
-	@JoinColumn(name="OWNER_ID", nullable=false)
-	public User owner;
-	public Date created;
-	@Column(unique=true)
-	public String token;
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public Long id;
+    @ManyToOne
+    @JoinColumn(name = "OWNER_ID", nullable = false)
+    public User owner;
+    public Date created;
+    @Column(unique = true)
+    public String token;
+    public boolean external;
 }

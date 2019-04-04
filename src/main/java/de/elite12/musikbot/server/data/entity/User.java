@@ -13,6 +13,8 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import de.elite12.musikbot.server.util.Util;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -27,26 +29,27 @@ import lombok.ToString;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class User implements Principal, Serializable {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -3629360425763011031L;
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id = null;
-	@NotBlank
-	@Size(max=64)
-	@NotBlank
-	private String name;
-	private boolean admin;
-	@ToString.Exclude
-	private String password;
-	@Email
-	private String email;
-	
-	@Transient
-	public String getGravatarId() {
-		return Util.md5Hex(this.getEmail().toLowerCase(Locale.GERMAN));
-	}
+    
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -3629360425763011031L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id = null;
+    @NotBlank
+    @Size(max = 64)
+    @NotBlank
+    private String name;
+    private boolean admin;
+    @ToString.Exclude
+    @JsonIgnore
+    private String password;
+    @Email
+    private String email;
+    
+    @Transient
+    public String getGravatarId() {
+        return Util.md5Hex(this.getEmail().toLowerCase(Locale.GERMAN));
+    }
 }

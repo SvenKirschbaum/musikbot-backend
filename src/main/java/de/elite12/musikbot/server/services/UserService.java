@@ -19,82 +19,82 @@ import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 
 @Service
-public class UserService implements PasswordEncoder{
+public class UserService implements PasswordEncoder {
     private Argon2 argon2;
-    
+
     @Autowired
     private UserRepository userrepository;
-    
+
     @Autowired
     private TokenRepository tokenrepository;
-    
+
     private static Logger logger = LoggerFactory.getLogger(UserService.class);
-    
+
     public UserService() {
         this.argon2 = Argon2Factory.create();
     }
-    
+
     public User findUserbyId(Long id) {
         logger.debug("Querying User by ID");
         return userrepository.findById(id).orElse(null);
     }
-    
+
     public User findUserbyName(String name) {
         logger.debug("Querying User by Name");
         return userrepository.findByName(name);
     }
-    
+
     public User findUserbyMail(String mail) {
         logger.debug("Querying User by ID");
         return userrepository.findByEmail(mail);
     }
-    
+
     public User findUserbyToken(String token) {
         logger.debug("Querying User by TOKEN");
         Optional<Token> t = tokenrepository.findByToken(token);
         return t.isPresent() ? t.get().getOwner() : null;
     }
-    
-    public User saveUser(User u) {
-    	return userrepository.save(u);
-    }
-    
-    public User createUser(String username, String password, String email) {
-    	User u = new User();
-    	u.setName(username);
-    	u.setPassword(this.argon2.hash(2, 65536, 1, password));
-    	u.setAdmin(false);
-    	u.setEmail(email);
-    	u = userrepository.save(u);
-    	return u;
-    }
-    
-    public String getExternalToken(User u) {
-    	Optional<Token> t = tokenrepository.findByOwner(u);
-    	String r = null;
-    	if(!t.isPresent()) {
-    		r = resetExternalToken(u);
-    	}
-    	else {
-    		r = t.get().getToken();
-    	}
-    	return r;
-    }
-    
-    public String resetExternalToken(User u) {
-    	Optional<Token> t = tokenrepository.findByOwner(u);
-    	if(t.isPresent()) {
-    		tokenrepository.delete(t.get());
-    	}
-    	Token token = new Token();
-    	token.setOwner(u);
-    	token.setCreated(new Date());
-    	token.setToken(UUID.randomUUID().toString());
-    	token = tokenrepository.save(token);
 
-    	return token.getToken();
+    public User saveUser(User u) {
+        return userrepository.save(u);
     }
-    
+
+    public User createUser(String username, String password, String email) {
+        User u = new User();
+        u.setName(username);
+        u.setPassword(this.argon2.hash(2, 65536, 1, password));
+        u.setAdmin(false);
+        u.setEmail(email);
+        u = userrepository.save(u);
+        return u;
+    }
+
+    public String getExternalToken(User u) {
+        Optional<Token> t = tokenrepository.findByOwnerAndExternal(u, true);
+        String r = null;
+        if (!t.isPresent()) {
+            r = resetExternalToken(u);
+        } else {
+            r = t.get().getToken();
+        }
+        return r;
+    }
+
+    public String resetExternalToken(User u) {
+        Optional<Token> t = tokenrepository.findByOwnerAndExternal(u, true);
+        if (t.isPresent()) {
+            tokenrepository.delete(t.get());
+        }
+        Token token = new Token();
+        token.setOwner(u);
+        token.setCreated(new Date());
+        token.setToken(UUID.randomUUID().toString());
+        token.setExternal(true);
+        token = tokenrepository.save(token);
+        
+        return token.getToken();
+    }
+
     public boolean checkPassword(User user, String password) {
         if (user.getPassword().length() == 32) {
             if (user.getPassword().equals(this.MD5(password))) {
@@ -108,12 +108,23 @@ public class UserService implements PasswordEncoder{
             return this.argon2.verify(user.getPassword(), password);
         }
     }
-    
+
+    public String getLoginToken(User user) {
+        Token token = new Token();
+        token.setOwner(user);
+        token.setCreated(new Date());
+        token.setToken(UUID.randomUUID().toString());
+        token.setExternal(false);
+        token = tokenrepository.save(token);
+
+        return token.getToken();
+    }
+
     @Deprecated
     public String hashPW(String pw) {
-    	return this.argon2.hash(2, 65536, 1, pw);
+        return this.argon2.hash(2, 65536, 1, pw);
     }
-    
+
     private String MD5(String md5) {
         try {
             java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
@@ -128,15 +139,15 @@ public class UserService implements PasswordEncoder{
         }
         return null;
     }
-
-	@Override
-	public String encode(CharSequence rawPassword) {
-		return this.argon2.hash(2, 65536, 1, rawPassword.toString());
-	}
-
-	@Override
-	public boolean matches(CharSequence rawPassword, String encodedPassword) {
-		if (rawPassword.length() == 32) {
+    
+    @Override
+    public String encode(CharSequence rawPassword) {
+        return this.argon2.hash(2, 65536, 1, rawPassword.toString());
+    }
+    
+    @Override
+    public boolean matches(CharSequence rawPassword, String encodedPassword) {
+        if (rawPassword.length() == 32) {
             if (encodedPassword.equals(this.MD5(rawPassword.toString()))) {
                 return true;
             } else {
@@ -145,5 +156,5 @@ public class UserService implements PasswordEncoder{
         } else {
             return this.argon2.verify(encodedPassword, rawPassword.toString());
         }
-	}
+    }
 }

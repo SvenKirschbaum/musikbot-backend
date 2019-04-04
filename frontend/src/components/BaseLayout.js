@@ -4,6 +4,8 @@ import CookieConsent from 'react-cookie-consent';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import { CSSTransition } from 'react-transition-group';
 
 import LoginService from '../services/LoginService.js';
@@ -74,10 +76,11 @@ class Footer extends Component {
 }
 
 function LoginFooter(props) {
+    let gravatarurl = "https://www.gravatar.com/avatar/"+LoginService.getGravatarID()+"?s=20&d=musikbot.elite12.de/img/favicon_small.png";
     if(LoginService.isLoggedIn()) {
         return (
             <span className="LoginFooter">
-                <img alt="profilbild" src={LoginService.getPicture()}></img>
+                <img alt="profilbild" src={gravatarurl}></img>
                 <span>Willkommen <Link to={`/users/${LoginService.getName()}`}>{LoginService.getName()}</Link></span>
                 <Link to="#" onClick={() => {LoginService.logout()}}>(Logout)</Link>
                 <Link to="#" onClick={props.onMenu}>Menü</Link>
@@ -101,7 +104,8 @@ class LoginBox extends React.Component {
         this.state = {
             loading: false,
             username: '',
-            password: ''
+            password: '',
+            errormessage: ''
         };
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -109,8 +113,15 @@ class LoginBox extends React.Component {
     handleSubmit(e) {
         this.setState({loading: true}, () => {
             //TODO: Handle Errors after LoginService implementation
-            LoginService.login(this.state.username,this.state.password).then(() => {
+            LoginService.login(this.state.username,this.state.password)
+            .then(() => {
                 this.props.onClose();
+            })
+            .catch((e) => {
+                this.setState({
+                    errormessage: e,
+                    loading: false
+                });
             });
         });
         e.preventDefault();
@@ -140,17 +151,22 @@ class LoginBox extends React.Component {
                         <Form.Label>Passwort</Form.Label>
                         <Form.Control type="password" name="password" value={this.state.password} onChange={this.handleChange} disabled={this.state.loading} />
                     </Form.Group>
-                    <Button variant="light" type="submit" className="float-right" size="sm" disabled={this.state.loading}>
-                        {this.state.loading &&
-                            <Spinner
-                                as="span"
-                                animation="border"
-                                size="sm"
-                                className="LoginSpinner"
-                            />
-                        }
-                        Einloggen
-                    </Button>
+                    <Row>
+                        <Col className="loginerrors">{this.state.errormessage}</Col>
+                        <Col>
+                            <Button variant="light" type="submit" className="float-right" size="sm" disabled={this.state.loading}>
+                                {this.state.loading &&
+                                    <Spinner
+                                        as="span"
+                                        animation="border"
+                                        size="sm"
+                                        className="LoginSpinner"
+                                    />
+                                }
+                                Einloggen
+                            </Button>
+                        </Col>
+                    </Row>
                 </Form>
             </div>
         );

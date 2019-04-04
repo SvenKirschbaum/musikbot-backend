@@ -1,9 +1,18 @@
-//TODO: Implement
 class LoginService {
     constructor() {
         if(!LoginService.instance) {
             LoginService.instance = this;
-            this.loggedin = false;
+            let state = JSON.parse(localStorage.getItem('loginstate'));
+            if(state) {
+                this.loggedin = state.loggedin;
+                this.user = state.user;
+                this.token = state.token;
+            }
+            else {
+                this.loggedin = false;
+                this.user = null;
+                this.token = null;
+            }
         }
     }
 
@@ -11,29 +20,57 @@ class LoginService {
         return this.loggedin;
     }
 
-    getPicture() {
-        return "https://www.gravatar.com/avatar/393db4e5e8992396545bd0ce9fce39ab?s=20&d=musikbot.elite12.de/img/favicon_small.png";
+    getGravatarID() {
+        if(this.user) return this.user.gravatarId;
     }
 
     getName() {
-        return "sven";
+        if(this.user) return this.user.name;
     }
 
     isAdmin() {
-        return true;
+        if(this.user) return this.user.admin;
+    }
+
+    getToken() {
+        if(this.loggedin) return this.token;
     }
 
     login(username, password) {
         return new Promise((resolve,reject) => {
-            setTimeout(() => {
-                this.loggedin = true;
-                resolve(true);
-            }, 2000);
+            fetch("/api/login", {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    'username': username,
+                    'password': password
+                })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if(response.success) {
+                    this.user = response.user;
+                    this.loggedin = true;
+                    localStorage.setItem('loginstate', JSON.stringify({
+                        loggedin: true,
+                        token: response.token,
+                        user: response.user
+                    }));
+                    resolve();
+                }
+                else {
+                    reject(response.error);
+                }
+            });
         });
     }
 
     logout() {
         this.loggedin = false;
+        this.user = null;
+        localStorage.removeItem('loginstate');
     }
 }
 const instance = new LoginService();

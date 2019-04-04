@@ -9,8 +9,8 @@ import de.elite12.musikbot.server.data.entity.Token;
 import de.elite12.musikbot.server.data.entity.User;
 
 @Repository
-public interface TokenRepository extends CrudRepository<Token, Long>{
-	public Optional<Token> findByToken(String token);
-	
-	public Optional<Token> findByOwner(User u);
+public interface TokenRepository extends CrudRepository<Token, Long> {
+    public Optional<Token> findByToken(String token);
+    
+    public Optional<Token> findByOwnerAndExternal(User u, boolean external);
 }
