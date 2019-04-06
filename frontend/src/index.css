@@ -59,6 +59,7 @@ footer a, footer a:hover {
 
 .LoginFooter img {
     margin-bottom: 0.25em;
+    margin-right: 6px;
 }
 
 .LoginBox {
@@ -141,15 +142,15 @@ footer a, footer a:hover {
     list-style: none;
     position: fixed;
     bottom: 30px;
-    margin-left: 13.6em;
     margin-bottom: 0px;
     z-index: 40;
     padding: 9px 12px 6px 12px;
     border: 1px solid #181818;
     border-bottom: 0;
-    border-radius: 8px 8px 0 0;
+    border-radius: 0px 8px 0 0;
     color: #E0E0E0;
     background-color: #222;
+    min-width: 11em;
 }
 .AMenu a {
     color: inherit;

@@ -22,6 +22,10 @@
     border-radius: 6px;
     box-shadow: inset 0px 2px 2px rgba(0, 0, 0, .5), 0px 1px 0px rgba(250, 250, 250, .2);
     text-shadow: none;
+    font-size: 14px;
+}
+.Status .row:first-child{
+    text-transform: uppercase;
 }
 .Control {
     margin-top: 1em;
@@ -79,4 +83,179 @@
     background-color: #eee!important;
     color: #333!important;
     transition: none;
+}
+.playlist {
+    font-size: 14px;
+    box-sizing: border-box;
+    line-height: 1.7em;
+    color: #212121;
+    text-shadow: none;
+    background-color: #252525;
+    background-image: url(../res/bgtexture.png);
+    box-shadow: 0px 0px 6px 2px rgba(0,0,0,0.25);
+    padding: 0;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    text-align: center;
+    overflow: hidden;
+}
+.playlist .header {
+    background-color: #121212;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    color: #BDBDBD;
+    margin: 0;
+}
+.space-top {
+    margin-top: 1.5em;
+}
+.song {
+    white-space: nowrap;
+    background-color: #B6B6B6;
+    color: #212121;
+    margin: 0;
+}
+.playlist a {
+    color: #555;
+}
+.playlist a:hover {
+    color: #555;
+}
+
+.nolink a {
+    color: #212121;
+}
+
+.nolink a:hover {
+    color: #212121;
+    text-decoration: none;
+}
+.playlist img {
+    margin-right: 1ch;
+}
+.addSong {
+    vertical-align: middle;
+    overflow: hidden;
+    border-radius: 4px;
+    box-shadow: inset 0px 2px 2px rgba(0, 0, 0, .5), 0px 1px 0px rgba(250, 250, 250, .2);
+    padding: 16px;
+    background-color: #252525;
+    background-image: url(../res/bgtexture.png);
+    box-sizing: border-box;
+    text-shadow: 0 -1px 0 #111;
+}
+.addSong button {
+    width: 100%;
+    color: #333!important;
+    text-shadow: 0 1px 0 #eee;
+    display: inline-block;
+    margin: 0;
+    padding: 6px 0;
+    border-radius: 4px;
+    border: none;
+    border-right: 1px solid #666;
+    box-shadow: none!important;
+    font-size: 1em!important;
+    background-color: #eee!important;
+    background-image: linear-gradient(#eee, #bbb 70%, #9f9f9f 100% );
+    background-position: 0 6px;
+    background-repeat: no-repeat;
+    box-shadow: rgba(0,0,0,.4) 0 3px 6px!important;
+    border-color: initial!important;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+}
+.addSong button:hover {
+    background-position: 0;
+    color: #333!important;
+    transition: all .1s ease-in;
+    box-shadow: rgba(0,0,0,.4) 0 3px 6px!important;
+    border-color: initial!important;
+    background-color: #eee!important;
+}
+.addSong button:focus {
+    box-shadow: rgba(0,0,0,.4) 0 3px 6px!important;
+    border-color: initial!important;
+    background-color: #eee!important;
+    color: #333!important;
+}
+.addSong button:active {
+    box-shadow: inset rgba(0,0,0,.5) 0px 5px 10px!important;
+    border-color: initial!important;
+    background-color: #eee!important;
+    color: #333!important;
+    transition: none;
+}
+@media (min-width: 768px) {
+    .addSong .col-md-8 {
+        padding-right: 1em;
+    }
+}
+@media (max-width: 767px) {
+    .addSong .col-md-8 {
+        padding-bottom: 1em;
+    }
+}
+.addSong input {
+    padding: 4px 5px;
+    border: 1px solid #888;
+    border-radius: 4px;
+    color: #eee;
+    background-color: #666;
+    box-shadow: inset 0 2px 2px rgba(0,0,0,0.2);
+    line-height: 1.3;
+    text-shadow: none;
+}
+.addSong input:focus {
+    border-color: #aaa;
+    background-color: #6a6a6a;
+    outline: none;
+}
+.playlist .songid {
+    width: 5em;
+}
+.playlist .insertat {
+    width: 10em;
+}
+.playlist .author {
+    width: 10em;
+}
+.playlist .delete {
+    width: 2em;
+}
+/* Song Animation */
+.song-anim-enter {
+    opacity: 0;
+}
+.song-anim-enter-active {
+    opacity: 1;
+    transition: all 300ms;
+}
+.song-anim-exit {
+    opacity: 1;
+}
+.song-anim-exit-active {
+    opacity: 0;
+    transition: all 300ms;
+}
+.slidedown-enter {
+    opacity: 0;
+}
+.slidedown-enter-active {
+    opacity: 1;
+    transition: all 300ms;
+}
+.slidedown-exit {
+    opacity: 1;
+}
+.slidedown-exit-active {
+    opacity: 0;
+    transition: all 300ms;
+}
+.deleteicon {
+    cursor: pointer;
+}
+.addSong form {
+    display: contents;
 }

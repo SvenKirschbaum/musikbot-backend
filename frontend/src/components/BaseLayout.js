@@ -8,12 +8,13 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { CSSTransition } from 'react-transition-group';
 
-import LoginService from '../services/LoginService.js';
+import AuthenticationContext from './AuthenticationContext';
 
 import Clock from './Clock.js';
 
 import reactlogo from '../res/react.png';
 import spotifylogo from '../res/spotify.svg';
+import GravatarIMG from "./GravatarIMG";
 
 class BaseLayout extends Component {
     render() {
@@ -32,6 +33,9 @@ class BaseLayout extends Component {
 }
 
 class Footer extends Component {
+
+    static contextType = AuthenticationContext;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -49,25 +53,25 @@ class Footer extends Component {
                     timeout={300}
                     unmountOnExit
                     in={this.state.isPaneOpen}>
-                        <LoginBox onClose={() => this.setState({ isPaneOpen: false })}></LoginBox>
+                        <LoginBox AuthState={this.context} onClose={() => this.setState({ isPaneOpen: false })}></LoginBox>
                 </CSSTransition>
                 <CSSTransition
                     classNames="slideup"
                     timeout={300}
                     unmountOnExit
                     in={this.state.isMenuOpen}>
-                    <AMenu onItemClick={() => this.setState({ isMenuOpen: false })}></AMenu>
+                    <AMenu AuthState={this.context} onItemClick={() => this.setState({ isMenuOpen: false })}></AMenu>
                 </CSSTransition>
                 <footer className="d-flex flex-row justify-content-between">
                     
-                    <LoginFooter onLogin={() => this.setState({isPaneOpen: true})} onMenu={() => this.setState({isMenuOpen: !this.state.isMenuOpen})}></LoginFooter>
+                    <LoginFooter AuthState={this.context} onLogin={() => this.setState({isPaneOpen: true})} onMenu={() => this.setState({isMenuOpen: !this.state.isMenuOpen})}></LoginFooter>
 
                     <Link to="/statistik">Statistik</Link>
             
                     <span>
-                        <a href="https://datenschutz.elite12.de/">Impressum/Disclaimer/Datenschutz</a>
+                        <a href="https://datenschutz.elite12.de/">Impressum<span className="d-none d-sm-inline">/Disclaimer/Datenschutz</span></a>
 
-                        <Clock className="clock"></Clock>
+                        <Clock className="clock d-none d-md-inline"></Clock>
                     </span>
                 </footer>
             </div>
@@ -76,13 +80,13 @@ class Footer extends Component {
 }
 
 function LoginFooter(props) {
-    let gravatarurl = "https://www.gravatar.com/avatar/"+LoginService.getGravatarID()+"?s=20&d=musikbot.elite12.de/img/favicon_small.png";
-    if(LoginService.isLoggedIn()) {
+    if(props.AuthState.loggedin) {
         return (
             <span className="LoginFooter">
-                <img alt="profilbild" src={gravatarurl}></img>
-                <span>Willkommen <Link to={`/users/${LoginService.getName()}`}>{LoginService.getName()}</Link></span>
-                <Link to="#" onClick={() => {LoginService.logout()}}>(Logout)</Link>
+                <Link to={`/users/${props.AuthState.user.name}`}>
+                    <GravatarIMG>{(props.AuthState.user ? props.AuthState.user.gravatarId : "")}</GravatarIMG>
+                    <span><span className="d-none d-sm-inline">Willkommen </span>{props.AuthState.user.name}</span>
+                </Link>
                 <Link to="#" onClick={props.onMenu}>Menü</Link>
             </span>
         );
@@ -112,8 +116,7 @@ class LoginBox extends React.Component {
     }
     handleSubmit(e) {
         this.setState({loading: true}, () => {
-            //TODO: Handle Errors after LoginService implementation
-            LoginService.login(this.state.username,this.state.password)
+            this.props.AuthState.login(this.state.username,this.state.password)
             .then(() => {
                 this.props.onClose();
             })
@@ -180,7 +183,7 @@ function AMenu(props) {
 			<li><Link to="/archiv" onClick={props.onItemClick}>Archiv</Link></li>
 			<li><Link to="/statistik" onClick={props.onItemClick}>Statistik</Link></li>
 			<li><Link to="/tokens" onClick={props.onItemClick}>Auth-Token</Link></li>
-            { LoginService.isAdmin() && 
+            { props.AuthState.user && props.AuthState.user.admin &&
                 <React.Fragment>
                     <li><Link to="/import" onClick={props.onItemClick}>Playlist Importieren</Link></li>
                     <li><Link to="/songs" onClick={props.onItemClick}>Gesperrte Songs</Link></li>
@@ -189,6 +192,7 @@ function AMenu(props) {
                     <li><Link to="/debug" onClick={props.onItemClick}>Entwicklermenü</Link></li>
                 </React.Fragment>
             }
+            <li><Link to="#" onClick={() => {props.AuthState.logout()}}>Logout</Link></li>
         </ul>
     );
 }
