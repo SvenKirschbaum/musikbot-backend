@@ -82,7 +82,7 @@ class AppRouter extends Component {
 
     render() {
         return (
-            <Router>
+            <Router basename="/v2">
                 <AuthenticationContext.Provider value={this.state}>
                     <BaseLayout>
                         <Switch>
