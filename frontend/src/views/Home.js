@@ -386,7 +386,7 @@ function Status(props) {
                     <Col className="text-right" md="auto">Die Aktuelle Playlist umfasst { props.duration } Minuten Musik!</Col>
                 </Row>
                 <Row>
-                    <Col><a href={ props.link }>{ props.title }</a></Col>
+                    <Col>{ (props.link) ? <a href={ props.link }>{ props.title }</a> : props.title }</Col>
                 </Row>
             </Col>
         </Row>
