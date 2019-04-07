@@ -8,6 +8,7 @@ import AuthenticationContext from './components/AuthenticationContext';
 
 
 class AppRouter extends Component {
+
     constructor(props) {
         super(props);
         let loadstate = JSON.parse(localStorage.getItem('loginstate'));

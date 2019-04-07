@@ -3,7 +3,9 @@ import Container from 'react-bootstrap/Container';
 import {Link} from "react-router-dom";
 import {TransitionGroup} from "react-transition-group";
 import CSSTransition from "react-transition-group/CSSTransition";
+import FlipMove from "react-flip-move";
 import Moment from 'react-moment';
+import {DragDropContext,Droppable,Draggable} from "react-beautiful-dnd";
 
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -13,6 +15,7 @@ import Alert from "react-bootstrap/Alert";
 import AuthenticationContext from '../components/AuthenticationContext';
 import GravatarIMG from "../components/GravatarIMG";
 import AddSong from "../components/AddSong";
+import DragFixedCell from "../components/DragFixedCell";
 
 import './Home.css';
 import { FaTrashAlt } from 'react-icons/fa';
@@ -41,6 +44,9 @@ class Home extends Component {
         this.sendShuffle=this.sendShuffle.bind(this);
         this.sendDelete=this.sendDelete.bind(this);
         this.sendSong=this.sendSong.bind(this);
+        this.sendSort=this.sendSort.bind(this);
+        this.onDragEnd=this.onDragEnd.bind(this);
+        this.update=this.update.bind(this);
         this.handlefetchError=this.handlefetchError.bind(this);
     }
 
@@ -55,6 +61,15 @@ class Home extends Component {
     }
 
     componentDidMount() {
+        this.update();
+        this.intervalId = setInterval(this.update, 8000);
+    }
+
+    componentWillUnmount(){
+        clearInterval(this.intervalId);
+    }
+
+    update() {
         let headers = new Headers();
         headers.append("Content-Type", "application/json");
         if(this.context.token) headers.append("Authorization", "Bearer " + this.context.token);
@@ -72,7 +87,14 @@ class Home extends Component {
             this.setState(response);
         })
         .catch(reason => {
-            this.handlefetchError(reason);
+            clearInterval(this.intervalId);
+            this.addAlert({
+                id: Math.random().toString(36),
+                type: 'danger',
+                head: 'Fehler beim Aktualisieren der Playlist',
+                text: 'Beim Aktualisieren der Playlist ist ein Fehler aufgetreten. Das automatische Aktualisieren wurde deaktiviert. Bitte lade die Seite neu, um es wieder zu aktivieren. \n\n'+reason,
+                autoclose: false
+            });
         });
     }
 
@@ -180,6 +202,7 @@ class Home extends Component {
             headers: headers
         }).then((res) => {
             if(!res.ok) throw Error(res.statusText);
+            this.update();
         })
         .catch(reason => {
             this.handlefetchError(reason);
@@ -201,6 +224,7 @@ class Home extends Component {
         })
         .then((res) => res.json())
         .then((res) => {
+            if(res.success) this.update();
             let type = res.success ? 'success' : 'danger';
             if(res.warn && res.success) type = 'warning';
             this.addAlert({
@@ -225,6 +249,41 @@ class Home extends Component {
         });
     }
 
+    onDragEnd(result) {
+        const {destination, source} = result;
+        if(!destination) return;
+        if(destination.droppableId === source.droppableId && destination.index === source.index) return;
+
+        const newList = Array.from(this.state.playlist);
+        newList.splice(source.index,1);
+        newList.splice(destination.index, 0, this.state.playlist[source.index]);
+
+        this.setState({
+           playlist: newList
+        });
+
+        const prev = (destination.index - 1) >= 0 ? newList[destination.index - 1].id : -1;
+        const id = newList[destination.index].id;
+
+        this.sendSort(prev,id);
+    }
+
+    sendSort(prev,id) {
+        let headers = new Headers();
+        headers.append("Content-Type", "text/plain");
+        if(this.context.token) headers.append("Authorization", "Bearer " + this.context.token);
+        fetch("/api/v2/songs/"+id, {
+            method: 'PUT',
+            headers: headers,
+            body: prev
+        }).then((res) => {
+            if(!res.ok) throw Error(res.statusText);
+        })
+        .catch(reason => {
+            this.handlefetchError(reason);
+        });
+    }
+
     render() {
         return (
             <Container fluid>
@@ -238,7 +297,7 @@ class Home extends Component {
                 </Row>
                 <Status state={this.state.status} title={this.state.songtitle} link={this.state.songlink} duration={this.state.duration} />
                 {this.context.user && this.context.user.admin && <ControlElements onStart={this.sendStart} onPause={this.sendPause} onStop={this.sendStop} onSkip={this.sendSkip}/>}
-                <Playlist AuthState={this.context} onDelete={this.sendDelete} songs={this.state.playlist} />
+                <Playlist onDragEnd={this.onDragEnd} AuthState={this.context} onDelete={this.sendDelete} songs={this.state.playlist} />
                 <BottomControl onShuffle={this.sendShuffle} />
                 <AddSong handlefetchError={this.handlefetchError} sendSong={this.sendSong}/>
             </Container>
@@ -260,17 +319,28 @@ function Playlist(props) {
                         { props.AuthState.user && props.AuthState.user.admin && <th className="delete"></th>}
                     </tr>
                 </thead>
-                <tbody>
-                    <TransitionGroup component={null}>
-                        {props.songs.map((song) => {
-                            return (
-                                <CSSTransition key={song.id} timeout={300} classNames="song-anim">
-                                    <Song AuthState={props.AuthState} onDelete={props.onDelete} key={song.id} {...song} />
-                                </CSSTransition>
-                            );
-                        })}
-                    </TransitionGroup>
-                </tbody>
+                <DragDropContext
+                    onDragEnd={props.onDragEnd}
+                >
+                    <Droppable droppableId="droppable">
+                        { (provided) => (
+                            <tbody ref={provided.innerRef} {...provided.droppableProps} style={{position: 'relative'}}>
+                                <FlipMove typeName={null} enterAnimation="fade" leaveAnimation="none" duration={400}>
+                                    {props.songs.map((song,index) => {
+                                        return (
+                                            <Draggable isDragDisabled={!(props.AuthState.user && props.AuthState.user.admin)} key={song.id} draggableId={song.id} index={index}>
+                                                {(provided, snapshot) => (
+                                                    <Song AuthState={props.AuthState} onDelete={props.onDelete} key={song.id} {...song} provided={provided} isDragging={snapshot.isDragging} />
+                                                )}
+                                            </Draggable>
+                                        );
+                                    })}
+                                    {provided.placeholder}
+                                </FlipMove>
+                            </tbody>
+                        )}
+                    </Droppable>
+                </DragDropContext>
             </table>
         </Row>
     );
@@ -278,13 +348,13 @@ function Playlist(props) {
 
 function Song(props) {
     return (
-        <tr className="song">
-            <td className="d-none d-sm-table-cell">{ props.id }</td>
-            <td className="d-none d-md-table-cell"><Moment format="DD.MM.YYYY - HH:mm:ss">{ props.insertedAt }</Moment></td>
-            <td className="d-none d-sm-inline-flex"><GravatarIMG>{ props.gravatarId }</GravatarIMG><Link to={`/users/${props.authorLink}`}>{ props.author }</Link></td>
-            <td className="nolink songtitle"><a href={ props.link }>{ props.title }</a></td>
-            <td className="d-none d-sm-table-cell songlink"><a href={props.link}>{ props.link }</a></td>
-            { props.AuthState.user && props.AuthState.user.admin && <td className="d-inline-flex deleteicon" onClick={(e) => {props.onDelete(props.id,e.shiftKey)}}><FaTrashAlt /></td>}
+        <tr className={props.isDragging ? "song dragging" : "song"} {...props.provided.draggableProps} ref={props.provided.innerRef}>
+            <DragFixedCell isDragOccurring={props.isDragging} className="d-none d-sm-table-cell" addToElem={props.provided.dragHandleProps}>{ props.id }</DragFixedCell>
+            <DragFixedCell isDragOccurring={props.isDragging} className="d-none d-md-table-cell"><Moment format="DD.MM.YYYY - HH:mm:ss">{ props.insertedAt }</Moment></DragFixedCell>
+            <DragFixedCell isDragOccurring={props.isDragging} className="d-none d-sm-inline-flex"><GravatarIMG>{ props.gravatarId }</GravatarIMG><Link to={`/users/${props.authorLink}`}>{ props.author }</Link></DragFixedCell>
+            <DragFixedCell isDragOccurring={props.isDragging} className="nolink songtitle"><a href={ props.link }>{ props.title }</a></DragFixedCell>
+            <DragFixedCell isDragOccurring={props.isDragging} className="d-none d-sm-table-cell songlink"><a href={props.link}>{ props.link }</a></DragFixedCell>
+            { props.AuthState.user && props.AuthState.user.admin && <DragFixedCell isDragOccurring={props.isDragging} className="d-inline-flex deleteicon" onClick={(e) => {props.onDelete(props.id,e.shiftKey)}}><FaTrashAlt /></DragFixedCell>}
         </tr>
     );
 }
