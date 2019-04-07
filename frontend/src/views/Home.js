@@ -68,6 +68,7 @@ class Home extends Component {
         })
         .then(res => res.json())
         .then(response => {
+            if(response.songtitle === null) response.songtitle = "Kein Song";
             this.setState(response);
         })
         .catch(reason => {
