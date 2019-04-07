@@ -36,11 +36,11 @@ class AppRouter extends Component {
 
     login(username, password) {
         return new Promise((resolve,reject) => {
-            fetch("/api/login", {
+            let headers = new Headers();
+            headers.append("Content-Type", "application/json");
+            fetch("/api/v2/login", {
                 method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: headers,
                 body: JSON.stringify({
                     'username': username,
                     'password': password

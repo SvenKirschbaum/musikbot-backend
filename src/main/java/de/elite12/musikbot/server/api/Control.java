@@ -77,7 +77,7 @@ public class Control {
 		
 		if(ids.size() == 0) return;
 		
-		for(int i = 0; i<ids.size(); i +=2 ) {
+		for(int i = 0; i<(ids.size()-1); i +=2 ) {
 			Pair<Long, Long> a = ids.get(i);
 			Pair<Long, Long> b = ids.get(i+1);
 			

@@ -36,7 +36,7 @@ public class UnifiedTrack {
 					.setFields(
 							"items/status/uploadStatus,items/status/privacyStatus,items/contentDetails/duration,items/snippet/categoryId,items/snippet/title,items/contentDetails/regionRestriction")
 					.execute().getItems();
-			if (list != null) {
+			if (list != null && !list.isEmpty()) {
 				if (!list.get(0).getStatus().getUploadStatus().equals("processed")
 						|| list.get(0).getStatus().getUploadStatus().equals("private")) {
 					throw new TrackNotAvailableException("private/processing");

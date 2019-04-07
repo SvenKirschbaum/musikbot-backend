@@ -47,8 +47,8 @@ class Footer extends Component {
     render() {
         return (
             <div>
-                <img className="spotify-logo" alt="spotify Logo" src={spotifylogo} />
-                <img className="react-logo" alt="HTML5 Logo" src={reactlogo} />
+                <img className="spotify-logo d-none d-md-block" alt="spotify Logo" src={spotifylogo} />
+                <img className="react-logo d-none d-md-block" alt="HTML5 Logo" src={reactlogo} />
                 <CSSTransition
                     classNames="slideright"
                     timeout={300}
@@ -183,7 +183,7 @@ function AMenu(props) {
             <li><Link to="/" onClick={props.onItemClick}>Startseite</Link></li>
 			<li><Link to="/archiv" onClick={props.onItemClick}>Archiv</Link></li>
 			<li><Link to="/statistik" onClick={props.onItemClick}>Statistik</Link></li>
-			<li><Link to="/tokens" onClick={props.onItemClick}>Auth-Token</Link></li>
+            { props.AuthState.loggedin && <li><Link to="/tokens" onClick={props.onItemClick}>Auth-Token</Link></li>}
             { props.AuthState.user && props.AuthState.user.admin &&
                 <React.Fragment>
                     <li><Link to="/import" onClick={props.onItemClick}>Playlist Importieren</Link></li>
@@ -193,7 +193,7 @@ function AMenu(props) {
                     <li><Link to="/debug" onClick={props.onItemClick}>Entwicklermenü</Link></li>
                 </React.Fragment>
             }
-            <li><Link to="#" onClick={() => {props.AuthState.logout()}}>Logout</Link></li>
+            { props.AuthState.loggedin && <li><Link to="#" onClick={() => {props.onItemClick(); props.AuthState.logout()}}>Logout</Link></li>}
         </ul>
     );
 }

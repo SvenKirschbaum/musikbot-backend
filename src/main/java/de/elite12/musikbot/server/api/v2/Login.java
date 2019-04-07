@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @RestController
-@RequestMapping("/api/login")
+@RequestMapping("/api/v2/login")
 public class Login {
 
     @Autowired

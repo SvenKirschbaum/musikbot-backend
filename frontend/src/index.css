@@ -9,6 +9,7 @@ body {
   background-color: #333;
   background-image: url(./res/bgtexture.png);
   cursor: default;
+  padding-bottom: 50px;
 }
 
 code {
@@ -38,7 +39,7 @@ footer a, footer a:hover {
 }
 
 .spotify-logo, .react-logo {
-    position: absolute;
+    position: fixed;
     z-index: -10;
     height: 50px;
     margin: 0px 5px 5px 5px;

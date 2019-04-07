@@ -3,6 +3,7 @@ package de.elite12.musikbot.server.services;
 import java.io.IOException;
 import java.util.Date;
 
+import de.elite12.musikbot.server.data.createSongResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -185,5 +186,92 @@ public class SongService {
 			logger.debug("Invalid URL",e);
 			return new ResponseEntity<String>("URL ungültig",HttpStatus.BAD_REQUEST);
 		}
+    }
+    public createSongResponse addSongv2(String url, User user, GuestSession gi) {
+        try {
+            logger.debug("Trying to Add Song "+url);
+            UnifiedTrack ut = UnifiedTrack.fromURL(url, youtube, spotify);
+            String notice = null;
+
+            if (lockedrepository.countByUrl(ut.getLink()) > 0) {
+                if (user != null && user.isAdmin()) {
+                    logger.debug("Song is locked, but User is Admin, creating Notice");
+                    notice = "Hinweis: Dieser Song wurde gesperrt!";
+                } else {
+                    logger.debug("Song is locked, denying");
+                    return new createSongResponse(false,false,"Dieser Song wurde leider gesperrt!");
+                }
+            }
+
+            if(songrepository.countByPlayed(false) >= 24) {
+                logger.debug("Adding Song aborted, Playlist is full");
+                return new createSongResponse(false,false,"Die Playlist ist leider voll!");
+            }
+
+            if(songrepository.countByLinkAndPlayed(ut.getLink(),false) > 0) {
+                logger.debug("Adding Song aborted, Song allready in Playlist");
+                return new createSongResponse(false,false,"Dieser Song befindet sich bereits in der Playlist!");
+            }
+
+            Long count = user != null ? songrepository.countByUserAuthor(user) : songrepository.countByGuestAuthor(gi.getId());
+            if(count > 2 && (user == null || !user.isAdmin())) {
+                logger.debug("Adding Song aborted, User reached maximum");
+                return new createSongResponse(false,false,"Du hast bereits die maximale Anzahl an Songs eingestellt!");
+            }
+
+            if(ut.getDuration() > 600 && (user == null || !user.isAdmin())) {
+                logger.debug("Adding Song aborted, Song to long");
+                return new createSongResponse(false,false,"Dieses Video ist leider zu lang!");
+            }
+            if (!config.getYoutube().getCategories().contains(ut.getCategoryId())) {
+                if (user != null && user.isAdmin()) {
+                    logger.debug("Song is not in allowed Categorys, but User is Admin, creating Notice");
+                    notice = "Hinweis: Dieser Song befindet sich nicht in einer der erlaubten Kategorien!";
+                } else {
+                    logger.debug("Song is not in allowed Categorys, denying");
+                    return new createSongResponse(false,false,"Dieses Song gehört nicht zu einer der erlaubten Kategorien!");
+                }
+            }
+
+            Song s = new Song();
+            s.setPlayed(false);
+            s.setLink(ut.getLink());
+            s.setTitle(ut.getTitle());
+            s.setDuration(ut.getDuration());
+            s.setInsertedAt(new Date());
+
+            if(user != null) {
+                s.setUserAuthor(user);
+            }
+            else {
+                s.setGuestAuthor(gi.getId());
+            }
+
+
+            s = songrepository.save(s);
+
+            logger.info("Succesfully added Song (ID: " + s.getId() + ") to Playlist: " + ut.getId()
+                    + " by " + (user != null ? ("User: " + user.getName()) : ("Guest: " + gi.getId())));
+
+
+
+            client.notifynewSong();
+
+            if(notice != null) {
+                return new createSongResponse(true,true,notice);
+            }
+            else {
+                return new createSongResponse(true,false,"Song erfolgreich hinzugefügt");
+            }
+        } catch (IOException e) {
+            logger.error("Error adding Song" ,e);
+            return new createSongResponse(false,false, "Unbekannter Fehler");
+        } catch (TrackNotAvailableException e) {
+            logger.debug("Track not found",e);
+            return new createSongResponse(false,false, "Song nicht verfügbar: " + e.getMessage());
+        } catch (InvalidURLException e) {
+            logger.debug("Invalid URL",e);
+            return new createSongResponse(false,false, "URL ungültig");
+        }
     }
 }
