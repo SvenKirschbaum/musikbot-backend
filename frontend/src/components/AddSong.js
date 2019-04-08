@@ -119,7 +119,7 @@ class AddSong extends Component {
 
         return (
             <Row className="space-top justify-content-center">
-                <Col className="addSong" xl={{span: 3}} md={{span: 6}} xs={{span: 11}}>
+                <Col className="addSong" xl={{span: 4}} md={{span: 6}} xs={{span: 11}}>
                     <Row noGutters>
                         <form onSubmit={this.handleSubmit}>
                             <Col xs={{span:12}} md={{span:8}}>
