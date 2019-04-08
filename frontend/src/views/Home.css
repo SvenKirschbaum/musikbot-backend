@@ -265,11 +265,12 @@
     padding:0;
     margin-top: 0.5rem;
     background-color: white;
-    width: 40rem;
+    width: 35rem;
     text-overflow: ellipsis;
     list-style: none;
     overflow-y: auto;
     max-height: 20em;
+    z-index: 100;
 }
 .ac-entry {
     position: relative;
@@ -353,4 +354,8 @@
 .dragging {
     background-color: #ffab40a1;
     display: table;
+}
+.lr-space {
+    margin-left: 10px;
+    margin-right: 10px;
 }

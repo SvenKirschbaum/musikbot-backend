@@ -308,7 +308,7 @@ class Home extends Component {
 function Playlist(props) {
     return (
         <Row className="space-top justify-content-center">
-            <table className="playlist col-xl-9 col-lg-10 col-md-12">
+            <table className="playlist col-xl-9 col-lg-10 col-md-12 lr-space">
                 <thead>
                     <tr className="header">
                         <th className="d-none d-sm-table-cell songid">Song ID</th>
@@ -411,7 +411,7 @@ function ControlElements(props) {
 function BottomControl(props) {
     return (
         <Row className="justify-content-center">
-            <Col className="BottomControl" xl={{span: 9}} lg={{span: 10}} md={{span: 12}}>
+            <Col className="BottomControl lr-space" xl={{span: 9}} lg={{span: 10}} md={{span: 12}}>
                 <Row noGutters={false}>
                     <Col xs={{span: 6}}><Link to="/archiv">Zum Archiv</Link></Col>
                     <Col xs={{span: 6}}><Button onClick={props.onShuffle}>Shuffle</Button></Col>
