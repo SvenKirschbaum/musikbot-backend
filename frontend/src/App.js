@@ -5,6 +5,7 @@ import NoMatch from './components/NoMatch';
 import BaseLayout from './components/BaseLayout';
 import Home from './views/Home';
 import Archiv from './views/Archiv';
+import Token from './views/Token';
 import AuthenticationContext from './components/AuthenticationContext';
 
 
@@ -85,7 +86,7 @@ class AppRouter extends Component {
         let headers = new Headers();
         headers.append("Content-Type", "application/json");
         headers.append("Authorization", "Bearer " + this.state.token);
-        fetch("/api/user/self", {
+        fetch("/api/v2/user/self", {
             method: 'GET',
             headers: headers
         })
@@ -109,6 +110,7 @@ class AppRouter extends Component {
                             <Route path="/" exact component={Home} />
                             <Route path="/demo" component={Demo} />
                             <Route path="/archiv/:page?" component={Archiv} />
+                            <Route path="/token" component={Token} />
                             <Route component={NoMatch} />
                         </Switch>
                     </BaseLayout>
