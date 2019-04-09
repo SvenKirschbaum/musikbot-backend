@@ -1,8 +1,6 @@
 import React, {Component} from 'react';
 import Container from 'react-bootstrap/Container';
 import {Link} from "react-router-dom";
-import {TransitionGroup} from "react-transition-group";
-import CSSTransition from "react-transition-group/CSSTransition";
 import FlipMove from "react-flip-move";
 import Moment from 'react-moment';
 import {DragDropContext,Droppable,Draggable} from "react-beautiful-dnd";
@@ -10,11 +8,12 @@ import {DragDropContext,Droppable,Draggable} from "react-beautiful-dnd";
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
-import Alert from "react-bootstrap/Alert";
 
 import AuthenticationContext from '../components/AuthenticationContext';
 import GravatarIMG from "../components/GravatarIMG";
 import AddSong from "../components/AddSong";
+import Header from "../components/Header";
+import Alerts from "../components/Alerts";
 import DragFixedCell from "../components/DragFixedCell";
 
 import './Home.css';
@@ -35,6 +34,9 @@ class Home extends Component {
             alerts: []
         };
 
+        this.statebuffer = null;
+        this.isdragging = false;
+
         this.addAlert=this.addAlert.bind(this);
         this.removeAlert=this.removeAlert.bind(this);
         this.sendStart=this.sendStart.bind(this);
@@ -45,19 +47,10 @@ class Home extends Component {
         this.sendDelete=this.sendDelete.bind(this);
         this.sendSong=this.sendSong.bind(this);
         this.sendSort=this.sendSort.bind(this);
+        this.onDragStart=this.onDragStart.bind(this);
         this.onDragEnd=this.onDragEnd.bind(this);
         this.update=this.update.bind(this);
         this.handlefetchError=this.handlefetchError.bind(this);
-    }
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        let diff = this.state.alerts.filter(x => !prevState.alerts.includes(x));
-        // eslint-disable-next-line
-        for (const [key,value] of Object.entries(diff)) {
-            if(value.autoclose) {
-                setTimeout(() => {this.removeAlert(value.id)},3000);
-            }
-        }
     }
 
     componentDidMount() {
@@ -84,7 +77,12 @@ class Home extends Component {
         .then(res => res.json())
         .then(response => {
             if(response.songtitle === null) response.songtitle = "Kein Song";
-            this.setState(response);
+            if(this.isdragging) {
+                this.statebuffer = response;
+            }
+            else {
+                this.setState(response);
+            }
         })
         .catch(reason => {
             clearInterval(this.intervalId);
@@ -249,7 +247,18 @@ class Home extends Component {
         });
     }
 
+    onDragStart(start,provided) {
+        this.isdragging = true;
+    }
+
     onDragEnd(result) {
+        this.isdragging = false;
+        if(this.statebuffer !== null) {
+            this.setState(this.statebuffer);
+            this.statebuffer = null;
+        }
+
+
         const {destination, source} = result;
         if(!destination) return;
         if(destination.droppableId === source.droppableId && destination.index === source.index) return;
@@ -287,17 +296,11 @@ class Home extends Component {
     render() {
         return (
             <Container fluid>
-                <Row className="justify-content-center">
-                    <Col xl={{span: 5}} md={{span: 8}} xs={{span: 10}} className="alerts">
-                        <Alerts onClose={this.removeAlert}>{this.state.alerts}</Alerts>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col className="Header text-center"><span>Elite12 // </span><span>Radio</span></Col>
-                </Row>
+                <Alerts onClose={this.removeAlert}>{this.state.alerts}</Alerts>
+                <Header />
                 <Status state={this.state.status} title={this.state.songtitle} link={this.state.songlink} duration={this.state.duration} />
                 {this.context.user && this.context.user.admin && <ControlElements onStart={this.sendStart} onPause={this.sendPause} onStop={this.sendStop} onSkip={this.sendSkip}/>}
-                <Playlist onDragEnd={this.onDragEnd} AuthState={this.context} onDelete={this.sendDelete} songs={this.state.playlist} />
+                <Playlist onDragStart={this.onDragStart} onDragEnd={this.onDragEnd} AuthState={this.context} onDelete={this.sendDelete} songs={this.state.playlist} />
                 <BottomControl onShuffle={this.sendShuffle} />
                 <AddSong handlefetchError={this.handlefetchError} sendSong={this.sendSong}/>
             </Container>
@@ -320,11 +323,12 @@ function Playlist(props) {
                     </tr>
                 </thead>
                 <DragDropContext
+                    onDragStart={props.onDragStart}
                     onDragEnd={props.onDragEnd}
                 >
                     <Droppable droppableId="droppable">
                         { (provided) => (
-                            <tbody ref={provided.innerRef} {...provided.droppableProps} style={{position: 'relative'}}>
+                            <tbody ref={provided.innerRef} {...provided.droppableProps}>
                                 <FlipMove typeName={null} enterAnimation="fade" leaveAnimation="none" duration={400}>
                                     {props.songs.map((song,index) => {
                                         return (
@@ -351,7 +355,7 @@ function Song(props) {
         <tr className={props.isDragging ? "song dragging" : "song"} {...props.provided.draggableProps} ref={props.provided.innerRef}>
             <DragFixedCell isDragOccurring={props.isDragging} className="d-none d-sm-table-cell" addToElem={props.provided.dragHandleProps}>{ props.id }</DragFixedCell>
             <DragFixedCell isDragOccurring={props.isDragging} className="d-none d-md-table-cell"><Moment format="DD.MM.YYYY - HH:mm:ss">{ props.insertedAt }</Moment></DragFixedCell>
-            <DragFixedCell isDragOccurring={props.isDragging} className="d-none d-sm-inline-flex"><GravatarIMG>{ props.gravatarId }</GravatarIMG><Link to={`/users/${props.authorLink}`}>{ props.author }</Link></DragFixedCell>
+            <DragFixedCell isDragOccurring={props.isDragging} className="d-none d-sm-inline-flex author"><GravatarIMG>{ props.gravatarId }</GravatarIMG><Link to={`/users/${props.authorLink}`}>{ props.author }</Link></DragFixedCell>
             <DragFixedCell isDragOccurring={props.isDragging} className="nolink songtitle"><a href={ props.link }>{ props.title }</a></DragFixedCell>
             <DragFixedCell isDragOccurring={props.isDragging} className="d-none d-sm-table-cell songlink"><a href={props.link}>{ props.link }</a></DragFixedCell>
             { props.AuthState.user && props.AuthState.user.admin && <DragFixedCell isDragOccurring={props.isDragging} className="d-inline-flex deleteicon" onClick={(e) => {props.onDelete(props.id,e.shiftKey)}}><FaTrashAlt /></DragFixedCell>}
@@ -359,31 +363,13 @@ function Song(props) {
     );
 }
 
-function Alerts(props) {
-    return (
-        <TransitionGroup component={null}>
-            {props.children.map((alert) => {
-                return (
-                    <CSSTransition key={alert.id} timeout={300} classNames="slidedown">
-                        <Alert dismissible variant={alert.type} onClose={() => {props.onClose(alert.id)}}>
-                            {alert.head && <Alert.Heading>{alert.head}</Alert.Heading>}
-                                {alert.text}
-                        </Alert>
-                    </CSSTransition>
-                );
-            })}
-        </TransitionGroup>
-    );
-}
-
-
 function Status(props) {
     return (
         <Row className="justify-content-center">
             <Col className="Status" xl={{span: 5}} md={{span: 8}} xs={{span: 10}}>
                 <Row>
                     <Col>{ props.state }</Col>
-                    <Col className="text-right" md="auto">Die Aktuelle Playlist umfasst { props.duration } Minuten Musik!</Col>
+                    <Col className="text-right" xs="auto"><span className="d-none d-lg-inline">Die Aktuelle Playlist umfasst </span>{ props.duration } Minuten<span className="d-none d-lg-inline"> Musik!</span></Col>
                 </Row>
                 <Row>
                     <Col>{ (props.link) ? <a href={ props.link }>{ props.title }</a> : props.title }</Col>

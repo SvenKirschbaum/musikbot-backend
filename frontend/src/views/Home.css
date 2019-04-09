@@ -1,17 +1,3 @@
-.Header {
-    line-height: 64px;
-    text-transform: uppercase;
-    font-size: 2.4em;
-    text-shadow: 0 -1px 0 #111;
-    padding: 16px 0;
-    font-family: "Open Sans", Arial, Helvetica, sans-serif;
-}
-.Header *:first-child {
-    color: rgb(128,93,55);
-}
-.Header *:last-child {
-    color: rgb(249,235,198);
-}
 .Status {
     padding: 9px;
     background-color: #FFAB40;
@@ -87,47 +73,14 @@
     color: #333!important;
     transition: none;
 }
-.playlist {
-    font-size: 14px;
-    box-sizing: border-box;
-    line-height: 1.7em;
-    color: #212121;
-    text-shadow: none;
-    background-color: #B6B6B6;
-    background-image: url(../res/bgtexture.png);
-    box-shadow: 0px 0px 60px 5px rgba(0,0,0,0.5);
-    padding: 0;
-    text-align: center;
-}
-.playlist .header {
-    background-color: #121212;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    color: #BDBDBD;
-    margin: 0;
-}
-.space-top {
-    margin-top: 1.5em;
-}
+
 .song {
     white-space: nowrap;
     background-color: #B6B6B6;
     color: #212121;
     margin: 0;
 }
-.playlist a {
-    color: #555;
-}
-.playlist a:hover {
-    color: #555;
-}
-.playlist .songlink, .playlist .songtitle {
-    text-align: left;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    max-width: 20em;
-}
+
 
 .nolink a {
     color: #212121;
@@ -137,9 +90,7 @@
     color: #212121;
     text-decoration: none;
 }
-.playlist img {
-    margin-right: 1ch;
-}
+
 .addSong {
     vertical-align: middle;
     border-radius: 4px;
@@ -218,46 +169,11 @@
     background-color: #6a6a6a;
     outline: none;
 }
-.playlist .songid {
-    width: 5em;
-}
-.playlist .insertat {
-    width: 10em;
-}
-.playlist .author {
-    width: 10em;
-}
-.playlist .delete {
-    width: 2em;
-}
-.slidedown-enter {
-    opacity: 0;
-}
-.slidedown-enter-active {
-    opacity: 1;
-    transition: all 300ms;
-}
-.slidedown-exit {
-    opacity: 1;
-}
-.slidedown-exit-active {
-    opacity: 0;
-    transition: all 300ms;
-}
 .deleteicon {
     cursor: pointer;
 }
 .addSong form {
     display: contents;
-}
-.alerts {
-    position:fixed;
-    z-index: 9000;
-    margin-top: 1em;
-}
-.alerts .alert {
-    box-shadow: 0px 0px 1rem 8px rgba(0,0,0,0.5);
-    white-space: pre-line;
 }
 .react-autosuggest__suggestions-list {
     position: absolute !important;

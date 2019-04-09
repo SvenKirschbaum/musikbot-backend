@@ -1,0 +1,21 @@
+.playlist .header {
+    background-color: #121212;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    color: #BDBDBD;
+    margin: 0;
+}
+.Header {
+    line-height: 64px;
+    text-transform: uppercase;
+    font-size: 2.4em;
+    text-shadow: 0 -1px 0 #111;
+    padding: 16px 0;
+    font-family: "Open Sans", Arial, Helvetica, sans-serif;
+}
+.Header *:first-child {
+    color: rgb(128,93,55);
+}
+.Header *:last-child {
+    color: rgb(249,235,198);
+}

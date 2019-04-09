@@ -18,6 +18,7 @@
     "react-autosuggest": "^9.4.3",
     "react-beautiful-dnd": "^10.1.1",
     "react-flip-move": "^3.0.3",
+    "react-js-pagination": "^3.0.2",
     "throttle-debounce": "^2.1.0"
   },
   "scripts": {

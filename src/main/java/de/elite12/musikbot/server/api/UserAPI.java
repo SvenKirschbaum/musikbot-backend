@@ -10,12 +10,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.data.entity.User;
@@ -111,6 +108,13 @@ public class UserAPI {
             	return new ResponseEntity<>("Attribut ungültig",HttpStatus.BAD_REQUEST);
             }
         }
+    }
+
+    @GetMapping(path = "self")
+    @PreAuthorize("isAuthenticated()")
+    public User getSelf() {
+        User user = ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        return user;
     }
     
     private static class Email {

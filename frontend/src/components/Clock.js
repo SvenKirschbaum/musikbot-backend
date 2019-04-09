@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Moment from "react-moment";
 
 class Clock extends Component {
   constructor(props) {
@@ -23,7 +24,7 @@ class Clock extends Component {
 
   render() {
     return (
-        <span className={ this.props.className }>{this.state.date.toLocaleTimeString("de", {hour: 'numeric', minute: 'numeric'})}</span>
+        <span className={ this.props.className }><Moment format="HH:mm">{ this.state.date }</Moment></span>
     );
   }
 }

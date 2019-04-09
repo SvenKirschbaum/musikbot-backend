@@ -4,6 +4,7 @@ import Demo from './views/Demo';
 import NoMatch from './components/NoMatch';
 import BaseLayout from './components/BaseLayout';
 import Home from './views/Home';
+import Archiv from './views/Archiv';
 import AuthenticationContext from './components/AuthenticationContext';
 
 
@@ -15,24 +16,25 @@ class AppRouter extends Component {
         if(loadstate) {
             this.state = {
                 loggedin: loadstate.loggedin,
-                user: loadstate.user,
+                user: {},
                 token: loadstate.token
             };
         }
         else {
             this.state = {
                 loggedin: false,
-                user: null,
+                user: {},
                 token: null
             };
         }
 
         this.login = this.login.bind(this);
         this.logout = this.logout.bind(this);
+        this.loadUser = this.loadUser.bind(this);
+    }
 
-
-        this.state.login = this.login;
-        this.state.logout = this.logout;
+    componentDidMount() {
+        if(this.state.loggedin) this.loadUser();
     }
 
     login(username, password) {
@@ -52,14 +54,13 @@ class AppRouter extends Component {
                     if(response.success) {
                         this.setState({
                             loggedin: true,
-                            user: response.user,
                             token: response.token
                         });
                         localStorage.setItem('loginstate', JSON.stringify({
                             loggedin: true,
-                            token: response.token,
-                            user: response.user
+                            token: response.token
                         }));
+                        this.loadUser();
                         resolve();
                     }
                     else {
@@ -80,14 +81,34 @@ class AppRouter extends Component {
         localStorage.removeItem('loginstate');
     }
 
+    loadUser() {
+        let headers = new Headers();
+        headers.append("Content-Type", "application/json");
+        headers.append("Authorization", "Bearer " + this.state.token);
+        fetch("/api/user/self", {
+            method: 'GET',
+            headers: headers
+        })
+        .then((res) => res.json())
+        .then((res) => {
+            this.setState({
+                user: res
+            });
+        })
+        .catch((res) => {
+           console.error("Error loading user" + res);
+        });
+    }
+
     render() {
         return (
             <Router>
-                <AuthenticationContext.Provider value={this.state}>
+                <AuthenticationContext.Provider value={{ ...this.state, login: this.login, logout: this.logout}}>
                     <BaseLayout>
                         <Switch>
                             <Route path="/" exact component={Home} />
                             <Route path="/demo" component={Demo} />
+                            <Route path="/archiv/:page?" component={Archiv} />
                             <Route component={NoMatch} />
                         </Switch>
                     </BaseLayout>

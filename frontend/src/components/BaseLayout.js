@@ -85,7 +85,7 @@ function LoginFooter(props) {
         return (
             <span className="LoginFooter">
                 <Link to={`/users/${props.AuthState.user.name}`}>
-                    <GravatarIMG>{(props.AuthState.user ? props.AuthState.user.gravatarId : "")}</GravatarIMG>
+                    <GravatarIMG>{props.AuthState.user.gravatarId}</GravatarIMG>
                     <span><span className="d-none d-sm-inline">Willkommen </span>{props.AuthState.user.name}</span>
                 </Link>
                 <Link to="#" onClick={props.onMenu}>Menü</Link>

@@ -101,7 +101,7 @@ footer a, footer a:hover {
 
 .vertical-center {
     min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
-    min-height: 100vh; /* These two lines are counted as one :-)       */
+    min-height: 90vh; /* These two lines are counted as one :-)       */
 
     display: flex;
     align-items: center;
@@ -156,4 +156,56 @@ footer a, footer a:hover {
 .AMenu a {
     color: inherit;
 }
-
+.space-top {
+    margin-top: 1.5em;
+}
+.playlist {
+    font-size: 14px;
+    box-sizing: border-box;
+    line-height: 1.7em;
+    color: #212121;
+    text-shadow: none;
+    background-color: #B6B6B6;
+    background-image: url(res/bgtexture.png);
+    box-shadow: 0px 0px 60px 5px rgba(0,0,0,0.5);
+    padding: 0;
+    text-align: center;
+    user-select: none;
+}
+.playlist {
+    background-color: #121212;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    color: #BDBDBD;
+    margin: 0;
+}
+.playlist a {
+    color: #555;
+}
+.playlist a:hover {
+    color: #555;
+}
+.playlist .songlink, .playlist .songtitle {
+    text-align: left;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 20em;
+}
+.playlist img {
+     margin-right: 1ch;
+}
+.playlist .songid {
+    width: 5em;
+}
+.playlist .insertat {
+    width: 10em;
+}
+.playlist .author {
+    width: 10em;
+    text-align: left;
+    padding-left: 1em;
+}
+.playlist .delete {
+    width: 2em;
+}

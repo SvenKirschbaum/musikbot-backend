@@ -23,12 +23,12 @@ public class Login {
     public LoginResponse loginAction(@RequestBody LoginRequest request) {
         User u = userservice.findUserbyName(request.getUsername());
         if (u == null) {
-            return new LoginResponse(false, "User not found", null, null);
+            return new LoginResponse(false, "User not found", null);
         }
         if (userservice.checkPassword(u, request.getPassword())) {
-            return new LoginResponse(true, "", userservice.getLoginToken(u), u);
+            return new LoginResponse(true, "", userservice.getLoginToken(u));
         } else {
-            return new LoginResponse(false, "Password wrong", null, null);
+            return new LoginResponse(false, "Password wrong", null);
         }
     }
 
@@ -39,7 +39,6 @@ public class Login {
         private boolean success;
         private String error;
         private String token;
-        private User user;
     }
 
     @Getter
