@@ -11,7 +11,11 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ArchivDTO {
+
     private int page;
+
     private int pages;
+
     private Song[] list;
+
 }
