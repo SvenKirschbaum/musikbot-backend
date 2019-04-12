@@ -6,6 +6,7 @@ import BaseLayout from './components/BaseLayout';
 import Home from './views/Home';
 import Archiv from './views/Archiv';
 import Token from './views/Token';
+import Debug from './views/Debug';
 import AuthenticationContext from './components/AuthenticationContext';
 
 
@@ -111,6 +112,7 @@ class AppRouter extends Component {
                             <Route path="/demo" component={Demo} />
                             <Route path="/archiv/:page?" component={Archiv} />
                             <Route path="/token" component={Token} />
+                            <Route path="/debug" component={Debug} />
                             <Route component={NoMatch} />
                         </Switch>
                     </BaseLayout>
