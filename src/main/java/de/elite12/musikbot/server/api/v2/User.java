@@ -1,10 +1,8 @@
 package de.elite12.musikbot.server.api.v2;
 
+import de.elite12.musikbot.server.api.dto.TokenDTO;
 import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.services.UserService;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +20,6 @@ import java.util.Set;
 @RequestMapping("/api/v2/user")
 @RestController
 public class User {
-    
-    @Autowired
-    HttpServletRequest req;
     
     @Autowired
     UserService userservice;
@@ -131,13 +126,6 @@ public class User {
         return new TokenDTO(userservice.getExternalToken(((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser()));
     }
 
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    private static class TokenDTO {
-        private String token;
-    }
-    
     private static class Email {
     	@javax.validation.constraints.Email
     	String v;

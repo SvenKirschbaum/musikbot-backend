@@ -1,11 +1,8 @@
 package de.elite12.musikbot.server.api.v2;
 
+import de.elite12.musikbot.server.api.dto.GapcloserDTO;
 import de.elite12.musikbot.server.services.GapcloserService;
 import de.elite12.musikbot.shared.SongIDParser;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,12 +39,4 @@ public class Gapcloser {
         return getAction();
     }
 
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    private static class GapcloserDTO {
-        private String playlist;
-        private GapcloserService.Mode mode;
-    }
 }

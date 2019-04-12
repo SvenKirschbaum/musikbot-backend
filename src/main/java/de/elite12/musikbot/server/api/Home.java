@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import javax.persistence.Tuple;
 
+import de.elite12.musikbot.server.api.dto.SearchResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,18 +27,8 @@ public class Home {
     	
     		Iterable<Tuple> res = songrepository.findSearchResult(term);
     		ArrayList<SearchResult> al = new ArrayList<>();
-    		res.forEach((Tuple t) -> {
-    			al.add(new SearchResult((String) t.get(1), (String) t.get(0)));
-    		});
+    		res.forEach(t -> al.add(new SearchResult(t.get(1,String.class), t.get(0,String.class))));
     		
     		return al.toArray(new SearchResult[0]);
     }
-    
-    @Getter
-	@Setter
-	@AllArgsConstructor
-	public static class SearchResult {
-		private String value;
-		private String label;
-	}
 }
