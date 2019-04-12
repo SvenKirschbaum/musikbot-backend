@@ -21,6 +21,8 @@ class Token extends Component {
             alerts: []
         };
 
+        this.addAlert=this.addAlert.bind(this);
+        this.removeAlert=this.removeAlert.bind(this);
         this.onReset = this.onReset.bind(this);
     }
 

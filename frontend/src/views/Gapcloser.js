@@ -8,9 +8,9 @@ import AuthenticationContext from '../components/AuthenticationContext';
 import Header from '../components/Header';
 import Alerts from '../components/Alerts';
 
-import './Log.css';
+import './Gapcloser.css';
 
-class Log extends Component {
+class Gapcloser extends Component {
 
     static contextType = AuthenticationContext;
 
@@ -18,12 +18,14 @@ class Log extends Component {
         super(props);
         this.state = {
             alerts: [],
-            log: ""
+            playlist: "",
+            mode : ''
         };
 
         this.addAlert=this.addAlert.bind(this);
         this.removeAlert=this.removeAlert.bind(this);
         this.load = this.load.bind(this);
+        this.save = this.save.bind(this);
     }
 
     componentDidMount() {
@@ -54,7 +56,7 @@ class Log extends Component {
         let headers = new Headers();
         headers.append("Content-Type", "application/json");
         if(this.context.token) headers.append("Authorization", "Bearer " + this.context.token);
-        fetch("/api/log", {
+        fetch("/api/v2/gapcloser", {
             method: 'GET',
             headers: headers
         })
@@ -62,8 +64,38 @@ class Log extends Component {
             if(!res.ok) throw Error(res.statusText);
             return res;
         })
+        .then((res) => res.json())
         .then((res) => {
-            res.text().then(value => this.setState({log: value}));
+            this.setState(res);
+        })
+        .catch(reason => {
+            this.addAlert({
+                id: Math.random().toString(36),
+                type: 'danger',
+                head: 'Es ist ein Fehler aufgetreten',
+                text: reason.message,
+                autoclose: false
+            });
+        });
+    }
+
+    save(e) {
+        e.preventDefault();
+        let headers = new Headers();
+        headers.append("Content-Type", "application/json");
+        if(this.context.token) headers.append("Authorization", "Bearer " + this.context.token);
+        fetch("/api/v2/gapcloser", {
+            method: 'POST',
+            body: JSON.stringify({mode: this.state.mode, playlist: this.state.playlist}),
+            headers: headers
+        })
+        .then((res) => {
+            if(!res.ok) throw Error(res.statusText);
+            return res;
+        })
+        .then((res) => res.json())
+        .then((res) => {
+            this.setState(res);
         })
         .catch(reason => {
             this.addAlert({
@@ -82,8 +114,21 @@ class Log extends Component {
                 <Alerts onClose={this.removeAlert}>{this.state.alerts}</Alerts>
                 <Header />
                 <Row className="justify-content-center">
-                    <Col className="log">
-                        {this.state.log}
+                    <Col className="gapcloser">
+                        Gapcloser - Einstellungen
+                        <form>
+                            <div>
+                                <label>Modus:</label>
+                                <select value={this.state.mode} onChange={(e) => this.setState({mode: e.target.value})}>
+                                    <option value="OFF">Aus</option>
+                                    <option value="RANDOM">Zufällig</option>
+                                    <option value="RANDOM100">Zufällig - Top 100</option>
+                                    <option value="PLAYLIST">Playlist</option>
+                                </select>
+                            </div>
+                            {this.state.mode === "PLAYLIST" && <div><label>Playlist:</label><input type="text" value={this.state.playlist} onChange={(e) => this.setState({playlist: e.target.value})} /></div>}
+                            <button onClick={this.save}>Speichern</button>
+                        </form>
                     </Col>
                 </Row>
             </Container>
@@ -91,4 +136,4 @@ class Log extends Component {
     }
 }
 
-export default Log;
+export default Gapcloser;

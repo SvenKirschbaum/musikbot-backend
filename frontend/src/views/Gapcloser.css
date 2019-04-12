@@ -1,0 +1,31 @@
+.gapcloser {
+    max-width: 40ch;
+    padding: 1em;
+    margin-top: 10em;
+    vertical-align: middle;
+    border-radius: 4px;
+    box-shadow: inset 0px 2px 2px rgba(0, 0, 0, .5), 0px 1px 0px rgba(250, 250, 250, .2);
+    background-color: #252525;
+    background-image: url(../res/bgtexture.png);
+    box-sizing: border-box;
+    text-shadow: 0 -1px 0 #111;
+    color: #D0D0D0;
+}
+.gapcloser button {
+    margin: 1em;
+}
+.gapcloser form {
+    justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+}
+.gapcloser form div {
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1em;
+}
+.gapcloser form div *:last-child {
+    flex-grow: 1;
+    margin-left: 1em;
+}

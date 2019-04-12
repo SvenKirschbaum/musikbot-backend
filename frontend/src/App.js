@@ -8,6 +8,7 @@ import Archiv from './views/Archiv';
 import Token from './views/Token';
 import Debug from './views/Debug';
 import Log from './views/Log';
+import Gapcloser from './views/Gapcloser';
 import AuthenticationContext from './components/AuthenticationContext';
 
 
@@ -115,6 +116,7 @@ class AppRouter extends Component {
                             <Route path="/token" component={Token} />
                             <Route path="/debug" component={Debug} />
                             <Route path="/log" component={Log} />
+                            <Route path="/gapcloser" component={Gapcloser} />
                             <Route component={NoMatch} />
                         </Switch>
                     </BaseLayout>

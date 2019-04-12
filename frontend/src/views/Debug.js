@@ -20,6 +20,8 @@ class Debug extends Component {
             alerts: []
         };
 
+        this.addAlert=this.addAlert.bind(this);
+        this.removeAlert=this.removeAlert.bind(this);
         this.onServer = this.onServer.bind(this);
         this.onClient = this.onClient.bind(this);
     }

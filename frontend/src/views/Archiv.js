@@ -29,6 +29,8 @@ class Archiv extends Component {
             alerts: []
         };
 
+        this.addAlert=this.addAlert.bind(this);
+        this.removeAlert=this.removeAlert.bind(this);
         this.change = this.change.bind(this);
     }
 
