@@ -7,6 +7,7 @@ import Home from './views/Home';
 import Archiv from './views/Archiv';
 import Token from './views/Token';
 import Debug from './views/Debug';
+import Log from './views/Log';
 import AuthenticationContext from './components/AuthenticationContext';
 
 
@@ -113,6 +114,7 @@ class AppRouter extends Component {
                             <Route path="/archiv/:page?" component={Archiv} />
                             <Route path="/token" component={Token} />
                             <Route path="/debug" component={Debug} />
+                            <Route path="/log" component={Log} />
                             <Route component={NoMatch} />
                         </Switch>
                     </BaseLayout>

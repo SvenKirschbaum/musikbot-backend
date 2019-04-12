@@ -1,15 +1,16 @@
-.debug {
-    max-width: 40ch;
+.log {
     padding: 1em;
-    margin-top: 10em;
+    margin: 0 1em 1em 1em;
+    height: 80vh;
     vertical-align: middle;
     border-radius: 4px;
     box-shadow: inset 0px 2px 2px rgba(0, 0, 0, .5), 0px 1px 0px rgba(250, 250, 250, .2);
-    background-color: #252525;
-    background-image: url(../res/bgtexture.png);
     box-sizing: border-box;
     text-shadow: 0 -1px 0 #111;
-}
-.debug button {
-    margin: 1em;
+    overflow-y: scroll;
+    white-space: pre;
+    background-color: #000;
+    color: #D0D0D0;
+    font-family: monospace;
+    font-weight: bold;
 }
