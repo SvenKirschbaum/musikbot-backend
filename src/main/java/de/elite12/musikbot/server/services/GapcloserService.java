@@ -1,11 +1,7 @@
 package de.elite12.musikbot.server.services;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import javax.annotation.PostConstruct;
 
@@ -40,57 +36,56 @@ public class GapcloserService {
         RANDOM100,
         RANDOM,
         PLAYLIST
-    };
+    }
 
     private Mode mode = Mode.OFF;
     private String playlist = "";
-    
+
     @Getter(AccessLevel.PRIVATE)
     @Setter(AccessLevel.PRIVATE)
     private Permutationhelper permutation;
-    
+
     @Autowired
     private SettingRepository settings;
-    
-    @Autowired 
+
+    @Autowired
     private SongRepository songs;
-    
-    @Autowired 
+
+    @Autowired
     private YouTubeService youtube;
 
     @Autowired
     private SpotifyService spotify;
-    
+
     @Autowired
     private ClientService client;
-    
-    
+
+
     private static final Logger logger = LoggerFactory.getLogger(GapcloserService.class);
 
     @PostConstruct
     public void postConstruct() {
-//    	boolean notfound = false;
-//    	try {
-//    		mode = Mode.valueOf(settings.findById("gapcloser").get().getValue());
-//    	}
-//    	catch(NoSuchElementException e) {notfound = true;}
-//    	
-//    	try {
-//    		playlist = settings.findById("playlist").get().getValue();
-//    	}
-//    	catch(NoSuchElementException e) {notfound = true;}
-//    	
-//    	if(notfound) save();
-//    	
-//        createPermutation();
+        Optional<Setting> mode = settings.findById("gapcloser");
+        Optional<Setting> playlist = settings.findById("playlist");
+        boolean found = mode.isPresent() && playlist.isPresent();
+
+        if(found) {
+            this.mode = Mode.valueOf(mode.get().getValue());
+            this.playlist = playlist.get().getValue();
+        }
+    	else {
+    	    save();
+        }
+
+        createPermutation();
     }
 
     private void save() {
     	Setting modesetting = new Setting("gapcloser", this.mode.toString());
     	Setting playlistsetting = new Setting("playlist", this.playlist);
-    	
-    	settings.saveAll(Arrays.asList(new Setting[] {modesetting, playlistsetting}));
-        
+
+    	settings.saveAll(Arrays.asList(modesetting, playlistsetting));
+
     	logger.debug("Einstellung " + modesetting + " wurde gespeichert");
     	logger.debug("Einstellung " + playlistsetting + " wurde gespeichert");
     }
@@ -102,9 +97,9 @@ public class GapcloserService {
         		if(url == null) {
     				return null;
     			}
-        		
+
         		UnifiedTrack ut;
-        		
+
         		try {
         			ut = UnifiedTrack.fromURL(url,youtube,spotify);
         		}
@@ -112,23 +107,25 @@ public class GapcloserService {
         			logger.debug("Generated invalid Song",e);
         			continue;
         		}
-        		
+
         		Song s = new Song();
         		s.setPlayed(true);
+        		s.setInsertedAt(new Date());
+        		s.setPlayedAt(new Date());
         		s.setLink(ut.getLink());
         		s.setTitle(ut.getTitle());
         		s.setGuestAuthor("Automatisch");
         		s.setDuration(ut.getDuration());
-        		
+
         		s = songs.save(s);
-        		
-    			
-                
+
+
+
                 logger.info("Gapcloser generated Song (ID: " + s.getId() + ") " + s.toString());
-                
+
                 return s;
         	}
-        	
+
         	logger.error("Loading Song Failed three times");
         	return null;
         } catch (IOException e) {
@@ -136,7 +133,7 @@ public class GapcloserService {
         }
         return null;
     }
-    
+
     private String selectCandidate() throws IOException {
     	switch (this.getMode()) {
 			case OFF: {
@@ -144,11 +141,11 @@ public class GapcloserService {
 			}
 			case RANDOM: {
 				Optional<Song> s = songs.getRandomSong();
-				return s.isPresent() ? s.get().getLink() : null;
+				return s.map(Song::getLink).orElse(null);
 			}
 			case RANDOM100: {
 				Optional<Song> s = songs.getRandomTop100Song();
-				return s.isPresent() ? s.get().getLink() : null;
+				return s.map(Song::getLink).orElse(null);
 			}
 			case PLAYLIST: {
 				String pid = SongIDParser.getPID(this.getPlaylist());
