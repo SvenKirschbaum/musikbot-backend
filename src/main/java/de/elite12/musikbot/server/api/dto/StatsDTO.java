@@ -43,6 +43,6 @@ public class StatsDTO {
     @AllArgsConstructor
     public static class GeneralEntry {
         private String title;
-        private Integer count;
+        private String value;
     }
 }

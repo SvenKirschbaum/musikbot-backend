@@ -142,7 +142,7 @@ class Stats extends Component {
                         (entry,key) => (
                             <tr key={key}>
                                 <td>{entry.title}:</td>
-                                <td>{entry.count}</td>
+                                <td>{entry.value}</td>
                             </tr>
                         )
                     }

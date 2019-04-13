@@ -70,15 +70,14 @@ public class Stats {
         Query q = em.createNativeQuery("select count(*) from user UNION ALL select count(*) from user WHERE admin = TRUE UNION ALL SELECT Count(*) FROM (SELECT guest_author FROM song WHERE CHAR_LENGTH(guest_author) = 36 GROUP BY guest_author) AS T UNION ALL select count(*) from song WHERE (USER_AUTHOR != 30 OR USER_AUTHOR IS NULL) UNION ALL select count(*) from song WHERE skipped = TRUE UNION ALL select sum(duration) from song WHERE skipped = FALSE;");
 
         Object[] list = q.getResultList().toArray();
-
         dto.setGeneral(
             Arrays.asList(
-                new StatsDTO.GeneralEntry("User", ((BigDecimal)list[0]).intValue()),
-                new StatsDTO.GeneralEntry("Admins", ((BigDecimal)list[1]).intValue()),
-                new StatsDTO.GeneralEntry("Gäste", ((BigDecimal)list[2]).intValue()),
-                new StatsDTO.GeneralEntry("Wünsche", ((BigDecimal)list[3]).intValue()),
-                new StatsDTO.GeneralEntry("Skippes", ((BigDecimal)list[4]).intValue()),
-                new StatsDTO.GeneralEntry("Gesamte Dauer", ((BigDecimal)list[5]).intValue())
+                new StatsDTO.GeneralEntry("User", ((BigDecimal)list[0]).toString()),
+                new StatsDTO.GeneralEntry("Admins", ((BigDecimal)list[1]).toString()),
+                new StatsDTO.GeneralEntry("Gäste", ((BigDecimal)list[2]).toString()),
+                new StatsDTO.GeneralEntry("Wünsche", ((BigDecimal)list[3]).toString()),
+                new StatsDTO.GeneralEntry("Skippes", ((BigDecimal)list[4]).toString()),
+                new StatsDTO.GeneralEntry("Gesamte Dauer", String.format("%d Stunden",((BigDecimal)list[5]).intValue()/3600))
             )
         );
 
