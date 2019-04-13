@@ -9,6 +9,7 @@ import Token from './views/Token';
 import Debug from './views/Debug';
 import Log from './views/Log';
 import Gapcloser from './views/Gapcloser';
+import Stats from './views/Stats';
 import AuthenticationContext from './components/AuthenticationContext';
 
 
@@ -117,6 +118,7 @@ class AppRouter extends Component {
                             <Route path="/debug" component={Debug} />
                             <Route path="/log" component={Log} />
                             <Route path="/gapcloser" component={Gapcloser} />
+                            <Route path="/statistik" component={Stats} />
                             <Route component={NoMatch} />
                         </Switch>
                     </BaseLayout>
