@@ -132,7 +132,7 @@ class AddSong extends Component {
                                     inputProps={inputProps}
                                 />
                             </Col>
-                            <Col xs={{span:12}} md={{span:4}}><Button type="submit">Abschicken</Button></Col>
+                            <Col xs={{span:12}} md={{span:4}}><Button type="submit">{this.props.buttontext}</Button></Col>
                         </form>
                     </Row>
                 </Col>

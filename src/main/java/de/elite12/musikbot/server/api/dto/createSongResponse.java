@@ -1,4 +1,4 @@
-package de.elite12.musikbot.server.data;
+package de.elite12.musikbot.server.api.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

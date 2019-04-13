@@ -228,7 +228,6 @@ class Home extends Component {
             headers: headers
         }).then((res) => {
             if (!res.ok) throw Error(res.statusText);
-            this.update();
         })
             .catch(reason => {
                 this.handlefetchError(reason);
@@ -254,7 +253,6 @@ class Home extends Component {
         })
             .then((res) => res.json())
             .then((res) => {
-                if (res.success) this.update();
                 let type = res.success ? 'success' : 'danger';
                 if (res.warn && res.success) type = 'warning';
                 this.addAlert({
@@ -349,7 +347,7 @@ class Home extends Component {
                 <Playlist onDragStart={this.onDragStart} onDragEnd={this.onDragEnd} AuthState={this.context}
                           onDelete={this.sendDelete} songs={this.state.playlist}/>
                 <BottomControl onShuffle={this.sendShuffle}/>
-                <AddSong handlefetchError={this.handlefetchError} sendSong={this.sendSong}/>
+                <AddSong handlefetchError={this.handlefetchError} sendSong={this.sendSong} buttontext="Abschicken" />
             </Container>
         );
     }

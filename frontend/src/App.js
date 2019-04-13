@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
-import Demo from './views/Demo';
+import Songs from './views/Songs';
 import NoMatch from './components/NoMatch';
 import BaseLayout from './components/BaseLayout';
 import Home from './views/Home';
@@ -80,7 +80,7 @@ class AppRouter extends Component {
         this.user = null;
         this.setState({
             loggedin: false,
-            user: null,
+            user: {},
             token: null
         });
         localStorage.removeItem('loginstate');
@@ -112,7 +112,7 @@ class AppRouter extends Component {
                     <BaseLayout>
                         <Switch>
                             <Route path="/" exact component={Home} />
-                            <Route path="/demo" component={Demo} />
+                            <Route path="/songs" component={Songs} />
                             <Route path="/archiv/:page?" component={Archiv} />
                             <Route path="/token" component={Token} />
                             <Route path="/debug" component={Debug} />

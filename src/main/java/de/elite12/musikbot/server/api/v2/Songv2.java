@@ -2,7 +2,7 @@ package de.elite12.musikbot.server.api.v2;
 
 import de.elite12.musikbot.server.data.GuestSession;
 import de.elite12.musikbot.server.data.UserPrincipal;
-import de.elite12.musikbot.server.data.createSongResponse;
+import de.elite12.musikbot.server.api.dto.createSongResponse;
 import de.elite12.musikbot.server.data.entity.LockedSong;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;

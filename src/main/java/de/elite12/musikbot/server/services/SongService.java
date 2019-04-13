@@ -3,7 +3,7 @@ package de.elite12.musikbot.server.services;
 import java.io.IOException;
 import java.util.Date;
 
-import de.elite12.musikbot.server.data.createSongResponse;
+import de.elite12.musikbot.server.api.dto.createSongResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

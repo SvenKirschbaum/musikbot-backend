@@ -13,7 +13,6 @@ class Header extends Component {
 
     onClick() {
         if(this.props.location.pathname !== '/') {
-            console.log("redirect");
             this.props.history.push('/');
         }
     }
