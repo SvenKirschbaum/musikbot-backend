@@ -1,14 +1,30 @@
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import React from "react";
+import React, {Component} from "react";
+import {withRouter} from "react-router";
 import './Header.css';
 
-function Header() {
-    return (
-        <Row>
-            <Col className="Header text-center"><span>Elite12 // </span><span>Radio</span></Col>
-        </Row>
-    );
+class Header extends Component {
+
+    constructor(props) {
+        super(props);
+        this.onClick = this.onClick.bind(this);
+    }
+
+    onClick() {
+        if(this.props.location.pathname !== '/') {
+            console.log("redirect");
+            this.props.history.push('/');
+        }
+    }
+
+    render() {
+        return (
+            <Row>
+                <Col onClick={this.onClick} className="Header text-center"><span>Elite12 // </span><span>Radio</span></Col>
+            </Row>
+        );
+    }
 }
 
-export default Header;
+export default withRouter(Header);
