@@ -36,6 +36,7 @@ class Home extends Component {
 
         this.statebuffer = null;
         this.isdragging = false;
+        this.updateinflight = false;
 
         this.addAlert=this.addAlert.bind(this);
         this.removeAlert=this.removeAlert.bind(this);
@@ -63,6 +64,7 @@ class Home extends Component {
     }
 
     update() {
+        if(this.updateinflight) return;
         let headers = new Headers();
         headers.append("Content-Type", "application/json");
         if(this.context.token) headers.append("Authorization", "Bearer " + this.context.token);
@@ -77,6 +79,7 @@ class Home extends Component {
         .then(res => res.json())
         .then(response => {
             if(response.songtitle === null) response.songtitle = "Kein Song";
+            if(this.updateinflight) return;
             if(this.isdragging) {
                 this.statebuffer = response;
             }
@@ -117,6 +120,7 @@ class Home extends Component {
     }
 
     sendStart() {
+        this.updateinflight = true;
         let headers = new Headers();
         headers.append("Content-Type", "application/json");
         if(this.context.token) headers.append("Authorization", "Bearer " + this.context.token);
@@ -128,10 +132,15 @@ class Home extends Component {
         })
         .catch(reason => {
             this.handlefetchError(reason);
+        })
+        .finally(() => {
+            this.updateinflight = false;
+            this.update();
         });
     }
 
     sendPause() {
+        this.updateinflight = true;
         let headers = new Headers();
         headers.append("Content-Type", "application/json");
         if(this.context.token) headers.append("Authorization", "Bearer " + this.context.token);
@@ -143,10 +152,15 @@ class Home extends Component {
         })
         .catch(reason => {
             this.handlefetchError(reason);
+        })
+        .finally(() => {
+            this.updateinflight = false;
+            this.update();
         });
     }
 
     sendStop() {
+        this.updateinflight = true;
         let headers = new Headers();
         headers.append("Content-Type", "application/json");
         if(this.context.token) headers.append("Authorization", "Bearer " + this.context.token);
@@ -158,10 +172,15 @@ class Home extends Component {
         })
         .catch(reason => {
             this.handlefetchError(reason);
+        })
+        .finally(() => {
+            this.updateinflight = false;
+            this.update();
         });
     }
 
     sendSkip() {
+        this.updateinflight = true;
         let headers = new Headers();
         headers.append("Content-Type", "application/json");
         if(this.context.token) headers.append("Authorization", "Bearer " + this.context.token);
@@ -171,12 +190,17 @@ class Home extends Component {
         }).then((res) => {
             if(!res.ok) throw Error(res.statusText);
         })
-            .catch(reason => {
-                this.handlefetchError(reason);
-            });
+        .catch(reason => {
+            this.handlefetchError(reason);
+        })
+        .finally(() => {
+            this.updateinflight = false;
+            this.update();
+        });
     }
 
     sendShuffle() {
+        this.updateinflight = true;
         let headers = new Headers();
         headers.append("Content-Type", "application/json");
         if(this.context.token) headers.append("Authorization", "Bearer " + this.context.token);
@@ -186,12 +210,17 @@ class Home extends Component {
         }).then((res) => {
             if(!res.ok) throw Error(res.statusText);
         })
-            .catch(reason => {
-                this.handlefetchError(reason);
-            });
+        .catch(reason => {
+            this.handlefetchError(reason);
+        })
+        .finally(() => {
+            this.updateinflight = false;
+            this.update();
+        });
     }
 
     sendDelete(id, lock) {
+        this.updateinflight = true;
         let headers = new Headers();
         headers.append("Content-Type", "application/json");
         if(this.context.token) headers.append("Authorization", "Bearer " + this.context.token);
@@ -204,14 +233,18 @@ class Home extends Component {
         })
         .catch(reason => {
             this.handlefetchError(reason);
+        })
+        .finally(() => {
+            this.updateinflight = false;
+            this.update();
         });
     }
 
     sendSong(url) {
+        this.updateinflight = true;
         let headers = new Headers();
         headers.append("Content-Type", "text/plain");
         if(this.context.token) headers.append("Authorization", "Bearer " + this.context.token);
-
         fetch("/api/v2/songs", {
             method: 'POST',
             body: url,
@@ -234,6 +267,10 @@ class Home extends Component {
         })
         .catch(reason => {
             this.handlefetchError(reason);
+        })
+        .finally(() => {
+            this.updateinflight = false;
+            this.update();
         });
     }
 
@@ -269,15 +306,17 @@ class Home extends Component {
 
         this.setState({
            playlist: newList
-        });
+        },() => this.statebuffer = null);
 
         const prev = (destination.index - 1) >= 0 ? newList[destination.index - 1].id : -1;
         const id = newList[destination.index].id;
 
         this.sendSort(prev,id);
+
     }
 
     sendSort(prev,id) {
+        this.updateinflight = true;
         let headers = new Headers();
         headers.append("Content-Type", "text/plain");
         if(this.context.token) headers.append("Authorization", "Bearer " + this.context.token);
@@ -287,9 +326,14 @@ class Home extends Component {
             body: prev
         }).then((res) => {
             if(!res.ok) throw Error(res.statusText);
+
         })
         .catch(reason => {
             this.handlefetchError(reason);
+        })
+        .finally(() => {
+            this.updateinflight = false;
+            this.update();
         });
     }
 
