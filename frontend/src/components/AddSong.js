@@ -6,6 +6,8 @@ import Autosuggest from "react-autosuggest";
 import Button from "react-bootstrap/Button";
 import { throttle, debounce } from "throttle-debounce";
 
+import './AddSong.css';
+
 class AddSong extends Component {
 
     static contextType = AuthenticationContext;

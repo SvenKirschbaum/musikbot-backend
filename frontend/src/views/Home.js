@@ -362,15 +362,15 @@ function Playlist(props) {
             >
                 <Droppable droppableId="droppable">
                     {(provided) => (
-                        <table className="playlist col-xl-9 col-lg-10 col-md-12 lr-space"
+                        <table className="playlist col-xl-9 col-lg-10 col-md-11 col-11"
                                ref={provided.innerRef} {...provided.droppableProps}>
                             <thead>
                             <tr className="header">
                                 <th className="d-none d-sm-table-cell songid">Song ID</th>
-                                <th className="d-none d-md-table-cell insertat">Eingefügt am</th>
+                                <th className="d-none d-lg-table-cell insertat">Eingefügt am</th>
                                 <th className="d-none d-sm-table-cell author">Eingefügt von</th>
                                 <th className="songtitle">Titel</th>
-                                <th className="d-none d-sm-table-cell songlink">Link</th>
+                                <th className="d-none d-md-table-cell songlink">Link</th>
                                 {props.AuthState.user && props.AuthState.user.admin && <th className="delete"></th>}
                             </tr>
                             </thead>
@@ -404,14 +404,14 @@ function Song(props) {
             ref={props.provided.innerRef}>
             <DragFixedCell isDragOccurring={props.isDragging} className="d-none d-sm-table-cell"
                            addToElem={props.provided.dragHandleProps}>{props.id}</DragFixedCell>
-            <DragFixedCell isDragOccurring={props.isDragging} className="d-none d-md-table-cell"><Moment
+            <DragFixedCell isDragOccurring={props.isDragging} className="d-none d-lg-table-cell"><Moment
                 format="DD.MM.YYYY - HH:mm:ss">{props.insertedAt}</Moment></DragFixedCell>
             <DragFixedCell isDragOccurring={props.isDragging}
                            className="d-none d-sm-inline-flex author"><GravatarIMG>{props.gravatarId}</GravatarIMG><Link
                 to={`/users/${props.authorLink}`}>{props.author}</Link></DragFixedCell>
             <DragFixedCell isDragOccurring={props.isDragging} className="nolink songtitle"><a
                 href={props.link}>{props.title}</a></DragFixedCell>
-            <DragFixedCell isDragOccurring={props.isDragging} className="d-none d-sm-table-cell songlink"><a
+            <DragFixedCell isDragOccurring={props.isDragging} className="d-none d-md-table-cell songlink"><a
                 href={props.link}>{props.link}</a></DragFixedCell>
             {props.AuthState.user && props.AuthState.user.admin &&
             <DragFixedCell isDragOccurring={props.isDragging} className="d-inline-flex deleteicon" onClick={(e) => {
@@ -456,7 +456,7 @@ function ControlElements(props) {
 function BottomControl(props) {
     return (
         <Row className="justify-content-center">
-            <Col className="BottomControl lr-space" xl={{span: 9}} lg={{span: 10}} md={{span: 12}}>
+            <Col className="BottomControl" xl={{span: 9}} lg={{span: 10}} md={{span: 11}} xs={{span: 11}}>
                 <Row noGutters={false}>
                     <Col xs={{span: 6}}><Link to="/archiv">Zum Archiv</Link></Col>
                     <Col xs={{span: 6}}><Button onClick={props.onShuffle}>Shuffle</Button></Col>
