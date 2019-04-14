@@ -116,29 +116,32 @@ class AddSong extends Component {
         const inputProps = {
             value: (this.state.value === undefined) ? '' : this.state.value,
             onChange: this.handleChange,
-            className: "w-100 h-100"
+            className: "w-100 h-100",
+            'aria-label': "Song Link"
         };
 
         return (
-            <Row className="space-top justify-content-center">
-                <Col className="addSong" xl={{span: 4}} md={{span: 6}} xs={{span: 11}}>
-                    <Row noGutters>
-                        <form onSubmit={this.handleSubmit}>
-                            <Col xs={{span:12}} md={{span:8}}>
-                                <Autosuggest
-                                    suggestions={this.state.suggestions}
-                                    onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-                                    onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-                                    getSuggestionValue={this.getSuggestionValue}
-                                    renderSuggestion={this.renderSuggestion}
-                                    inputProps={inputProps}
-                                />
-                            </Col>
-                            <Col xs={{span:12}} md={{span:4}}><Button type="submit">{this.props.buttontext}</Button></Col>
-                        </form>
-                    </Row>
-                </Col>
-            </Row>
+            <section>
+                <Row className="space-top justify-content-center">
+                    <Col className="addSong" xl={{span: 4}} md={{span: 6}} xs={{span: 11}}>
+                        <Row noGutters>
+                            <form onSubmit={this.handleSubmit}>
+                                <Col xs={{span:12}} md={{span:8}}>
+                                    <Autosuggest
+                                        suggestions={this.state.suggestions}
+                                        onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+                                        onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+                                        getSuggestionValue={this.getSuggestionValue}
+                                        renderSuggestion={this.renderSuggestion}
+                                        inputProps={inputProps}
+                                    />
+                                </Col>
+                                <Col xs={{span:12}} md={{span:4}}><Button type="submit">{this.props.buttontext}</Button></Col>
+                            </form>
+                        </Row>
+                    </Col>
+                </Row>
+            </section>
         );
     }
 }

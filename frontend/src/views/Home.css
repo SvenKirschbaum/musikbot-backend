@@ -1,7 +1,7 @@
 .Status {
     padding: 9px;
     background-color: #FFAB40;
-    color: #965502;
+    color: #452602;
     font-family: monospace;
     font-weight: bold;
     border: 1px solid #2a2a2a;
@@ -83,11 +83,11 @@
 
 
 .nolink a {
-    color: #212121;
+    color: #212121!important;
 }
 
 .nolink a:hover {
-    color: #212121;
+    color: #212121!important;
     text-decoration: none;
 }
 .deleteicon {
@@ -99,10 +99,11 @@
     padding:0;
     margin-top: 0.5rem;
     background-color: white;
-    width: 35rem;
+    width: 36rem;
     text-overflow: ellipsis;
     list-style: none;
     overflow-y: auto;
+    overflow-x: hidden;
     max-height: 20em;
     z-index: 100;
 }
@@ -152,4 +153,54 @@
 .lr-space {
     margin-left: 10px;
     margin-right: 10px;
+}
+.playlist {
+    font-size: 14px;
+    box-sizing: border-box;
+    line-height: 1.7em;
+    color: #212121;
+    text-shadow: none;
+    background-color: #B6B6B6;
+    background-image: url(../res/bgtexture.png);
+    box-shadow: 0px 0px 60px 5px rgba(0,0,0,0.5);
+    padding: 0;
+    text-align: center;
+    user-select: none;
+}
+.playlist {
+    background-color: #121212;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    color: #BDBDBD;
+    margin: 0;
+}
+.playlist a {
+    color: #292929;
+}
+.playlist a:hover {
+    color: #555;
+}
+.playlist .songlink, .playlist .songtitle {
+    text-align: left;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 20em;
+}
+.playlist img {
+    margin-right: 1ch;
+}
+.playlist .songid {
+    width: 5em;
+}
+.playlist .insertat {
+    width: 10em;
+}
+.playlist .author {
+    width: 10em;
+    text-align: left;
+    padding-left: 1em;
+}
+.playlist .delete {
+    width: 2em;
 }

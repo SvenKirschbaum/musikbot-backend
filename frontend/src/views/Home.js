@@ -339,15 +339,17 @@ class Home extends Component {
             <Container fluid>
                 <Alerts onClose={this.removeAlert}>{this.state.alerts}</Alerts>
                 <Header/>
-                <Status state={this.state.status} title={this.state.songtitle} link={this.state.songlink}
-                        duration={this.state.duration}/>
-                {this.context.user && this.context.user.admin &&
-                <ControlElements onStart={this.sendStart} onPause={this.sendPause} onStop={this.sendStop}
-                                 onSkip={this.sendSkip}/>}
-                <Playlist onDragStart={this.onDragStart} onDragEnd={this.onDragEnd} AuthState={this.context}
-                          onDelete={this.sendDelete} songs={this.state.playlist}/>
-                <BottomControl onShuffle={this.sendShuffle}/>
-                <AddSong handlefetchError={this.handlefetchError} sendSong={this.sendSong} buttontext="Abschicken" />
+                <main>
+                    <Status state={this.state.status} title={this.state.songtitle} link={this.state.songlink}
+                            duration={this.state.duration}/>
+                    {this.context.user && this.context.user.admin &&
+                    <ControlElements onStart={this.sendStart} onPause={this.sendPause} onStop={this.sendStop}
+                                     onSkip={this.sendSkip}/>}
+                    <Playlist onDragStart={this.onDragStart} onDragEnd={this.onDragEnd} AuthState={this.context}
+                              onDelete={this.sendDelete} songs={this.state.playlist}/>
+                    <BottomControl onShuffle={this.sendShuffle}/>
+                    <AddSong handlefetchError={this.handlefetchError} sendSong={this.sendSong} buttontext="Abschicken"/>
+                </main>
             </Container>
         );
     }
@@ -355,46 +357,48 @@ class Home extends Component {
 
 function Playlist(props) {
     return (
-        <Row className="space-top justify-content-center">
-            <DragDropContext
-                onDragStart={props.onDragStart}
-                onDragEnd={props.onDragEnd}
-            >
-                <Droppable droppableId="droppable">
-                    {(provided) => (
-                        <table className="playlist col-xl-9 col-lg-10 col-md-11 col-11"
-                               ref={provided.innerRef} {...provided.droppableProps}>
-                            <thead>
-                            <tr className="header">
-                                <th className="d-none d-sm-table-cell songid">Song ID</th>
-                                <th className="d-none d-lg-table-cell insertat">Eingefügt am</th>
-                                <th className="d-none d-sm-table-cell author">Eingefügt von</th>
-                                <th className="songtitle">Titel</th>
-                                <th className="d-none d-md-table-cell songlink">Link</th>
-                                {props.AuthState.user && props.AuthState.user.admin && <th className="delete"></th>}
-                            </tr>
-                            </thead>
-                            <FlipMove typeName="tbody" enterAnimation="fade" leaveAnimation="none" duration={400}>
-                                {props.songs.map((song, index) => {
-                                    return (
-                                        <Draggable
-                                            isDragDisabled={!(props.AuthState.user && props.AuthState.user.admin)}
-                                            key={song.id} draggableId={song.id} index={index}>
-                                            {(provided, snapshot) => (
-                                                <Song AuthState={props.AuthState} onDelete={props.onDelete}
-                                                      key={song.id} {...song} provided={provided}
-                                                      isDragging={snapshot.isDragging}/>
-                                            )}
-                                        </Draggable>
-                                    );
-                                })}
-                                {provided.placeholder}
-                            </FlipMove>
-                        </table>
-                    )}
-                </Droppable>
-            </DragDropContext>
-        </Row>
+        <section>
+            <Row className="space-top justify-content-center">
+                <DragDropContext
+                    onDragStart={props.onDragStart}
+                    onDragEnd={props.onDragEnd}
+                >
+                    <Droppable droppableId="droppable">
+                        {(provided) => (
+                            <table className="playlist col-xl-9 col-lg-10 col-md-11 col-11"
+                                   ref={provided.innerRef} {...provided.droppableProps}>
+                                <thead>
+                                <tr className="header">
+                                    <th className="d-none d-sm-table-cell songid">Song ID</th>
+                                    <th className="d-none d-lg-table-cell insertat">Eingefügt am</th>
+                                    <th className="d-none d-sm-table-cell author">Eingefügt von</th>
+                                    <th className="songtitle">Titel</th>
+                                    <th className="d-none d-md-table-cell songlink">Link</th>
+                                    {props.AuthState.user && props.AuthState.user.admin && <th className="delete"></th>}
+                                </tr>
+                                </thead>
+                                <FlipMove typeName="tbody" enterAnimation="fade" leaveAnimation="none" duration={400}>
+                                    {props.songs.map((song, index) => {
+                                        return (
+                                            <Draggable
+                                                isDragDisabled={!(props.AuthState.user && props.AuthState.user.admin)}
+                                                key={song.id} draggableId={song.id} index={index}>
+                                                {(provided, snapshot) => (
+                                                    <Song AuthState={props.AuthState} onDelete={props.onDelete}
+                                                          key={song.id} {...song} provided={provided}
+                                                          isDragging={snapshot.isDragging}/>
+                                                )}
+                                            </Draggable>
+                                        );
+                                    })}
+                                    {provided.placeholder}
+                                </FlipMove>
+                            </table>
+                        )}
+                    </Droppable>
+                </DragDropContext>
+            </Row>
+        </section>
     );
 }
 
@@ -407,7 +411,7 @@ function Song(props) {
             <DragFixedCell isDragOccurring={props.isDragging} className="d-none d-lg-table-cell"><Moment
                 format="DD.MM.YYYY - HH:mm:ss">{props.insertedAt}</Moment></DragFixedCell>
             <DragFixedCell isDragOccurring={props.isDragging}
-                           className="d-none d-sm-inline-flex author"><GravatarIMG>{props.gravatarId}</GravatarIMG><Link
+                           className="d-none d-sm-inline-flex author"><span><GravatarIMG>{props.gravatarId}</GravatarIMG></span><Link
                 to={`/users/${props.authorLink}`}>{props.author}</Link></DragFixedCell>
             <DragFixedCell isDragOccurring={props.isDragging} className="nolink songtitle"><a
                 href={props.link}>{props.title}</a></DragFixedCell>
@@ -423,46 +427,52 @@ function Song(props) {
 
 function Status(props) {
     return (
-        <Row className="justify-content-center">
-            <Col className="Status" xl={{span: 5}} md={{span: 8}} xs={{span: 10}}>
-                <Row>
-                    <Col>{props.state}</Col>
-                    <Col className="text-right" xs="auto"><span className="d-none d-lg-inline">Die Aktuelle Playlist umfasst </span>{props.duration} Minuten<span
-                        className="d-none d-lg-inline"> Musik!</span></Col>
-                </Row>
-                <Row>
-                    <Col>{(props.link) ? <a href={props.link}>{props.title}</a> : props.title}</Col>
-                </Row>
-            </Col>
-        </Row>
+        <section>
+            <Row className="justify-content-center">
+                <Col className="Status" xl={{span: 5}} md={{span: 8}} xs={{span: 10}}>
+                    <Row>
+                        <Col>{props.state}</Col>
+                        <Col className="text-right" xs="auto"><span className="d-none d-lg-inline">Die Aktuelle Playlist umfasst </span>{props.duration} Minuten<span
+                            className="d-none d-lg-inline"> Musik!</span></Col>
+                    </Row>
+                    <Row>
+                        <Col>{(props.link) ? <a href={props.link}>{props.title}</a> : props.title}</Col>
+                    </Row>
+                </Col>
+            </Row>
+        </section>
     );
 }
 
 function ControlElements(props) {
     return (
-        <Row className="justify-content-center">
-            <Col className="Control" xl={{span: 5}} md={{span: 8}} xs={{span: 10}}>
-                <Row noGutters={false}>
-                    <Col><Button onClick={props.onStart}>Start</Button></Col>
-                    <Col><Button onClick={props.onPause}>Pause</Button></Col>
-                    <Col><Button onClick={props.onStop}>Stop</Button></Col>
-                    <Col><Button onClick={props.onSkip}>Skip</Button></Col>
-                </Row>
-            </Col>
-        </Row>
+        <section>
+            <Row className="justify-content-center">
+                <Col className="Control" xl={{span: 5}} md={{span: 8}} xs={{span: 10}}>
+                    <Row noGutters={false}>
+                        <Col><Button onClick={props.onStart}>Start</Button></Col>
+                        <Col><Button onClick={props.onPause}>Pause</Button></Col>
+                        <Col><Button onClick={props.onStop}>Stop</Button></Col>
+                        <Col><Button onClick={props.onSkip}>Skip</Button></Col>
+                    </Row>
+                </Col>
+            </Row>
+        </section>
     );
 }
 
 function BottomControl(props) {
     return (
-        <Row className="justify-content-center">
-            <Col className="BottomControl" xl={{span: 9}} lg={{span: 10}} md={{span: 11}} xs={{span: 11}}>
-                <Row noGutters={false}>
-                    <Col xs={{span: 6}}><Link to="/archiv">Zum Archiv</Link></Col>
-                    <Col xs={{span: 6}}><Button onClick={props.onShuffle}>Shuffle</Button></Col>
-                </Row>
-            </Col>
-        </Row>
+        <section>
+            <Row className="justify-content-center">
+                <Col className="BottomControl" xl={{span: 9}} lg={{span: 10}} md={{span: 11}} xs={{span: 11}}>
+                    <Row noGutters={false}>
+                        <Col xs={{span: 6}}><Link to="/archiv">Zum Archiv</Link></Col>
+                        <Col xs={{span: 6}}><Button onClick={props.onShuffle}>Shuffle</Button></Col>
+                    </Row>
+                </Col>
+            </Row>
+        </section>
     );
 }
 

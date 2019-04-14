@@ -179,7 +179,7 @@ class LoginBox extends React.Component {
 
 function AMenu(props) {
     return (
-        <ul className="AMenu">
+        <nav className="AMenu">
             <li><Link to="/" onClick={props.onItemClick}>Startseite</Link></li>
 			<li><Link to="/archiv" onClick={props.onItemClick}>Archiv</Link></li>
 			<li><Link to="/statistik" onClick={props.onItemClick}>Statistik</Link></li>
@@ -194,7 +194,7 @@ function AMenu(props) {
                 </React.Fragment>
             }
             { props.AuthState.loggedin && <li><Link to="#" onClick={() => {props.onItemClick(); props.AuthState.logout()}}>Logout</Link></li>}
-        </ul>
+        </nav>
     );
 }
 

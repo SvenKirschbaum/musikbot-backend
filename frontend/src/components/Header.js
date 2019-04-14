@@ -19,9 +19,11 @@ class Header extends Component {
 
     render() {
         return (
-            <Row>
-                <Col onClick={this.onClick} className="Header text-center"><span>Elite12 // </span><span>Radio</span></Col>
-            </Row>
+            <header>
+                <Row>
+                    <Col onClick={this.onClick} className="Header text-center"><span>Elite12 // </span><span>Radio</span></Col>
+                </Row>
+            </header>
         );
     }
 }
