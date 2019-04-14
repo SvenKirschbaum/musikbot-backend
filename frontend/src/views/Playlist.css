@@ -1,0 +1,69 @@
+.importlist {
+    font-size: 14px;
+    box-sizing: border-box;
+    line-height: 1.7em;
+    text-shadow: none;
+    background-image: url(../res/bgtexture.png);
+    box-shadow: 0px 0px 60px 5px rgba(0,0,0,0.5);
+    padding: 0;
+    text-align: center;
+    background-color: #121212;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    color: #BDBDBD;
+    margin: 0;
+    width: 100%;
+}
+.importlist td {
+    text-align: left;
+}
+.importlist a {
+    color: #292929;
+}
+.importlist a:hover {
+    color: #555;
+}
+.importlist tbody tr {
+    background-color: #B6B6B6;
+    color: #212121;
+}
+.importlist td input[type="checkbox"] {
+    vertical-align: middle;
+}
+.importlist td:first-child {
+    text-align: center;
+}
+.playlisturl {
+    text-align: right;
+}
+.playlisturl th, .importlist tfoot th {
+    padding: 6px;
+}
+.playlisturl input {
+    width: 100%;
+    text-align: right;
+}
+.playlisturl button {
+    width: 100%;
+}
+.importlist tfoot {
+    text-align: right;
+}
+.playlisttitle {
+    text-align: left;
+    vertical-align: middle;
+    color: #BDBDBD;
+    padding-left: 2em;
+}
+.playlisttitle a, .playlisttitle a:hover {
+    color: #BDBDBD;
+}
+.alert ul .success {
+    color: green;
+}
+.alert ul .danger {
+    color: red;
+}
+.alert ul .warning {
+    color: darkorange;
+}

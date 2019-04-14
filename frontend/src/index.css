@@ -225,3 +225,6 @@ button.close {
     background-image: none!important;
     box-shadow: none!important;
 }
+.space-bottom {
+    margin-bottom: 4em;
+}

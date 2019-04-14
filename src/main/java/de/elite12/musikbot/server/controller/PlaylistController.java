@@ -2,6 +2,7 @@ package de.elite12.musikbot.server.controller;
 
 import java.util.Optional;
 
+import de.elite12.musikbot.server.api.dto.PlaylistDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,6 @@ import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.services.MessageService;
 import de.elite12.musikbot.server.services.PlaylistImporterService;
-import de.elite12.musikbot.server.services.PlaylistImporterService.Playlist;
 import de.elite12.musikbot.server.services.SongService;
 import de.elite12.musikbot.shared.SongIDParser;
 import de.elite12.musikbot.shared.SongIDParser.SpotifyPlaylistHelper;
@@ -58,7 +58,7 @@ public class PlaylistController {
 			return "import";
 		}
 		
-		Playlist p = null;
+		PlaylistDTO p = null;
 		if (pid != null) {
 			p = pimport.getyoutubePlaylist(pid);
 		}
@@ -83,7 +83,7 @@ public class PlaylistController {
 
 		for (Integer l : i) {
 			try {
-				songservice.addSong(p.entrys[l].link, u, null);
+				songservice.addSong(p.songs[l].link, u, null);
 			} catch (Exception e) {
 				logger.error("pimport hat falsches Format: ", e);
 				messages.addMessage("Fehler", UserMessage.TYPE_ERROR);

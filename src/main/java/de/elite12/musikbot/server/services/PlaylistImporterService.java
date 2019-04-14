@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.elite12.musikbot.server.api.dto.PlaylistDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import com.wrapper.spotify.model_objects.specification.Paging;
 import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
 import com.wrapper.spotify.model_objects.specification.TrackSimplified;
 
-import de.elite12.musikbot.server.services.PlaylistImporterService.Playlist.Entry;
+import de.elite12.musikbot.server.api.dto.PlaylistDTO.Entry;
 
 @Service
 public class PlaylistImporterService {
@@ -28,24 +29,11 @@ public class PlaylistImporterService {
 	private SpotifyService spotify;
 	
 	private Logger logger = LoggerFactory.getLogger(PlaylistImporterService.class);
-	
-    public static class Playlist {
-        public static class Entry {
-            public String name;
-            public String link;
-        }
 
-        public String id;
-        public String link;
-        public String typ;
-        public String name;
-        public Entry[] entrys;
-    }
-
-    public Playlist getyoutubePlaylist(String id) {
+    public PlaylistDTO getyoutubePlaylist(String id) {
         try {
             logger.debug("Querying Youtube...");
-            Playlist p = new Playlist();
+            PlaylistDTO p = new PlaylistDTO();
             List<com.google.api.services.youtube.model.Playlist> plist = youtube.api().playlists()
                     .list("snippet,contentDetails").setId(id).setFields("items/snippet/title,items/id,items/contentDetails/itemCount")
                     .execute().getItems();
@@ -53,7 +41,7 @@ public class PlaylistImporterService {
             	throw new IOException("Playlist not found");
             }
             com.google.api.services.youtube.model.Playlist yl = plist.get(0);
-           	Long pages = Math.min(8, yl.getContentDetails().getItemCount());
+           	Long pages = Math.min(8, (yl.getContentDetails().getItemCount()/50)+1);
            	
            	p.id = id;
             p.typ = "youtube";
@@ -83,7 +71,7 @@ public class PlaylistImporterService {
                             .execute();
            		}
            	}
-            p.entrys = entries.toArray(new Entry[0]);
+            p.songs = entries.toArray(new Entry[0]);
             return p;
         } catch (IOException e) {
             logger.error("Error loading Playlist", e);
@@ -91,12 +79,12 @@ public class PlaylistImporterService {
         }
     }
 
-    public Playlist getspotifyPlaylist(String uid, String pid) {
+    public PlaylistDTO getspotifyPlaylist(String uid, String pid) {
         com.wrapper.spotify.model_objects.specification.Playlist sp = spotify.getPlaylist(uid, pid);
         if (sp == null) {
             return null;
         }
-        Playlist p = new Playlist();
+        PlaylistDTO p = new PlaylistDTO();
         p.id = pid;
         p.typ = "spotifyplaylist";
         p.name = sp.getName();
@@ -115,21 +103,21 @@ public class PlaylistImporterService {
                 entries.add(e);
             }
         }
-        p.entrys = entries.toArray(new Entry[0]);
+        p.songs = entries.toArray(new Entry[0]);
         return p;
     }
 
-    public Playlist getspotifyAlbum(String said) {
+    public PlaylistDTO getspotifyAlbum(String said) {
         Album a = spotify.getAlbum(said);
         if (a == null) {
             return null;
         }
-        Playlist p = new Playlist();
+        PlaylistDTO p = new PlaylistDTO();
         p.id = said;
         p.typ = "spotifyalbum";
         p.name = a.getName();
         p.link = "https://open.spotify.com/album/" + said;
-        p.entrys = new Entry[Math.min(200,a.getTracks().getTotal())];
+        p.songs = new Entry[Math.min(200,a.getTracks().getTotal())];
         
         List<Entry> entries = new ArrayList<>();
         
@@ -144,7 +132,7 @@ public class PlaylistImporterService {
                 entries.add(e);
             }
         }
-        p.entrys = entries.toArray(new Entry[0]);
+        p.songs = entries.toArray(new Entry[0]);
         return p;
     }
 }

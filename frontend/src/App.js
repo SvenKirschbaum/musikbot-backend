@@ -10,6 +10,7 @@ import Debug from './views/Debug';
 import Log from './views/Log';
 import Gapcloser from './views/Gapcloser';
 import Stats from './views/Stats';
+import Playlist from './views/Playlist';
 import AuthenticationContext from './components/AuthenticationContext';
 
 
@@ -119,6 +120,7 @@ class AppRouter extends Component {
                             <Route path="/log" component={Log} />
                             <Route path="/gapcloser" component={Gapcloser} />
                             <Route path="/statistik" component={Stats} />
+                            <Route path="/import" component={Playlist} />
                             <Route component={NoMatch} />
                         </Switch>
                     </BaseLayout>

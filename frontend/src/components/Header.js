@@ -21,7 +21,7 @@ class Header extends Component {
         return (
             <header>
                 <Row>
-                    <Col onClick={this.onClick} className="Header text-center"><span>Elite12 // </span><span>Radio</span></Col>
+                    <Col className="Header text-center"><span onClick={this.onClick}>Elite12 // </span><span onClick={this.onClick}>Radio</span></Col>
                 </Row>
             </header>
         );
