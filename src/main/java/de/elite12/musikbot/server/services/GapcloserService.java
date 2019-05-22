@@ -5,6 +5,7 @@ import java.util.*;
 
 import javax.annotation.PostConstruct;
 
+import de.elite12.musikbot.server.data.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,9 @@ public class GapcloserService {
     @Autowired
     private ClientService client;
 
+    @Autowired
+    private UserRepository userRepository;
+
 
     private static final Logger logger = LoggerFactory.getLogger(GapcloserService.class);
 
@@ -114,7 +118,7 @@ public class GapcloserService {
         		s.setPlayedAt(new Date());
         		s.setLink(ut.getLink());
         		s.setTitle(ut.getTitle());
-        		s.setGuestAuthor("Automatisch");
+        		s.setUserAuthor(userRepository.findByName("Automatisch"));
         		s.setDuration(ut.getDuration());
 
         		s = songs.save(s);

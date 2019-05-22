@@ -77,6 +77,6 @@ public class Song implements Serializable {
     
     @Transient
     public String getAuthor() {
-    	return this.getUserAuthor()==null ? "Gast" : this.getUserAuthor().getName();
+        return this.getUserAuthor()==null ? "Gast" : this.getUserAuthor().getName();
     }
 }
