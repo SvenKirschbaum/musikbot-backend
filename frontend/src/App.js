@@ -11,6 +11,7 @@ import Log from './views/Log';
 import Gapcloser from './views/Gapcloser';
 import Stats from './views/Stats';
 import Playlist from './views/Playlist';
+import UserPage from './views/UserPage';
 import AuthenticationContext from './components/AuthenticationContext';
 
 
@@ -109,7 +110,7 @@ class AppRouter extends Component {
     render() {
         return (
             <Router>
-                <AuthenticationContext.Provider value={{ ...this.state, login: this.login, logout: this.logout}}>
+                <AuthenticationContext.Provider value={{ ...this.state, login: this.login, logout: this.logout, reload: this.loadUser}}>
                     <BaseLayout>
                         <Switch>
                             <Route path="/" exact component={Home} />
@@ -121,6 +122,7 @@ class AppRouter extends Component {
                             <Route path="/gapcloser" component={Gapcloser} />
                             <Route path="/statistik" component={Stats} />
                             <Route path="/import" component={Playlist} />
+                            <Route path="/users/:name" component={UserPage} />
                             <Route component={NoMatch} />
                         </Switch>
                     </BaseLayout>
