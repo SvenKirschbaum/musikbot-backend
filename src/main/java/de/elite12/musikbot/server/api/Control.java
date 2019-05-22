@@ -21,7 +21,7 @@ import de.elite12.musikbot.server.services.SongService;
 import de.elite12.musikbot.server.data.entity.Song;
 
 
-@RequestMapping("/api/control")
+@RequestMapping("/control")
 @PreAuthorize("hasRole('admin')")
 @RestController
 public class Control {

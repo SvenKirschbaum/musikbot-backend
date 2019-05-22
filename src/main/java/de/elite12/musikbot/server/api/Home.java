@@ -16,7 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-@RequestMapping("/api/home")
+@RequestMapping("/home")
 @RestController
 public class Home {
 	

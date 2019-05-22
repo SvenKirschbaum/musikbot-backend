@@ -22,7 +22,7 @@ public class ErrorController implements org.springframework.boot.web.servlet.err
 	}
 	
 	@RequestMapping("/error")
-    public String handleError(HttpServletRequest request, HttpServletResponse response, Model model) throws Exception {
+    public void handleError(HttpServletRequest request, HttpServletResponse response, Model model) throws Exception {
 		Integer statusCode = (Integer) request.getAttribute("javax.servlet.error.status_code");
 	    Exception exception = (Exception) request.getAttribute("javax.servlet.error.exception");
 	    String errormsg = (String) request.getAttribute("javax.servlet.error.message");
@@ -38,11 +38,5 @@ public class ErrorController implements org.springframework.boot.web.servlet.err
 		if(exception != null) {
 			throw exception;
 		}
-		
-		model.addAttribute("code", statusCode);
-		model.addAttribute("path", path);
-		model.addAttribute("message", HttpStatus.resolve(statusCode).getReasonPhrase());
-		
-        return "error";
     }
 }

@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.stream.StreamSupport;
 
 @RestController
-@RequestMapping(path = "/api/v2/playlist")
+@RequestMapping(path = "/v2/playlist")
 @PreAuthorize("hasRole('admin')")
 public class Playlist {
 

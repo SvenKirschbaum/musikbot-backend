@@ -20,7 +20,7 @@ import java.util.stream.StreamSupport;
 
 @RestController
 @PreAuthorize("hasRole('admin')")
-@RequestMapping(path = "/api/v2/lockedsongs")
+@RequestMapping(path = "/v2/lockedsongs")
 public class LockedSongs {
 
     private Logger logger = LoggerFactory.getLogger(LockedSongs.class);

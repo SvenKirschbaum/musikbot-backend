@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-@RequestMapping("/api/v2/songs")
+@RequestMapping("/v2/songs")
 @RestController
 public class Songv2 {
 	

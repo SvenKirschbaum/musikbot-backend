@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @RestController
-@RequestMapping(path = "/api/v2/stats")
+@RequestMapping(path = "/v2/stats")
 public class Stats {
 
     @Autowired

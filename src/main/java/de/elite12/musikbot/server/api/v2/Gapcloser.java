@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @PreAuthorize("hasRole('admin')")
-@RequestMapping(path = "/api/v2/gapcloser")
+@RequestMapping(path = "/v2/gapcloser")
 public class Gapcloser {
 
     @Autowired

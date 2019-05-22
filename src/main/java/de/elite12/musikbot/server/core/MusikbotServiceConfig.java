@@ -18,7 +18,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import de.elite12.musikbot.server.filter.CookieFilter;
 import de.elite12.musikbot.server.filter.TokenFilter;
 
 @Configuration
@@ -26,9 +25,6 @@ import de.elite12.musikbot.server.filter.TokenFilter;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableScheduling
 public class MusikbotServiceConfig {
-	
-	@Autowired
-	private CookieFilter cookieFilter;
 	
 	@Configuration
 	@Order(1)
@@ -38,10 +34,10 @@ public class MusikbotServiceConfig {
 		
 		@Override
 	    protected void configure(HttpSecurity http) throws Exception {
-			http.antMatcher("/api/**")
+			http
 				.csrf().disable()
 				.cors().and()
-				.sessionManagement().maximumSessions(1).and().sessionCreationPolicy(SessionCreationPolicy.NEVER).and()
+				.sessionManagement().maximumSessions(1).and().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 				.addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class)
 				.headers()
 					.xssProtection()
@@ -70,50 +66,5 @@ public class MusikbotServiceConfig {
 			source.registerCorsConfiguration("/**", configuration);
 			return source;
 		}
-	}
-	
-	@Configuration
-	@Order(2)
-	public static class MainWebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
-		
-		@Override
-	    protected void configure(HttpSecurity http) throws Exception {
-			http
-				.sessionManagement()
-					.maximumSessions(1)
-					.and()
-					.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
-					.and()
-				.formLogin()
-					.loginPage("/")
-					.loginProcessingUrl("/login")
-					.defaultSuccessUrl("/")
-					.usernameParameter("user")
-					.passwordParameter("password")
-					.failureUrl("/")
-					.and()
-				.logout()
-					.logoutSuccessUrl("/")
-					.and()
-				.csrf()
-					.and()
-				.headers()
-					.xssProtection()
-						.disable()
-					.contentTypeOptions()
-						.disable()
-					.frameOptions()
-						.disable()
-					.and();
-	    }
-	}
-	
-	@Bean
-	public FilterRegistrationBean<CookieFilter> cookieFilterRegistration() {
-		FilterRegistrationBean<CookieFilter> t = new FilterRegistrationBean<>();
-		t.setFilter(cookieFilter);
-		t.addUrlPatterns("/api/*");
-		t.setMatchAfter(true);
-		return t;
 	}
 }

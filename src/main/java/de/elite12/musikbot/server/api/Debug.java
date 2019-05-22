@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import de.elite12.musikbot.server.services.ClientService;
 
 @RestController
-@RequestMapping("/api/debug")
+@RequestMapping("/debug")
 @PreAuthorize("hasRole('admin')")
 public class Debug {
 	

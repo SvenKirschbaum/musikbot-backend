@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 
-@RequestMapping("/api/v2/user")
+@RequestMapping("/v2/user")
 @RestController
 public class Userv2 {
 

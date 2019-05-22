@@ -12,7 +12,7 @@ import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.services.UserService;
 
 @RestController
-@RequestMapping("/api/v2/login")
+@RequestMapping("/v2/login")
 public class Login {
 
     @Autowired

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(path = "/api/v2/archiv")
+@RequestMapping(path = "/v2/archiv")
 public class Archiv {
     @Autowired
     private SongRepository songs;

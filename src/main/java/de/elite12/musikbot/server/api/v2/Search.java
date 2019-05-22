@@ -9,7 +9,7 @@ import javax.persistence.Tuple;
 import java.util.ArrayList;
 import java.util.Optional;
 
-@RequestMapping("/api/v2/search")
+@RequestMapping("/v2/search")
 @RestController
 public class Search {
 

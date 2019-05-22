@@ -14,7 +14,7 @@ import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.services.SongService;
 
 @RestController
-@RequestMapping("/api/status")
+@RequestMapping("/status")
 public class Status {
     @Context
     private HttpServletRequest req;
