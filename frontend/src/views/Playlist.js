@@ -174,11 +174,13 @@ class Playlist extends Component {
                                         </form>
                                     </th>
                                 </tr>
-                                <tr>
-                                    <th></th>
-                                    <th>Titel</th>
-                                    <th>Link</th>
-                                </tr>
+                                {this.state.songs.length>0 && (
+                                    <tr>
+                                        <th></th>
+                                        <th>Titel</th>
+                                        <th>Link</th>
+                                    </tr>
+                                )}
                             </thead>
                             <tbody>
                                 <TransitionGroup component={null} exit={false}>
@@ -190,6 +192,7 @@ class Playlist extends Component {
                                 </TransitionGroup>
                             </tbody>
                             <tfoot>
+                            {this.state.songs.length>0 && (
                                 <tr>
                                     <th></th>
                                     <th></th>
@@ -197,6 +200,7 @@ class Playlist extends Component {
                                         <Button disabled={this.state.songs.length===0} onClick={this.onSubmit}>Einfügen</Button>
                                     </th>
                                 </tr>
+                            )}
                             </tfoot>
                         </table>
                     </Col>
