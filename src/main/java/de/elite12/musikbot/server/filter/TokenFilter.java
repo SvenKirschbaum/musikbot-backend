@@ -8,6 +8,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Component;
 
 import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.data.entity.User;
-import de.elite12.musikbot.server.exception.InvalidAuthorizationException;
 import de.elite12.musikbot.server.services.UserService;
 
 @Component
@@ -39,7 +39,9 @@ public class TokenFilter implements Filter{
 				SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(up, "", up.getAuthorities()));
 			}
 			else if(authheader != null && !authheader.isEmpty()) {
-				throw new InvalidAuthorizationException("Authorization Header invalid");
+				HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+				httpServletResponse.sendError(403,"Authorization Header invalid");
+				return;
 			}
 			chain.doFilter(request, response);
 		}
