@@ -48,6 +48,13 @@ public class Debug {
 						SpringApplication.exit(appContext, () -> 0);
 					}
 				}, 2500);
+				new Timer().schedule(new TimerTask() {
+
+					@Override
+					public void run() {
+						System.exit(0);
+					}
+				}, 10000);
 				break;
 			}
 		}
