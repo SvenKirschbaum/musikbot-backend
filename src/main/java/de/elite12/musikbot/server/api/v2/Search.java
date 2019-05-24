@@ -7,20 +7,24 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.Tuple;
 import java.util.ArrayList;
-import java.util.Optional;
 
 @RequestMapping("/v2/search")
 @RestController
 public class Search {
 
-    @Autowired
+    final
     SongRepository songrepository;
 
-    @RequestMapping(path = "", method = RequestMethod.POST, produces = {"application/json"}, consumes = {"text/plain"})
-    public SearchResult[] autocomplete(@RequestBody Optional<String> term) {
+    @Autowired
+    public Search(SongRepository songrepository) {
+        this.songrepository = songrepository;
+    }
 
-        if (!term.isPresent()) return new SearchResult[0];
-        Iterable<Tuple> res = songrepository.findSearchResult(term.get());
+    @RequestMapping(path = "", method = RequestMethod.POST, produces = {"application/json"}, consumes = {"text/plain"})
+    public SearchResult[] autocomplete(@RequestBody(required = false) String term) {
+
+        if (term == null) return new SearchResult[0];
+        Iterable<Tuple> res = songrepository.findSearchResult(term);
         ArrayList<SearchResult> al = new ArrayList<>();
         res.forEach(t -> al.add(new SearchResult(t.get(1, String.class), t.get(0, String.class))));
 

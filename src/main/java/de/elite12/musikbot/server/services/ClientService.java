@@ -24,29 +24,28 @@ import de.elite12.musikbot.shared.Command;
 @Service
 public class ClientService implements Runnable {
 	
-	@Autowired
-	private TaskExecutor taskExecutor;
-	
+	private final TaskExecutor taskExecutor;
+
+	@SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
 	@Autowired
 	private SongService songservice;
 	
-	@Autowired
-	private MusikbotServiceProperties config;
+	private final MusikbotServiceProperties config;
 
 	
 	private ServerSocket sock;
 	private Socket client;
-	
-    private ObjectInputStream in;
-    private ObjectOutputStream out;
+
+	private ObjectOutputStream out;
     private boolean waitforsong = false;
     private boolean ispaused = false;
     private State state = State.STARTED;
     private Thread thread;
 	
-	private static Logger logger = LoggerFactory.getLogger(ClientService.class);
+	private static final Logger logger = LoggerFactory.getLogger(ClientService.class);
 
-	public ClientService() throws IOException {
+	@Autowired
+	public ClientService(TaskExecutor taskExecutor, MusikbotServiceProperties config) throws IOException {
 		logger.debug("Initializing ConnectionListener...");
 
 		try {
@@ -56,6 +55,8 @@ public class ClientService implements Runnable {
 			logger.error("Error Creating ServerSocket", e);
 			throw e;
 		}
+		this.taskExecutor = taskExecutor;
+		this.config = config;
 	}
 	
 	@PostConstruct
@@ -90,9 +91,9 @@ public class ClientService implements Runnable {
 
 				this.out = new ObjectOutputStream(client.getOutputStream());
 	            this.out.flush();
-	            this.in = new ObjectInputStream(client.getInputStream());
+				ObjectInputStream in = new ObjectInputStream(client.getInputStream());
 	            
-	            Command authcmd = null;
+	            Command authcmd;
 	            logger.debug("Requesting Auth");
 	            this.out.writeObject(new Command(Command.REQUEST_AUTH));
 	            this.out.flush();
@@ -131,47 +132,17 @@ public class ClientService implements Runnable {
 		                    }
 		                    case Command.REQUEST_SONG: {
 		                        logger.debug("Got Song Request");
-		                        Song song = songservice.getnextSong();
-		                        if (song != null) {
-		                            this.sendSong(song);
-		                        } else {
-		                            this.out.writeObject(new Command(Command.NO_SONG_AVAILABLE));
-		                            this.out.flush();
-		                            songservice.setState("Warte auf neue Lieder");
-		                            songservice.setSongtitle(null);
-		                            songservice.setSonglink(null);
-		                            this.waitforsong = true;
-		                        }
-		                        break;
+								handleRequestSong();
+								break;
 		                    }
 		                    case Command.SONG_FINISHED: {
 		                        logger.debug("Got Song finished");
-		                        Song song = songservice.getnextSong();
-		                        if (song != null) {
-		                            this.sendSong(song);
-		                        } else {
-		                            this.waitforsong = true;
-		                            this.out.writeObject(new Command(Command.NO_SONG_AVAILABLE));
-		                            songservice.setState("Warte auf neue Lieder");
-		                            songservice.setSongtitle(null);
-		                            songservice.setSonglink(null);
-		                            this.out.flush();
-		                        }
+								handleRequestSong();
 		                        break;
 		                    }
 		    				case Command.PLAYBACK_ERROR: {
-		    					logger.error("Client reported PLAYBACK_ERROR: " + (String) cmd.getdata());
-		    					Song song = songservice.getnextSong();
-		    					if (song != null) {
-		    						this.sendSong(song);
-		    					} else {
-		    						this.waitforsong = true;
-		    						this.out.writeObject(new Command(Command.NO_SONG_AVAILABLE));
-		    						songservice.setState("Warte auf neue Lieder");
-		    						songservice.setSongtitle(null);
-		    						songservice.setSonglink(null);
-		    						this.out.flush();
-		    					}
+		    					logger.error("Client reported PLAYBACK_ERROR: " + cmd.getdata());
+								handleRequestSong();
 		    					break;
 		    				}
 	                    }
@@ -209,10 +180,24 @@ public class ClientService implements Runnable {
 		}
 		logger.info("Shutting down ConnectionListener");
 	}
-	
+
+	private void handleRequestSong() throws IOException {
+		Song song = songservice.getnextSong();
+		if (song != null) {
+			this.sendSong(song);
+		} else {
+			this.out.writeObject(new Command(Command.NO_SONG_AVAILABLE));
+			this.out.flush();
+			songservice.setState("Warte auf neue Lieder");
+			songservice.setSongtitle(null);
+			songservice.setSonglink(null);
+			this.waitforsong = true;
+		}
+	}
+
 	public void notifynewSong() {
         logger.debug("Notify Song");
-        if(!checkConnected()) return;
+        if(isNotConnected()) return;
         if (this.waitforsong) {
             this.sendSong(songservice.getnextSong());
             this.waitforsong = false;
@@ -221,7 +206,7 @@ public class ClientService implements Runnable {
 	
 	public void pause() {
         logger.debug("Pausing");
-        if(!checkConnected()) return;
+        if(isNotConnected()) return;
         if (this.state == State.STARTED) {
             this.ispaused = !this.ispaused;
             try {
@@ -240,7 +225,7 @@ public class ClientService implements Runnable {
 
     public void stop() {
         logger.debug("Stopping");
-        if(!checkConnected()) return;
+        if(isNotConnected()) return;
         if (this.state == State.STARTED) {
             this.state = State.STOPPED;
             try {
@@ -257,22 +242,12 @@ public class ClientService implements Runnable {
 
     public void start() {
         logger.debug("Starting...");
-        if(!checkConnected()) return;
+        if(isNotConnected()) return;
         if (this.state == State.STOPPED) {
             this.state = State.STARTED;
             try {
-                Song song = songservice.getnextSong();
-                if (song != null) {
-                    this.sendSong(song);
-                } else {
-                    this.out.writeObject(new Command(Command.NO_SONG_AVAILABLE));
-                    this.out.flush();
-                    songservice.setState("Warte auf neue Lieder");
-                    songservice.setSongtitle(null);
-                    songservice.setSonglink(null);
-                    this.waitforsong = true;
-                }
-            } catch (IOException e) {
+				handleRequestSong();
+			} catch (IOException e) {
                 logger.error("Unknown Error", e);
             }
         }
@@ -280,7 +255,7 @@ public class ClientService implements Runnable {
     
     private void sendSong(Song song) {
         logger.debug("Sending Song...");
-        if(!checkConnected()) return;
+        if(isNotConnected()) return;
         try {
         	this.waitforsong = false;
         	songservice.setState("Playing");
@@ -304,7 +279,7 @@ public class ClientService implements Runnable {
 
     public void sendShutdown() {
         logger.debug("Sending Shutdown...");
-        if(!checkConnected()) return;
+        if(isNotConnected()) return;
         try {
             Command c = new Command(Command.SHUTDOWN);
             this.out.writeObject(c);
@@ -314,13 +289,12 @@ public class ClientService implements Runnable {
         }
     }
     
-    private boolean checkConnected() {
-    	return this.client != null && !this.client.isClosed() && this.client.isConnected();
+    private boolean isNotConnected() {
+    	return this.client == null || this.client.isClosed() || !this.client.isConnected();
     }
 	
-	public static enum State {
+	public enum State {
 		STARTED,
-		PAUSED,
 		STOPPED
 	}
 }

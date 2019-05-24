@@ -1,6 +1,5 @@
 package de.elite12.musikbot.server.api.dto;
 
-import de.elite12.musikbot.server.api.v2.Stats;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

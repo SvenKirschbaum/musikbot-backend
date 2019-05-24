@@ -26,21 +26,25 @@ import java.util.Optional;
 @RestController
 public class Songv2 {
 	
-	@Autowired
-	private SongService songservice;
+	private final SongService songservice;
 	
-	@Autowired
-	private SongRepository songrepository;
+	private final SongRepository songrepository;
 	
-	@Autowired
-	private LockedSongRepository lockedsongrepository;
+	private final LockedSongRepository lockedsongrepository;
 	
-	@Autowired
-	private GuestSession guestinfo;
+	private final GuestSession guestinfo;
 	
-	private static Logger logger = LoggerFactory.getLogger(Songv2.class);
-    
-    
+	private static final Logger logger = LoggerFactory.getLogger(Songv2.class);
+
+    @Autowired
+    public Songv2(SongService songservice, SongRepository songrepository, LockedSongRepository lockedsongrepository, GuestSession guestinfo) {
+        this.songservice = songservice;
+        this.songrepository = songrepository;
+        this.lockedsongrepository = lockedsongrepository;
+        this.guestinfo = guestinfo;
+    }
+
+
     @RequestMapping(path="{ids}", method = RequestMethod.GET, produces = {"application/json"})
     public ResponseEntity<de.elite12.musikbot.server.data.entity.Song[]> getSong(@PathVariable String ids) {
         String[] a = ids.split(",");
@@ -48,27 +52,28 @@ public class Songv2 {
         try {
             for (int i = 0; i < a.length; i++) {
                 long id = Long.parseLong(a[i]);
-                r[i] = songrepository.findById(id).get();
+                r[i] = songrepository.findById(id).orElseThrow();
             }
         } catch (NumberFormatException e) {
         	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch(NoSuchElementException e) {
         	return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<de.elite12.musikbot.server.data.entity.Song[]>(r, HttpStatus.OK);
+        return new ResponseEntity<>(r, HttpStatus.OK);
     }
     
     @PreAuthorize("hasRole('admin')")
     @RequestMapping(path="{ids}", method = RequestMethod.DELETE, produces = {"application/json"})
-    public ResponseEntity<Object> deleteSong(@PathVariable String ids, @RequestParam("lock") Optional<Boolean> lock) {
+    public ResponseEntity<Object> deleteSong(@PathVariable String ids, @RequestParam(value = "lock",required = false) Boolean lock) {
         String[] a = ids.split("/");
+        lock = lock == null ? false : lock;
         try {
             for (String b : a) {
                 long id = Long.parseLong(b);
                 Optional<de.elite12.musikbot.server.data.entity.Song> song = songrepository.findById(id);
                 if(!song.isPresent()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
                 
-                if (lock.isPresent() && lock.get()) {
+                if (lock) {
                     LockedSong ls = new LockedSong();
                     ls.setTitle(song.get().getTitle());
                     ls.setUrl(song.get().getLink());
@@ -78,7 +83,7 @@ public class Songv2 {
                 
                 songrepository.delete(song.get());
             }
-            logger.info(String.format("Songs %s by %s: %s", lock.orElse(Boolean.FALSE) ? "deleted" : "deleted and locked", ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(), Arrays.toString(a)));
+            logger.info(String.format("Songs %s by %s: %s", lock ? "deleted" : "deleted and locked", ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(), Arrays.toString(a)));
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (NumberFormatException e) {
         	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -86,16 +91,16 @@ public class Songv2 {
     }
     
     @RequestMapping(path="", method = RequestMethod.POST, consumes = {"text/plain"}, produces = {"application/json"})
-    public createSongResponse createSong(@RequestBody Optional<String> url) {
+    public createSongResponse createSong(@RequestBody(required = false) String url) {
     	Object p = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     	logger.info(SecurityContextHolder.getContext().getAuthentication().toString());
     	User u = p instanceof UserPrincipal ? ((UserPrincipal) p).getUser() : null;
 
-    	if(!url.isPresent()) {
+    	if(url == null) {
             return new createSongResponse(false, false, "Songlink kann nicht leer sein");
         }
 
-        return songservice.addSongv2(url.get(), u, guestinfo);
+        return songservice.addSong(url, u, guestinfo);
     }
 
 
@@ -104,10 +109,11 @@ public class Songv2 {
     public ResponseEntity<Object> sortsong(@PathVariable("ids") String sid, @RequestBody(required=false) String prev) {
         try {
         	long id = Long.parseLong(sid);
-        	long pr = -1;
+        	long pr;
             try {
                 pr = Long.parseLong(prev);
             } catch (NumberFormatException e) {
+                pr = -1;
             }
             long low = Long.MAX_VALUE;
             
@@ -118,14 +124,13 @@ public class Songv2 {
             	cs = songs.iterator().next();
                 low = cs.getSort();
             }
-            iterator = songs.iterator();
             if (pr == -1) {
                 pr = low - 1;
             } else {
-                pr = songrepository.findById(pr).get().getSort();
+                pr = songrepository.findById(pr).orElseThrow().getSort();
             }
             
-            de.elite12.musikbot.server.data.entity.Song s = songrepository.findById(id).get();
+            de.elite12.musikbot.server.data.entity.Song s = songrepository.findById(id).orElseThrow();
             s.setSort(pr +1);
             songrepository.save(s);
             do {
@@ -135,9 +140,8 @@ public class Songv2 {
                         low++;
                     }
                     if (cs.getSort() != low) {
-                    	s = songrepository.findById(cs.getId()).get();
-                        s.setSort(low);
-                        songrepository.save(s);
+                        cs.setSort(low);
+                        songrepository.save(cs);
                     }
                     low++;
                 }
@@ -145,7 +149,7 @@ public class Songv2 {
             if (SecurityContextHolder.getContext().getAuthentication() != null) {
                logger.info(String.format("Playlist sorted by %s", ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
             }
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException | NoSuchElementException e) {
         	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(HttpStatus.OK);

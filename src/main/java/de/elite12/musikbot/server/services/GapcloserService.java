@@ -32,6 +32,15 @@ import lombok.AccessLevel;
 @Service
 public class GapcloserService {
 
+    @Autowired
+    public GapcloserService(SettingRepository settings, SongRepository songs, YouTubeService youtube, SpotifyService spotify, UserRepository userRepository) {
+        this.settings = settings;
+        this.songs = songs;
+        this.youtube = youtube;
+        this.spotify = spotify;
+        this.userRepository = userRepository;
+    }
+
     public enum Mode {
         OFF,
         RANDOM100,
@@ -46,23 +55,15 @@ public class GapcloserService {
     @Setter(AccessLevel.PRIVATE)
     private Permutationhelper permutation;
 
-    @Autowired
-    private SettingRepository settings;
+    private final SettingRepository settings;
 
-    @Autowired
-    private SongRepository songs;
+    private final SongRepository songs;
 
-    @Autowired
-    private YouTubeService youtube;
+    private final YouTubeService youtube;
 
-    @Autowired
-    private SpotifyService spotify;
+    private final SpotifyService spotify;
 
-    @Autowired
-    private ClientService client;
-
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
 
     private static final Logger logger = LoggerFactory.getLogger(GapcloserService.class);
@@ -191,8 +192,6 @@ public class GapcloserService {
     public void setMode(Mode mode) {
         this.mode = mode;
         this.save();
-        if(mode != Mode.OFF)
-        	client.notifynewSong();
     }
 
     public String getPlaylist() {
@@ -229,7 +228,7 @@ public class GapcloserService {
 
     private class Permutationhelper {
         private int p;
-        private List<Integer> list;
+        private final List<Integer> list;
 
         public Permutationhelper(int size) {
             this.p = 0;

@@ -10,7 +10,7 @@ import de.elite12.musikbot.server.data.entity.User;
 
 @Repository
 public interface TokenRepository extends CrudRepository<Token, Long> {
-    public Optional<Token> findByToken(String token);
+    Optional<Token> findByToken(String token);
     
-    public Optional<Token> findByOwnerAndExternal(User u, boolean external);
+    Optional<Token> findByOwnerAndExternal(User u, boolean external);
 }

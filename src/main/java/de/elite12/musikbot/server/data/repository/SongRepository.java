@@ -59,21 +59,32 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>{
 	Iterable<Tuple> findTopUser();
 	
 	@Query(value = "SELECT title,link,COUNT(*) FROM song s WHERE user_author = ?1 GROUP BY link ORDER BY COUNT(*) DESC LIMIT 10", nativeQuery = true)
-	Iterable<Tuple> findTopByUser(User u);
+	Iterable<TopResult> findTopByUser(User u);
 	
 	@Query(value = "SELECT title,link,COUNT(*) FROM song s WHERE guest_author = ?1 GROUP BY link ORDER BY COUNT(*) DESC LIMIT 10", nativeQuery = true)
-	Iterable<Tuple> findTopByGuest(String u);
+	Iterable<TopResult> findTopByGuest(String u);
 	
 	@Query(value = "SELECT title,link,COUNT(*) FROM song s WHERE user_author = ?1 AND skipped = true GROUP BY link ORDER BY COUNT(*) DESC LIMIT 10", nativeQuery = true)
-	Iterable<Tuple> findTopSkippedByUser(User u);
+	Iterable<TopResult> findTopSkippedByUser(User u);
 	
 	@Query(value = "SELECT title,link,COUNT(*) FROM song s WHERE guest_author = ?1 AND skipped = true GROUP BY link ORDER BY COUNT(*) DESC LIMIT 10", nativeQuery = true)
-	Iterable<Tuple> findTopSkippedByGuest(String u);
+	Iterable<TopResult> findTopSkippedByGuest(String u);
 	
 	@Query(value = "SELECT id,title,link FROM song s WHERE user_author = ?1 ORDER BY id DESC LIMIT 10", nativeQuery = true)
-	Iterable<Tuple> findRecentByUser(User u);
+	Iterable<RecentResult> findRecentByUser(User u);
 	
 	@Query(value = "SELECT id,title,link FROM song s WHERE guest_author = ?1 ORDER BY id DESC LIMIT 10", nativeQuery = true)
-	Iterable<Tuple> findRecentByGuest(String u);
-	
+	Iterable<RecentResult> findRecentByGuest(String u);
+
+	interface TopResult {
+		String gettitle();
+		String getlink();
+		Long getcount();
+	}
+
+	interface RecentResult {
+		Long getid();
+		String gettitle();
+		String getlink();
+	}
 }

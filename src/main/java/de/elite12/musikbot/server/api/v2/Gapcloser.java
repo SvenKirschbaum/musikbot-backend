@@ -16,10 +16,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = "/v2/gapcloser")
 public class Gapcloser {
 
-    private static Logger logger = LoggerFactory.getLogger(Gapcloser.class);
+    private static final Logger logger = LoggerFactory.getLogger(Gapcloser.class);
+
+    private final GapcloserService gapcloserService;
 
     @Autowired
-    private GapcloserService gapcloserService;
+    public Gapcloser(GapcloserService gapcloserService) {
+        this.gapcloserService = gapcloserService;
+    }
 
     @GetMapping
     public GapcloserDTO getAction() {

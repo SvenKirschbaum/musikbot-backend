@@ -17,23 +17,26 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
-import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping(path = "/v2/playlist")
 @PreAuthorize("hasRole('admin')")
 public class Playlist {
 
-    @Autowired
-    private PlaylistImporterService playlistImporterService;
+    private final PlaylistImporterService playlistImporterService;
+
+    private final SongService songservice;
+
+    private final GuestSession guestinfo;
+
+    private static final Logger logger = LoggerFactory.getLogger(Playlist.class);
 
     @Autowired
-    private SongService songservice;
-
-    @Autowired
-    private GuestSession guestinfo;
-
-    private static Logger logger = LoggerFactory.getLogger(Playlist.class);
+    public Playlist(PlaylistImporterService playlistImporterService, SongService songservice, GuestSession guestinfo) {
+        this.playlistImporterService = playlistImporterService;
+        this.songservice = songservice;
+        this.guestinfo = guestinfo;
+    }
 
     @GetMapping
     public PlaylistDTO getAction(@RequestParam String url) {
@@ -67,6 +70,6 @@ public class Playlist {
 
         logger.info(String.format("Playlist imported by %s", u.toString()));
 
-        return Arrays.stream(entries).map(entry -> songservice.addSongv2(entry.link,u,guestinfo)).toArray(createSongResponse[]::new);
+        return Arrays.stream(entries).map(entry -> songservice.addSong(entry.link,u,guestinfo)).toArray(createSongResponse[]::new);
     }
 }

@@ -8,7 +8,7 @@ public class GenericTest {
 
     @Test
     public final void test() {
-        assertTrue(0 == 2 - 2);
+        assertTrue(true);
     }
 
 }

@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.YouTubeRequestInitializer;
@@ -22,13 +20,7 @@ public class YouTubeService {
 	
 	public YouTubeService(@Autowired MusikbotServiceProperties config) throws GeneralSecurityException, IOException {
 		
-		this.yt = new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), new JacksonFactory(), new HttpRequestInitializer() {
-			
-			@Override
-			public void initialize(HttpRequest request) throws IOException {
-				
-			}
-		}).setYouTubeRequestInitializer(new YouTubeRequestInitializer(config.getYoutube().getApikey())).setApplicationName("e12-musikbot").build();
+		this.yt = new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), new JacksonFactory(), request -> {}).setYouTubeRequestInitializer(new YouTubeRequestInitializer(config.getYoutube().getApikey())).setApplicationName("e12-musikbot").build();
 	}
 	
 	public YouTube api() {

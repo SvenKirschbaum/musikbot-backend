@@ -22,8 +22,12 @@ import de.elite12.musikbot.server.services.UserService;
 @Component
 public class TokenFilter implements Filter{
 	
+	private final UserService userservice;
+
 	@Autowired
-	private UserService userservice;
+	public TokenFilter(UserService userservice) {
+		this.userservice = userservice;
+	}
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -49,7 +53,7 @@ public class TokenFilter implements Filter{
 	
 	private String getToken(String raw) {
 		if (raw != null && raw.startsWith("Bearer ")) {
-            return raw.substring(7, raw.length());
+            return raw.substring(7);
         }
         return null;
 	}

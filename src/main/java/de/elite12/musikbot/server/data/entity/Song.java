@@ -45,7 +45,7 @@ public class Song implements Serializable {
     @NotNull
     private String link;
     @ManyToOne
-	@JoinColumn(name="USER_AUTHOR", nullable=true)
+	@JoinColumn(name="USER_AUTHOR")
     @JsonIgnore
     @Nullable
     private User userAuthor;

@@ -15,7 +15,7 @@ import de.elite12.musikbot.shared.SongIDParser;
 
 public class UnifiedTrack {
 
-	private Song song;
+	private final Song song;
 
 	private Video video = null;
 	private Track track = null;
@@ -60,7 +60,7 @@ public class UnifiedTrack {
 				throw new TrackNotAvailableException("Not found");
 			}
 		}
-		else if (SID != null) {
+		else {
 			this.type = Type.SPOTIFY;
 			try {
 				this.track = spotify.getTrackRaw(SongIDParser.getSID(s.getLink()));

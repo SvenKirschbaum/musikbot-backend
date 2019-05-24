@@ -27,17 +27,21 @@ import de.elite12.musikbot.server.data.entity.Song;
 @RestController
 public class Control {
 	
+	private final ClientService client;
+	
+	private final SongService songservice;
+	
+	private final SongRepository songrepository;
+	
+	private static final Logger logger = LoggerFactory.getLogger(Control.class);
+
 	@Autowired
-	private ClientService client;
-	
-	@Autowired
-	private SongService songservice;
-	
-	@Autowired
-	private SongRepository songrepository;
-	
-	private static Logger logger = LoggerFactory.getLogger(Control.class);
-	
+	public Control(ClientService client, SongService songservice, SongRepository songrepository) {
+		this.client = client;
+		this.songservice = songservice;
+		this.songrepository = songrepository;
+	}
+
 	@RequestMapping(path="/start", method = RequestMethod.POST)
 	public void start() {
 		client.start();

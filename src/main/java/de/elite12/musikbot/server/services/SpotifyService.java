@@ -32,15 +32,19 @@ import de.elite12.musikbot.server.core.MusikbotServiceProperties;
 @Service
 public class SpotifyService {
 	
-	@Autowired
-	private MusikbotServiceProperties config;
+	private final MusikbotServiceProperties config;
 
     private SpotifyApi api;
 
     private boolean authorized = false;
     
-    private Logger logger = LoggerFactory.getLogger(SpotifyService.class);
-    
+    private final Logger logger = LoggerFactory.getLogger(SpotifyService.class);
+
+    @Autowired
+    public SpotifyService(MusikbotServiceProperties config) {
+        this.config = config;
+    }
+
     @PostConstruct
     public void postConstruct() {
     	api = new SpotifyApi.Builder().setClientId(config.getSpotify().getId()).setClientSecret(config.getSpotify().getSecret()).build();
@@ -74,11 +78,7 @@ public class SpotifyService {
         check();
         GetTrackRequest r = api.getTrack(sid).build();
         try {
-            Track t = r.execute();
-            //if (!t.getAvailableMarkets().contains("DE") && !t.getAvailableMarkets().isEmpty()) {
-            //    t = null;
-            //}
-            return t;
+            return r.execute();
         } catch (IOException | SpotifyWebApiException e) {
             logger.error("Error reading Track", e);
             return null;
@@ -91,8 +91,7 @@ public class SpotifyService {
         }
         check();
         GetTrackRequest r = api.getTrack(sid).build();
-        Track t = r.execute();
-        return t;
+        return r.execute();
     }
 
     public Album getAlbum(String sid) {
@@ -102,8 +101,7 @@ public class SpotifyService {
         check();
         GetAlbumRequest r = api.getAlbum(sid).build();
         try {
-            Album t = r.execute();
-            return t;
+            return r.execute();
         } catch (IOException | SpotifyWebApiException e) {
             logger.error("Error reading Album", e);
             return null;
@@ -122,8 +120,7 @@ public class SpotifyService {
         @SuppressWarnings("deprecation")
 		GetPlaylistRequest r = api.getPlaylist(uid, sid).build();
         try {
-            Playlist t = r.execute();
-            return t;
+            return r.execute();
         } catch (IOException | SpotifyWebApiException e) {
             logger.error("Error reading Playlist", e);
             return null;

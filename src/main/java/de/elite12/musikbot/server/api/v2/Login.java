@@ -19,10 +19,14 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/v2/login")
 public class Login {
 
-    private static Logger logger = LoggerFactory.getLogger(Login.class);
+    private static final Logger logger = LoggerFactory.getLogger(Login.class);
+
+    private final UserService userservice;
 
     @Autowired
-    private UserService userservice;
+    public Login(UserService userservice) {
+        this.userservice = userservice;
+    }
 
     @PostMapping
     public LoginResponse loginAction(@RequestBody LoginRequest loginRequest, HttpServletRequest httpServletRequest) {

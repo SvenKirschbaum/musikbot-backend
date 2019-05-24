@@ -22,13 +22,17 @@ import de.elite12.musikbot.server.api.dto.PlaylistDTO.Entry;
 @Service
 public class PlaylistImporterService {
 	
-	@Autowired
-	private YouTubeService youtube;
+	private final YouTubeService youtube;
 	
-	@Autowired
-	private SpotifyService spotify;
+	private final SpotifyService spotify;
 	
-	private Logger logger = LoggerFactory.getLogger(PlaylistImporterService.class);
+	private final Logger logger = LoggerFactory.getLogger(PlaylistImporterService.class);
+
+    @Autowired
+    public PlaylistImporterService(YouTubeService youtube, SpotifyService spotify) {
+        this.youtube = youtube;
+        this.spotify = spotify;
+    }
 
     public PlaylistDTO getyoutubePlaylist(String id) {
         try {
@@ -41,7 +45,7 @@ public class PlaylistImporterService {
             	throw new IOException("Playlist not found");
             }
             com.google.api.services.youtube.model.Playlist yl = plist.get(0);
-           	Long pages = Math.min(8, (yl.getContentDetails().getItemCount()/50)+1);
+           	long pages = Math.min(8, (yl.getContentDetails().getItemCount()/50)+1);
            	
            	p.id = id;
             p.typ = "youtube";
@@ -56,13 +60,12 @@ public class PlaylistImporterService {
                     .execute();
             for(int page = 0; page < pages; page++) {
             	List<PlaylistItem> list = r.getItems();
-           		for (int i = 0; i < list.size(); i++) {
-           			PlaylistItem item = list.get(i);
-           			Entry e = new Entry();
+                for (PlaylistItem item : list) {
+                    Entry e = new Entry();
                     e.link = "https://www.youtube.com/watch?v=" + item.getSnippet().getResourceId().getVideoId();
                     e.name = item.getSnippet().getTitle();
                     entries.add(e);
-           		}
+                }
            		if(page!=pages-1) {
            			r = youtube.api().playlistItems().list("snippet,status")
                             .setPlaylistId(id).setMaxResults(50L)

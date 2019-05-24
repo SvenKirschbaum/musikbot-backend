@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
-import java.math.BigInteger;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
@@ -27,23 +26,28 @@ import java.util.stream.StreamSupport;
 @RestController
 public class Userv2 {
 
-    @Autowired
+    final
     UserService userservice;
 
-    @Autowired
+    final
     SongRepository songRepository;
 
-    @Autowired
-    private Validator validator;
+    private final Validator validator;
 
-    private static Logger logger = LoggerFactory.getLogger(Userv2.class);
+    private static final Logger logger = LoggerFactory.getLogger(Userv2.class);
+
+    @Autowired
+    public Userv2(UserService userservice, SongRepository songRepository, Validator validator) {
+        this.userservice = userservice;
+        this.songRepository = songRepository;
+        this.validator = validator;
+    }
 
     @GetMapping("{username}")
     public UserDTO getUserByName(@PathVariable("username") String username) {
         User target = userservice.findUserbyName(username);
 
         User user = null;
-        boolean admin = false;
         boolean self = false;
         boolean guest = false;
 
@@ -51,7 +55,6 @@ public class Userv2 {
         if (p instanceof UserPrincipal) {
             UserPrincipal t = (UserPrincipal) p;
             user = t.getUser();
-            admin = user.isAdmin();
         }
 
         if (target == null) {
@@ -70,7 +73,7 @@ public class Userv2 {
             }
         }
 
-        UserDTO r = null;
+        UserDTO r;
 
         if ((user != null && user.isAdmin()) || self) {
             r = new UserDTO.AdminView();
@@ -107,9 +110,9 @@ public class Userv2 {
                         .map(
                                 tuple ->
                                         new UserDTO.GeneralEntry(
-                                                tuple.get(0, BigInteger.class).longValue(),
-                                                tuple.get(1, String.class),
-                                                tuple.get(2, String.class)
+                                                tuple.getid(),
+                                                tuple.gettitle(),
+                                                tuple.getlink()
                                         )
                         )
                         .toArray(UserDTO.GeneralEntry[]::new)
@@ -128,9 +131,9 @@ public class Userv2 {
                         .map(
                                 tuple ->
                                         new UserDTO.TopEntry(
-                                                tuple.get(0, String.class),
-                                                tuple.get(1, String.class),
-                                                tuple.get(2, BigInteger.class).longValue()
+                                                tuple.gettitle(),
+                                                tuple.getlink(),
+                                                tuple.getcount()
                                         )
                         )
                         .toArray(UserDTO.TopEntry[]::new)
@@ -149,9 +152,9 @@ public class Userv2 {
                         .map(
                                 tuple ->
                                         new UserDTO.TopEntry(
-                                                tuple.get(0, String.class),
-                                                tuple.get(1, String.class),
-                                                tuple.get(2, BigInteger.class).longValue()
+                                                tuple.gettitle(),
+                                                tuple.getlink(),
+                                                tuple.getcount()
                                         )
                         )
                         .toArray(UserDTO.TopEntry[]::new)
@@ -163,7 +166,7 @@ public class Userv2 {
     @RequestMapping(path = "{userid}/{attribute}", method = RequestMethod.POST, consumes = {"text/plain"})
     public ResponseEntity<String> updateUser(@PathVariable("userid") Long userid, @PathVariable("attribute") String attr, @RequestBody String value) {
         Object p = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        de.elite12.musikbot.server.data.entity.User user = null;
+        de.elite12.musikbot.server.data.entity.User user;
         if (p instanceof UserPrincipal) {
             user = ((UserPrincipal) p).getUser();
         } else {
@@ -186,7 +189,7 @@ public class Userv2 {
                         logger.info(String.format("User changed by %s (Email): %s", user, target));
                         return new ResponseEntity<>(HttpStatus.OK);
                     } else {
-                        return new ResponseEntity<>(((ConstraintViolation<Email>) violations.toArray()[0]).getMessage(), HttpStatus.BAD_REQUEST);
+                        return new ResponseEntity<>(violations.iterator().next().getMessage(), HttpStatus.BAD_REQUEST);
                     }
                 } else {
                     return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -238,8 +241,7 @@ public class Userv2 {
     @GetMapping(path = "self")
     @PreAuthorize("isAuthenticated()")
     public de.elite12.musikbot.server.data.entity.User getSelf() {
-        de.elite12.musikbot.server.data.entity.User user = ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
-        return user;
+        return ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
     }
 
     @GetMapping(path = "self/token")

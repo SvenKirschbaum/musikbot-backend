@@ -23,14 +23,19 @@ import de.elite12.musikbot.server.services.ClientService;
 @PreAuthorize("hasRole('admin')")
 public class Debug {
 	
-	@Autowired
+	final
 	ClientService client;
 	
+	private final ApplicationContext appContext;
+	
+	private static final Logger logger = LoggerFactory.getLogger(Debug.class);
+
 	@Autowired
-    private ApplicationContext appContext;
-	
-	private static Logger logger = LoggerFactory.getLogger(Debug.class);
-	
+	public Debug(ClientService client, ApplicationContext appContext) {
+		this.client = client;
+		this.appContext = appContext;
+	}
+
 	@PostMapping("{value}")
     public void doPost(@PathVariable String value) {
 		switch(value) {
@@ -45,7 +50,7 @@ public class Debug {
 					
 					@Override
 					public void run() {
-						SpringApplication.exit(appContext, () -> {return 0;});
+						SpringApplication.exit(appContext, () -> 0);
 					}
 				}, 2500);
 				break;

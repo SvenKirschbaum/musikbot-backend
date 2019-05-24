@@ -19,11 +19,15 @@ import java.util.stream.StreamSupport;
 @RequestMapping(path = "/v2/stats")
 public class Stats {
 
-    @Autowired
-    private EntityManager em;
+    private final EntityManager em;
+
+    private final SongRepository songs;
 
     @Autowired
-    private SongRepository songs;
+    public Stats(EntityManager em, SongRepository songs) {
+        this.em = em;
+        this.songs = songs;
+    }
 
     @GetMapping
     public StatsDTO getAction() {
@@ -72,11 +76,11 @@ public class Stats {
         Object[] list = q.getResultList().toArray();
         dto.setGeneral(
             Arrays.asList(
-                new StatsDTO.GeneralEntry("User", ((BigDecimal)list[0]).toString()),
-                new StatsDTO.GeneralEntry("Admins", ((BigDecimal)list[1]).toString()),
-                new StatsDTO.GeneralEntry("Gäste", ((BigDecimal)list[2]).toString()),
-                new StatsDTO.GeneralEntry("Wünsche", ((BigDecimal)list[3]).toString()),
-                new StatsDTO.GeneralEntry("Skippes", ((BigDecimal)list[4]).toString()),
+                new StatsDTO.GeneralEntry("User", list[0].toString()),
+                new StatsDTO.GeneralEntry("Admins", list[1].toString()),
+                new StatsDTO.GeneralEntry("Gäste", list[2].toString()),
+                new StatsDTO.GeneralEntry("Wünsche", list[3].toString()),
+                new StatsDTO.GeneralEntry("Skippes", list[4].toString()),
                 new StatsDTO.GeneralEntry("Gesamte Dauer", String.format("%d Stunden",((BigDecimal)list[5]).intValue()/3600))
             )
         );

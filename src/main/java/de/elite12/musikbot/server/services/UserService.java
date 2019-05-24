@@ -1,6 +1,6 @@
 package de.elite12.musikbot.server.services;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,18 +20,19 @@ import de.mkammerer.argon2.Argon2Factory;
 
 @Service
 public class UserService implements PasswordEncoder {
-    private Argon2 argon2;
+    private final Argon2 argon2;
+
+    private final UserRepository userrepository;
+
+    private final TokenRepository tokenrepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
-    private UserRepository userrepository;
-
-    @Autowired
-    private TokenRepository tokenrepository;
-
-    private static Logger logger = LoggerFactory.getLogger(UserService.class);
-
-    public UserService() {
+    public UserService(UserRepository userrepository, TokenRepository tokenrepository) {
         this.argon2 = Argon2Factory.create();
+        this.userrepository = userrepository;
+        this.tokenrepository = tokenrepository;
     }
 
     public User findUserbyId(Long id) {
@@ -52,7 +53,7 @@ public class UserService implements PasswordEncoder {
     public User findUserbyToken(String token) {
         logger.debug("Querying User by TOKEN");
         Optional<Token> t = tokenrepository.findByToken(token);
-        return t.isPresent() ? t.get().getOwner() : null;
+        return t.map(Token::getOwner).orElse(null);
     }
 
     public User saveUser(User u) {
@@ -71,7 +72,7 @@ public class UserService implements PasswordEncoder {
 
     public String getExternalToken(User u) {
         Optional<Token> t = tokenrepository.findByOwnerAndExternal(u, true);
-        String r = null;
+        String r;
         if (!t.isPresent()) {
             r = resetExternalToken(u);
         } else {
@@ -82,9 +83,9 @@ public class UserService implements PasswordEncoder {
 
     public String resetExternalToken(User u) {
         Optional<Token> t = tokenrepository.findByOwnerAndExternal(u, true);
-        if (t.isPresent()) {
-            tokenrepository.delete(t.get());
-        }
+
+        t.ifPresent(tokenrepository::delete);
+
         Token token = new Token();
         token.setOwner(u);
         token.setCreated(new Date());
@@ -128,13 +129,13 @@ public class UserService implements PasswordEncoder {
     private String MD5(String md5) {
         try {
             java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
-            byte[] array = md.digest(md5.getBytes("UTF-8"));
-            StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < array.length; ++i) {
-                sb.append(Integer.toHexString(array[i] & 0xFF | 0x100).substring(1, 3));
+            byte[] array = md.digest(md5.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : array) {
+                sb.append(Integer.toHexString(b & 0xFF | 0x100), 1, 3);
             }
             return sb.toString();
-        } catch (java.security.NoSuchAlgorithmException | UnsupportedEncodingException e) {
+        } catch (java.security.NoSuchAlgorithmException e) {
             logger.error("Error calculating MD5", e);
         }
         return null;
@@ -148,11 +149,7 @@ public class UserService implements PasswordEncoder {
     @Override
     public boolean matches(CharSequence rawPassword, String encodedPassword) {
         if (rawPassword.length() == 32) {
-            if (encodedPassword.equals(this.MD5(rawPassword.toString()))) {
-                return true;
-            } else {
-                return false;
-            }
+            return encodedPassword.equals(this.MD5(rawPassword.toString()));
         } else {
             return this.argon2.verify(encodedPassword, rawPassword.toString());
         }

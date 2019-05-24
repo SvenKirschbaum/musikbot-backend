@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @RestController
@@ -25,20 +24,24 @@ import java.util.stream.StreamSupport;
 @RequestMapping(path = "/v2/lockedsongs")
 public class LockedSongs {
 
-    private Logger logger = LoggerFactory.getLogger(LockedSongs.class);
+    private final Logger logger = LoggerFactory.getLogger(LockedSongs.class);
+
+    private final LockedSongRepository songs;
+
+    private final YouTubeService youtube;
+
+    private final SpotifyService spotify;
 
     @Autowired
-    private LockedSongRepository songs;
-
-    @Autowired
-    private YouTubeService youtube;
-
-    @Autowired
-    private SpotifyService spotify;
+    public LockedSongs(LockedSongRepository songs, YouTubeService youtube, SpotifyService spotify) {
+        this.songs = songs;
+        this.youtube = youtube;
+        this.spotify = spotify;
+    }
 
     @GetMapping
     public LockedSong[] getAction() {
-        return StreamSupport.stream(songs.findAll().spliterator(), false).collect(Collectors.toList()).toArray(new LockedSong[0]);
+        return StreamSupport.stream(songs.findAll().spliterator(), false).toArray(LockedSong[]::new);
     }
 
     @DeleteMapping(path = "{id}")

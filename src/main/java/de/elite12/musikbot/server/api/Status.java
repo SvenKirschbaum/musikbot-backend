@@ -19,12 +19,16 @@ public class Status {
     @Context
     private HttpServletRequest req;
     
-    @Autowired
-    private SongService songservice;
+    private final SongService songservice;
     
+    private final SongRepository songrepository;
+
     @Autowired
-    private SongRepository songrepository;
-    
+    public Status(SongService songservice, SongRepository songrepository) {
+        this.songservice = songservice;
+        this.songrepository = songrepository;
+    }
+
     @RequestMapping(path = "", produces = {"application/json"})
     public StatusUpdate getstatus() {
         StatusUpdate st = new StatusUpdate();

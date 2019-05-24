@@ -8,7 +8,7 @@ import de.elite12.musikbot.server.data.entity.User;
 @Repository
 public interface UserRepository extends CrudRepository<User, Long> {
 	
-	public User findByName(String name);
+	User findByName(String name);
 	
-	public User findByEmail(String email);
+	User findByEmail(String email);
 }

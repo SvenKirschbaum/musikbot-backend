@@ -1,6 +1,7 @@
 package de.elite12.musikbot.server.core;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.apache.catalina.filters.RemoteIpFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +31,13 @@ public class MusikbotServiceConfig {
 	@Configuration
 	@Order(1)
 	public static class ApiWebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
+		private final TokenFilter tokenFilter;
+
 		@Autowired
-	    private TokenFilter tokenFilter;
-		
+		public ApiWebSecurityConfigurationAdapter(TokenFilter tokenFilter) {
+			this.tokenFilter = tokenFilter;
+		}
+
 		@Override
 	    protected void configure(HttpSecurity http) throws Exception {
 			http
@@ -65,7 +70,7 @@ public class MusikbotServiceConfig {
 		@Bean
 		CorsConfigurationSource corsConfigurationSource() {
 			CorsConfiguration configuration = new CorsConfiguration();
-			configuration.setAllowedOrigins(Arrays.asList("*"));
+			configuration.setAllowedOrigins(Collections.singletonList("*"));
 			configuration.setAllowedHeaders(Arrays.asList("origin", "content-type", "accept", "authorization"));
 			configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
 			UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
