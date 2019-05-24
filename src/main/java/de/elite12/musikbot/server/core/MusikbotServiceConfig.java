@@ -2,6 +2,7 @@ package de.elite12.musikbot.server.core;
 
 import java.util.Arrays;
 
+import org.apache.catalina.filters.RemoteIpFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -54,6 +55,11 @@ public class MusikbotServiceConfig {
 		    FilterRegistrationBean<TokenFilter> registration = new FilterRegistrationBean<>(tokenFilter);
 		    registration.setEnabled(false);
 		    return registration;
+		}
+
+		@Bean
+		public RemoteIpFilter remoteIpFilter() {
+			return new RemoteIpFilter();
 		}
 		
 		@Bean
