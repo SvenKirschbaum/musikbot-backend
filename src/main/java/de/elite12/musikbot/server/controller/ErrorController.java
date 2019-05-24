@@ -30,10 +30,7 @@ public class ErrorController implements org.springframework.boot.web.servlet.err
 	    
 	    Object p = SecurityContextHolder.getContext().getAuthentication() != null ? SecurityContextHolder.getContext().getAuthentication().getPrincipal():null;
 	    
-		logger.warn("Error for User: " + p + 
-				", Error Code: " + statusCode + 
-				" Message: " + errormsg + 
-				" Path: " + path);
+		logger.warn(String.format("Error for User: %s, Error Code: %d Message: %s Path: %s", p, statusCode, errormsg, path));
 		
 		if(exception != null) {
 			throw exception;

@@ -250,9 +250,7 @@ public class SongService {
 
             s = songrepository.save(s);
 
-            logger.info("Succesfully added Song (ID: " + s.getId() + ") to Playlist: " + ut.getId()
-                    + " by " + (user != null ? ("User: " + user.getName()) : ("Guest: " + gi.getId())));
-
+            logger.info(String.format("Song added by %s: %s", user != null ? ("User " + user.getName()) : ("Guest " + gi.getId()), s.toString()));
 
 
             client.notifynewSong();

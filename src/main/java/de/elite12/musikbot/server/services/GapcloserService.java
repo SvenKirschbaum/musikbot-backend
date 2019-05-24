@@ -125,7 +125,7 @@ public class GapcloserService {
 
 
 
-                logger.info("Gapcloser generated Song (ID: " + s.getId() + ") " + s.toString());
+                logger.info(String.format("Gapcloser generated Song %s", s.toString()));
 
                 return s;
         	}

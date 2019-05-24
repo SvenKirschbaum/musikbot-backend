@@ -183,7 +183,7 @@ public class Userv2 {
                     if (violations.isEmpty()) {
                         target.setEmail(value);
                         userservice.saveUser(target);
-                        logger.info(user + " changed Email-Address of " + target + "to " + target.getEmail());
+                        logger.info(String.format("User changed by %s (Email): %s", user, target));
                         return new ResponseEntity<>(HttpStatus.OK);
                     } else {
                         return new ResponseEntity<>(((ConstraintViolation<Email>) violations.toArray()[0]).getMessage(), HttpStatus.BAD_REQUEST);
@@ -196,7 +196,7 @@ public class Userv2 {
                 if (selforadmin(user, target)) {
                     target.setPassword(userservice.encode(value));
                     userservice.saveUser(target);
-                    logger.info(user + " changed the Password of " + target);
+                    logger.info(String.format("User changed by %s (Password): %s", user, target));
                     return new ResponseEntity<>(HttpStatus.OK);
                 } else {
                     return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -208,7 +208,7 @@ public class Userv2 {
                             || value.equalsIgnoreCase("true");
                     target.setAdmin(admin);
                     userservice.saveUser(target);
-                    logger.info(user + " changed the Admin-Status of " + target + " to " + target.isAdmin());
+                    logger.info(String.format("User changed by %s (Admin): %s", user, target));
                     return new ResponseEntity<>(HttpStatus.OK);
                 } else {
                     return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -217,9 +217,10 @@ public class Userv2 {
             case "username": {
                 if (user.isAdmin()) {
                     if (userservice.findUserbyName(value) == null) {
-                        logger.info(user + " changed the Username of " + target + " to " + value);
+                        String oldname = target.getName();
                         target.setName(value);
                         userservice.saveUser(target);
+                        logger.info(String.format("User changed by %s (Name): %s -> %s", user, oldname, target));
                         return new ResponseEntity<>(HttpStatus.OK);
                     } else {
                         return new ResponseEntity<>(HttpStatus.CONFLICT);
@@ -251,6 +252,7 @@ public class Userv2 {
     @PreAuthorize("isAuthenticated()")
     public TokenDTO resetToken() {
         userservice.resetExternalToken(((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser());
+        logger.info(String.format("Token reset by %s", ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
         return new TokenDTO(userservice.getExternalToken(((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser()));
     }
 

@@ -3,8 +3,10 @@ package de.elite12.musikbot.server.api.v2;
 import de.elite12.musikbot.server.data.UnifiedTrack;
 import de.elite12.musikbot.server.data.UserMessage;
 import de.elite12.musikbot.server.api.dto.createSongResponse;
+import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.data.entity.LockedSong;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
+import de.elite12.musikbot.server.exception.NotFoundException;
 import de.elite12.musikbot.server.services.SpotifyService;
 import de.elite12.musikbot.server.services.YouTubeService;
 import org.slf4j.Logger;
@@ -15,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -41,7 +44,13 @@ public class LockedSongs {
 
     @DeleteMapping(path = "{id}")
     public void deleteAction(@PathVariable Long id) {
+        Optional<LockedSong> s = songs.findById(id);
+
+        if(!s.isPresent()) throw new NotFoundException();
+
         songs.deleteById(id);
+
+        logger.info(String.format("Locked Song removed by %s: %s",((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(),s.toString()));
     }
 
     @PostMapping
@@ -54,7 +63,7 @@ public class LockedSongs {
             songs.save(ls);
 
 
-            logger.info("added Song to locklist: " + ut.getId() + "by User: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+            logger.info(String.format("Song locked by %s: %s",((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(),ls.toString()));
             return new createSongResponse(true,false,"Song hinzugefügt");
         } catch (UnifiedTrack.TrackNotAvailableException e) {
             return new createSongResponse(false,false,"Der eingegebene Song existiert nicht");

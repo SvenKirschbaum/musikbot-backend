@@ -56,6 +56,8 @@ public class Playlist {
             p = playlistImporterService.getspotifyAlbum(said);
         }
 
+        logger.info(String.format("Playlist loaded by %s: %s",((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(),p.toString()));
+
         return p;
     }
 
@@ -63,7 +65,7 @@ public class Playlist {
     public createSongResponse[] postAction(@RequestBody PlaylistDTO.Entry[] entries) {
         User u = ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 
-        logger.info("Playlist imported by " + u.toString());
+        logger.info(String.format("Playlist imported by %s", u.toString()));
 
         return Arrays.stream(entries).map(entry -> songservice.addSongv2(entry.link,u,guestinfo)).toArray(createSongResponse[]::new);
     }

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.elite12.musikbot.server.data.UserPrincipal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,27 +41,27 @@ public class Control {
 	@RequestMapping(path="/start", method = RequestMethod.POST)
 	public void start() {
 		client.start();
-		logger.info("Botstart by User: "+ SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+		logger.info(String.format("Botstart by %s", ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
 	}
 	
 	@RequestMapping(path="/stop", method = RequestMethod.POST)
 	public void stop() {
 		client.stop();
-		logger.info("Botstop by User: "+ SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+		logger.info(String.format("Botstop by %s", ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
 	}
 	
 	@RequestMapping(path="/pause", method = RequestMethod.POST)
 	public void pause() {
 		client.pause();
-		logger.info("Botpause by User: "+ SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+		logger.info(String.format("Botpause by %s", ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
 	}
 	
 	@RequestMapping(path="/skip", method = RequestMethod.POST)
 	public void skip() {
-		logger.info("Song skipped by User: "+ SecurityContextHolder.getContext().getAuthentication().getPrincipal()+ " Song: "+ songservice.getSongtitle());
 		songservice.markskipped();
 		client.stop();
 		client.start();
+		logger.info(String.format("Song skipped by %s: [%s, %s]", ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(), songservice.getSongtitle(), songservice.getSonglink()));
 	}
 	
 	@RequestMapping(path="/shuffle", method = RequestMethod.POST)
@@ -90,6 +91,6 @@ public class Control {
 			songrepository.save(t);
 		}
 		
-        logger.info("Playlist shuffled by: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        logger.info(String.format("Playlist shuffled by %s", ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
 	}
 }

@@ -78,8 +78,7 @@ public class Songv2 {
                 
                 songrepository.delete(song.get());
             }
-            logger.info("Songs (" + Arrays.toString(a) + ") deleted"
-                    + (lock.orElseGet(() -> Boolean.FALSE) ? " and locked " : " ") + "by User: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+            logger.info(String.format("Songs %s by %s: %s", lock.orElse(Boolean.FALSE) ? "deleted" : "deleted and locked", ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(), Arrays.toString(a)));
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (NumberFormatException e) {
         	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -144,7 +143,7 @@ public class Songv2 {
                 }
             } while (iterator.hasNext());
             if (SecurityContextHolder.getContext().getAuthentication() != null) {
-               logger.info("Playlist sorted by: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+               logger.info(String.format("Playlist sorted by %s", ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
             }
         } catch (NumberFormatException e) {
         	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

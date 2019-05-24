@@ -1,5 +1,8 @@
 package de.elite12.musikbot.server.api.dto;
 
+import lombok.ToString;
+
+@ToString(exclude = {"songs"})
 public class PlaylistDTO {
     public static class Entry {
         public String name;
