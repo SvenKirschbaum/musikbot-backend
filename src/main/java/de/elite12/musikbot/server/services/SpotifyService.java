@@ -31,20 +31,15 @@ import de.elite12.musikbot.server.core.MusikbotServiceProperties;
 
 @Service
 public class SpotifyService {
-	
-	private final MusikbotServiceProperties config;
+
+    @Autowired
+	private MusikbotServiceProperties config;
 
     private SpotifyApi api;
 
     private boolean authorized = false;
     
     private final Logger logger = LoggerFactory.getLogger(SpotifyService.class);
-
-    @Autowired
-    public SpotifyService(MusikbotServiceProperties config) {
-        this.config = config;
-    }
-
     @PostConstruct
     public void postConstruct() {
     	api = new SpotifyApi.Builder().setClientId(config.getSpotify().getId()).setClientSecret(config.getSpotify().getSecret()).build();

@@ -21,12 +21,8 @@ public class Login {
 
     private static final Logger logger = LoggerFactory.getLogger(Login.class);
 
-    private final UserService userservice;
-
     @Autowired
-    public Login(UserService userservice) {
-        this.userservice = userservice;
-    }
+    private UserService userservice;
 
     @PostMapping
     public LoginResponse loginAction(@RequestBody LoginRequest loginRequest, HttpServletRequest httpServletRequest) {

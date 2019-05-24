@@ -26,22 +26,16 @@ import java.util.stream.StreamSupport;
 @RestController
 public class Userv2 {
 
-    final
-    UserService userservice;
-
-    final
-    SongRepository songRepository;
-
-    private final Validator validator;
-
-    private static final Logger logger = LoggerFactory.getLogger(Userv2.class);
+    @Autowired
+    private UserService userservice;
 
     @Autowired
-    public Userv2(UserService userservice, SongRepository songRepository, Validator validator) {
-        this.userservice = userservice;
-        this.songRepository = songRepository;
-        this.validator = validator;
-    }
+    private SongRepository songRepository;
+
+    @Autowired
+    private Validator validator;
+
+    private static final Logger logger = LoggerFactory.getLogger(Userv2.class);
 
     @GetMapping("{username}")
     public UserDTO getUserByName(@PathVariable("username") String username) {

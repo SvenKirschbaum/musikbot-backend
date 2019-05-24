@@ -10,13 +10,9 @@ import de.elite12.musikbot.server.data.entity.User;
 
 @Service
 public class UserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService {
-	
-	private final UserService userservice;
 
 	@Autowired
-	public UserDetailsService(UserService userservice) {
-		this.userservice = userservice;
-	}
+	private UserService userservice;
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

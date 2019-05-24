@@ -23,14 +23,15 @@ import de.elite12.musikbot.shared.Command;
 
 @Service
 public class ClientService implements Runnable {
-	
-	private final TaskExecutor taskExecutor;
 
-	@SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
+	@Autowired
+	private TaskExecutor taskExecutor;
+
 	@Autowired
 	private SongService songservice;
-	
-	private final MusikbotServiceProperties config;
+
+	@Autowired
+	private MusikbotServiceProperties config;
 
 	
 	private ServerSocket sock;
@@ -44,8 +45,7 @@ public class ClientService implements Runnable {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ClientService.class);
 
-	@Autowired
-	public ClientService(TaskExecutor taskExecutor, MusikbotServiceProperties config) throws IOException {
+	public ClientService() throws IOException {
 		logger.debug("Initializing ConnectionListener...");
 
 		try {
@@ -55,8 +55,6 @@ public class ClientService implements Runnable {
 			logger.error("Error Creating ServerSocket", e);
 			throw e;
 		}
-		this.taskExecutor = taskExecutor;
-		this.config = config;
 	}
 	
 	@PostConstruct

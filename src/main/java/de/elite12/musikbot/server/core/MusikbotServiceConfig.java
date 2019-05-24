@@ -31,12 +31,8 @@ public class MusikbotServiceConfig {
 	@Configuration
 	@Order(1)
 	public static class ApiWebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
-		private final TokenFilter tokenFilter;
-
 		@Autowired
-		public ApiWebSecurityConfigurationAdapter(TokenFilter tokenFilter) {
-			this.tokenFilter = tokenFilter;
-		}
+		private TokenFilter tokenFilter;
 
 		@Override
 	    protected void configure(HttpSecurity http) throws Exception {

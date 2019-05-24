@@ -22,17 +22,16 @@ import de.mkammerer.argon2.Argon2Factory;
 public class UserService implements PasswordEncoder {
     private final Argon2 argon2;
 
-    private final UserRepository userrepository;
+    @Autowired
+    private UserRepository userrepository;
 
-    private final TokenRepository tokenrepository;
+    @Autowired
+    private TokenRepository tokenrepository;
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    @Autowired
-    public UserService(UserRepository userrepository, TokenRepository tokenrepository) {
+    public UserService() {
         this.argon2 = Argon2Factory.create();
-        this.userrepository = userrepository;
-        this.tokenrepository = tokenrepository;
     }
 
     public User findUserbyId(Long id) {

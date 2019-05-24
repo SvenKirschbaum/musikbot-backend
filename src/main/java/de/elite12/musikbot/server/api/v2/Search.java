@@ -12,13 +12,8 @@ import java.util.ArrayList;
 @RestController
 public class Search {
 
-    final
-    SongRepository songrepository;
-
     @Autowired
-    public Search(SongRepository songrepository) {
-        this.songrepository = songrepository;
-    }
+    private SongRepository songrepository;
 
     @RequestMapping(path = "", method = RequestMethod.POST, produces = {"application/json"}, consumes = {"text/plain"})
     public SearchResult[] autocomplete(@RequestBody(required = false) String term) {

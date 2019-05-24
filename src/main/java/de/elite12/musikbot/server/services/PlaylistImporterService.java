@@ -21,18 +21,14 @@ import de.elite12.musikbot.server.api.dto.PlaylistDTO.Entry;
 
 @Service
 public class PlaylistImporterService {
-	
-	private final YouTubeService youtube;
-	
-	private final SpotifyService spotify;
-	
-	private final Logger logger = LoggerFactory.getLogger(PlaylistImporterService.class);
 
     @Autowired
-    public PlaylistImporterService(YouTubeService youtube, SpotifyService spotify) {
-        this.youtube = youtube;
-        this.spotify = spotify;
-    }
+	private YouTubeService youtube;
+
+    @Autowired
+	private SpotifyService spotify;
+	
+	private final Logger logger = LoggerFactory.getLogger(PlaylistImporterService.class);
 
     public PlaylistDTO getyoutubePlaylist(String id) {
         try {

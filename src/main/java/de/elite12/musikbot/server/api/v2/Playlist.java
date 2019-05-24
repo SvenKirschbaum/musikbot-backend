@@ -23,20 +23,16 @@ import java.util.Arrays;
 @PreAuthorize("hasRole('admin')")
 public class Playlist {
 
-    private final PlaylistImporterService playlistImporterService;
-
-    private final SongService songservice;
-
-    private final GuestSession guestinfo;
-
-    private static final Logger logger = LoggerFactory.getLogger(Playlist.class);
+    @Autowired
+    private PlaylistImporterService playlistImporterService;
 
     @Autowired
-    public Playlist(PlaylistImporterService playlistImporterService, SongService songservice, GuestSession guestinfo) {
-        this.playlistImporterService = playlistImporterService;
-        this.songservice = songservice;
-        this.guestinfo = guestinfo;
-    }
+    private SongService songservice;
+
+    @Autowired
+    private GuestSession guestinfo;
+
+    private static final Logger logger = LoggerFactory.getLogger(Playlist.class);
 
     @GetMapping
     public PlaylistDTO getAction(@RequestParam String url) {

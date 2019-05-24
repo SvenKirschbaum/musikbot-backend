@@ -25,24 +25,20 @@ import java.util.Optional;
 @RequestMapping("/v2/songs")
 @RestController
 public class Songv2 {
-	
-	private final SongService songservice;
-	
-	private final SongRepository songrepository;
-	
-	private final LockedSongRepository lockedsongrepository;
-	
-	private final GuestSession guestinfo;
-	
-	private static final Logger logger = LoggerFactory.getLogger(Songv2.class);
 
     @Autowired
-    public Songv2(SongService songservice, SongRepository songrepository, LockedSongRepository lockedsongrepository, GuestSession guestinfo) {
-        this.songservice = songservice;
-        this.songrepository = songrepository;
-        this.lockedsongrepository = lockedsongrepository;
-        this.guestinfo = guestinfo;
-    }
+	private SongService songservice;
+
+    @Autowired
+	private SongRepository songrepository;
+
+    @Autowired
+	private LockedSongRepository lockedsongrepository;
+
+    @Autowired
+	private GuestSession guestinfo;
+	
+	private static final Logger logger = LoggerFactory.getLogger(Songv2.class);
 
 
     @RequestMapping(path="{ids}", method = RequestMethod.GET, produces = {"application/json"})

@@ -21,13 +21,9 @@ import de.elite12.musikbot.server.services.UserService;
 
 @Component
 public class TokenFilter implements Filter{
-	
-	private final UserService userservice;
 
 	@Autowired
-	public TokenFilter(UserService userservice) {
-		this.userservice = userservice;
-	}
+	private UserService userservice;
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)

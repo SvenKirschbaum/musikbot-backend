@@ -18,12 +18,8 @@ public class Gapcloser {
 
     private static final Logger logger = LoggerFactory.getLogger(Gapcloser.class);
 
-    private final GapcloserService gapcloserService;
-
     @Autowired
-    public Gapcloser(GapcloserService gapcloserService) {
-        this.gapcloserService = gapcloserService;
-    }
+    private GapcloserService gapcloserService;
 
     @GetMapping
     public GapcloserDTO getAction() {

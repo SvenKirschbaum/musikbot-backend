@@ -36,31 +36,27 @@ public class SongService {
     private String songlink;
     
     private static final Logger logger = LoggerFactory.getLogger(SongService.class);
-    
-    private final SongRepository songrepository;
-    
-    private final LockedSongRepository lockedrepository;
-    
-    private final MusikbotServiceProperties config;
-    
-    private final GapcloserService gapcloser;
-    
-    private final YouTubeService youtube;
-    
-    private final SpotifyService spotify;
-
-    private final ClientService client;
 
     @Autowired
-    public SongService(SongRepository songrepository, LockedSongRepository lockedrepository, MusikbotServiceProperties config, GapcloserService gapcloser, YouTubeService youtube, SpotifyService spotify, ClientService client) {
-        this.songrepository = songrepository;
-        this.lockedrepository = lockedrepository;
-        this.config = config;
-        this.gapcloser = gapcloser;
-        this.youtube = youtube;
-        this.spotify = spotify;
-        this.client = client;
-    }
+    private SongRepository songrepository;
+
+    @Autowired
+    private LockedSongRepository lockedrepository;
+
+    @Autowired
+    private MusikbotServiceProperties config;
+
+    @Autowired
+    private GapcloserService gapcloser;
+
+    @Autowired
+    private YouTubeService youtube;
+
+    @Autowired
+    private SpotifyService spotify;
+
+    @Autowired
+    private ClientService client;
 
     public Song getnextSong() {
     	Song next = songrepository.getNextSong();

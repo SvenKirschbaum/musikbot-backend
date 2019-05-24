@@ -26,18 +26,14 @@ public class LockedSongs {
 
     private final Logger logger = LoggerFactory.getLogger(LockedSongs.class);
 
-    private final LockedSongRepository songs;
-
-    private final YouTubeService youtube;
-
-    private final SpotifyService spotify;
+    @Autowired
+    private LockedSongRepository songs;
 
     @Autowired
-    public LockedSongs(LockedSongRepository songs, YouTubeService youtube, SpotifyService spotify) {
-        this.songs = songs;
-        this.youtube = youtube;
-        this.spotify = spotify;
-    }
+    private YouTubeService youtube;
+
+    @Autowired
+    private SpotifyService spotify;
 
     @GetMapping
     public LockedSong[] getAction() {

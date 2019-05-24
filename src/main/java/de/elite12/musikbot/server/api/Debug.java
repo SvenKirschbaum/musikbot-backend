@@ -22,19 +22,14 @@ import de.elite12.musikbot.server.services.ClientService;
 @RequestMapping("/debug")
 @PreAuthorize("hasRole('admin')")
 public class Debug {
-	
-	final
-	ClientService client;
-	
-	private final ApplicationContext appContext;
-	
-	private static final Logger logger = LoggerFactory.getLogger(Debug.class);
 
 	@Autowired
-	public Debug(ClientService client, ApplicationContext appContext) {
-		this.client = client;
-		this.appContext = appContext;
-	}
+	private ClientService client;
+
+	@Autowired
+	private ApplicationContext appContext;
+	
+	private static final Logger logger = LoggerFactory.getLogger(Debug.class);
 
 	@PostMapping("{value}")
     public void doPost(@PathVariable String value) {

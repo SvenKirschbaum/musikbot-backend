@@ -14,12 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/v2/archiv")
 public class Archiv {
-    private final SongRepository songs;
-
     @Autowired
-    public Archiv(SongRepository songs) {
-        this.songs = songs;
-    }
+    private SongRepository songs;
 
     @GetMapping
     @RequestMapping(value = {"", "{page}"})

@@ -19,15 +19,11 @@ import java.util.stream.StreamSupport;
 @RequestMapping(path = "/v2/stats")
 public class Stats {
 
-    private final EntityManager em;
-
-    private final SongRepository songs;
+    @Autowired
+    private EntityManager em;
 
     @Autowired
-    public Stats(EntityManager em, SongRepository songs) {
-        this.em = em;
-        this.songs = songs;
-    }
+    private SongRepository songs;
 
     @GetMapping
     public StatsDTO getAction() {

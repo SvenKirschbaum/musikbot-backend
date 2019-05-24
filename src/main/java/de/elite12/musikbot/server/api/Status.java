@@ -18,16 +18,12 @@ import de.elite12.musikbot.server.services.SongService;
 public class Status {
     @Context
     private HttpServletRequest req;
-    
-    private final SongService songservice;
-    
-    private final SongRepository songrepository;
 
     @Autowired
-    public Status(SongService songservice, SongRepository songrepository) {
-        this.songservice = songservice;
-        this.songrepository = songrepository;
-    }
+    private SongService songservice;
+
+    @Autowired
+    private SongRepository songrepository;
 
     @RequestMapping(path = "", produces = {"application/json"})
     public StatusUpdate getstatus() {
