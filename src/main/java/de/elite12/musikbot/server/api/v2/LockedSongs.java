@@ -1,7 +1,6 @@
 package de.elite12.musikbot.server.api.v2;
 
 import de.elite12.musikbot.server.data.UnifiedTrack;
-import de.elite12.musikbot.server.data.UserMessage;
 import de.elite12.musikbot.server.api.dto.createSongResponse;
 import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.data.entity.LockedSong;
