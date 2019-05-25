@@ -89,7 +89,6 @@ public class Songv2 {
     @RequestMapping(path="", method = RequestMethod.POST, consumes = {"text/plain"}, produces = {"application/json"})
     public createSongResponse createSong(@RequestBody(required = false) String url) {
     	Object p = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    	logger.info(SecurityContextHolder.getContext().getAuthentication().toString());
     	User u = p instanceof UserPrincipal ? ((UserPrincipal) p).getUser() : null;
 
     	if(url == null) {
@@ -142,9 +141,8 @@ public class Songv2 {
                     low++;
                 }
             } while (iterator.hasNext());
-            if (SecurityContextHolder.getContext().getAuthentication() != null) {
-               logger.info(String.format("Playlist sorted by %s", ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
-            }
+
+            logger.info(String.format("Playlist sorted by %s", ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
         } catch (NumberFormatException | NoSuchElementException e) {
         	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
