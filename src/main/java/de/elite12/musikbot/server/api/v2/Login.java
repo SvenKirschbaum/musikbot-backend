@@ -32,7 +32,7 @@ public class Login {
             return new LoginResponse(false, "User not found", null);
         }
         if (userservice.checkPassword(u, loginRequest.getPassword())) {
-            logger.info(String.format("Successful Login by %s",u.toString()));
+            logger.info(String.format("Successful Login by %s: %s", httpServletRequest.getRemoteAddr(), u.toString()));
             return new LoginResponse(true, "", userservice.getLoginToken(u));
         } else {
             logger.info(String.format("Login failed (Wrong Password) by %s: %s", httpServletRequest.getRemoteAddr(), loginRequest.getUsername()));
