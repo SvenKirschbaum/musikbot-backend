@@ -30,7 +30,7 @@ public class Gapcloser {
     public GapcloserDTO postAction(@RequestBody GapcloserDTO req) {
         String pid = SongIDParser.getPID(req.getPlaylist());
         String said = SongIDParser.getSAID(req.getPlaylist());
-        SongIDParser.SpotifyPlaylistHelper spid = SongIDParser.getSPID(req.getPlaylist());
+        String spid = SongIDParser.getSPID(req.getPlaylist());
 
         if (pid != null) {
             gapcloserService.setPlaylist("https://www.youtube.com/playlist?list=" + pid);
@@ -39,7 +39,7 @@ public class Gapcloser {
             gapcloserService.setPlaylist("https://open.spotify.com/album/" + said);
         }
         if (spid != null) {
-            gapcloserService.setPlaylist("https://open.spotify.com/user/" + spid.user + "/playlist/" + spid.pid);
+            gapcloserService.setPlaylist("https://open.spotify.com/playlist/" + spid);
         }
 
         gapcloserService.setMode(req.getMode());

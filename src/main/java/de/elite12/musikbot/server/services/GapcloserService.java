@@ -24,7 +24,6 @@ import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.repository.SettingRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.shared.SongIDParser;
-import de.elite12.musikbot.shared.SongIDParser.SpotifyPlaylistHelper;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.AccessLevel;
@@ -151,7 +150,7 @@ public class GapcloserService {
 			case PLAYLIST: {
 				String pid = SongIDParser.getPID(this.getPlaylist());
 				String said = SongIDParser.getSAID(this.getPlaylist());
-                SpotifyPlaylistHelper spid = SongIDParser.getSPID(this.getPlaylist());
+                String spid = SongIDParser.getSPID(this.getPlaylist());
                 int id = this.permutation.getNext();
 
                 if (pid != null) {
@@ -170,7 +169,7 @@ public class GapcloserService {
                     PlaylistItem item = r.getItems().get(id % 50);
                     return "https://www.youtube.com/watch?v=" + item.getSnippet().getResourceId().getVideoId();
                 } else if (spid != null) {
-                    Track t = spotify.getTrackfromPlaylist(spid.user, spid.pid, id);
+                    Track t = spotify.getTrackfromPlaylist(spid, id);
                     return "https://open.spotify.com/track/" + t.getId();
                 } else if (said != null) {
                 	TrackSimplified t = spotify.getTrackfromAlbum(said, id);
@@ -202,7 +201,7 @@ public class GapcloserService {
 
     private void createPermutation() {
         String pid = SongIDParser.getPID(this.getPlaylist());
-        SpotifyPlaylistHelper spid = SongIDParser.getSPID(this.getPlaylist());
+        String spid = SongIDParser.getSPID(this.getPlaylist());
         String said = SongIDParser.getSAID(this.getPlaylist());
         if (pid != null) {
             try {
@@ -214,7 +213,7 @@ public class GapcloserService {
                 logger.error("Error loading Playlist count", e);
             }
         } else if (spid != null) {
-            this.permutation = new Permutationhelper(spotify.getPlaylistlength(spid.user, spid.pid));
+            this.permutation = new Permutationhelper(spotify.getPlaylistlength(spid));
         } else if (said != null) {
         	this.permutation = new Permutationhelper(spotify.getAlbumlength(said));
         } else {

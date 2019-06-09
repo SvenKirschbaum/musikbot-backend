@@ -103,17 +103,13 @@ public class SpotifyService {
         }
     }
 
-    public Playlist getPlaylist(String uid, String sid) {
-        if (sid == null || uid == null || sid.isEmpty() || uid.isEmpty()) {
+    public Playlist getPlaylist(String spid) {
+        if (spid == null || spid.isEmpty()) {
             return null;
         }
         check();
-        
-        //TODO: Change according to new Playlist format
-        //This has been rolled back by spotify
-        //https://developer.spotify.com/community/news/2018/06/12/changes-to-playlist-uris/
-        @SuppressWarnings("deprecation")
-		GetPlaylistRequest r = api.getPlaylist(uid, sid).build();
+
+        GetPlaylistRequest r = api.getPlaylist(spid).build();
         try {
             return r.execute();
         } catch (IOException | SpotifyWebApiException e) {
@@ -142,14 +138,13 @@ public class SpotifyService {
         }
     }
 
-    public Track getTrackfromPlaylist(String uid, String sid, int id) {
-        if (sid == null || uid == null || sid.isEmpty() || uid.isEmpty()) {
+    public Track getTrackfromPlaylist(String spid, int id) {
+        if (spid == null || spid.isEmpty()) {
             return null;
         }
         check();
-        //TODO: s.o.
-        @SuppressWarnings("deprecation")
-        GetPlaylistsTracksRequest r = api.getPlaylistsTracks(uid, sid).limit(1).offset(id).build();
+
+        GetPlaylistsTracksRequest r = api.getPlaylistsTracks(spid).limit(1).offset(id).build();
         try {
         	Paging<PlaylistTrack> t = r.execute();
             return t.getItems()[0].getTrack();
@@ -159,13 +154,13 @@ public class SpotifyService {
         }
     }
 
-    public Integer getPlaylistlength(String uid, String sid) {
-        if (sid == null || uid == null || sid.isEmpty() || uid.isEmpty()) {
+    public Integer getPlaylistlength(String spid) {
+        if (spid == null || spid.isEmpty()) {
             return null;
         }
         check();
         
-        return this.getPlaylist(uid, sid).getTracks().getTotal();
+        return this.getPlaylist(spid).getTracks().getTotal();
     }
 
 	public Integer getAlbumlength(String said) {

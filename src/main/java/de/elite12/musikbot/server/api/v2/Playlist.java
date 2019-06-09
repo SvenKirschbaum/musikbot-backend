@@ -37,7 +37,7 @@ public class Playlist {
     @GetMapping
     public PlaylistDTO getAction(@RequestParam String url) {
         String pid = SongIDParser.getPID(url);
-        SongIDParser.SpotifyPlaylistHelper spid = SongIDParser.getSPID(url);
+        String spid = SongIDParser.getSPID(url);
         String said = SongIDParser.getSAID(url);
 
         if (pid == null && spid == null && said == null) {
@@ -49,7 +49,7 @@ public class Playlist {
             p = playlistImporterService.getyoutubePlaylist(pid);
         }
         if (spid != null) {
-            p = playlistImporterService.getspotifyPlaylist(spid.user, spid.pid);
+            p = playlistImporterService.getspotifyPlaylist(spid);
         }
         if (said != null) {
             p = playlistImporterService.getspotifyAlbum(said);

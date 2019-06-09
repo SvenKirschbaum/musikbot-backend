@@ -78,16 +78,16 @@ public class PlaylistImporterService {
         }
     }
 
-    public PlaylistDTO getspotifyPlaylist(String uid, String pid) {
-        com.wrapper.spotify.model_objects.specification.Playlist sp = spotify.getPlaylist(uid, pid);
+    public PlaylistDTO getspotifyPlaylist(String spid) {
+        com.wrapper.spotify.model_objects.specification.Playlist sp = spotify.getPlaylist(spid);
         if (sp == null) {
             return null;
         }
         PlaylistDTO p = new PlaylistDTO();
-        p.id = pid;
+        p.id = spid;
         p.typ = "spotifyplaylist";
         p.name = sp.getName();
-        p.link = "https://open.spotify.com/user/" + uid + "/playlist/" + pid;
+        p.link = "https://open.spotify.com/playlist/" + spid;
         
         List<Entry> entries = new ArrayList<>();
         
