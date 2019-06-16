@@ -33,6 +33,9 @@ public class ClientService implements Runnable {
 	@Autowired
 	private MusikbotServiceProperties config;
 
+	@Autowired
+	private PushService pushService;
+
 	
 	private ServerSocket sock;
 	private Socket client;
@@ -190,6 +193,7 @@ public class ClientService implements Runnable {
 			songservice.setSongtitle(null);
 			songservice.setSonglink(null);
 			this.waitforsong = true;
+			this.pushService.sendState();
 		}
 	}
 
@@ -215,6 +219,7 @@ public class ClientService implements Runnable {
                 }
                 this.out.writeObject(new Command(Command.PAUSE));
                 this.out.flush();
+				this.pushService.sendState();
             } catch (IOException e) {
                 logger.error("Unknown Error", e);
             }
@@ -232,6 +237,7 @@ public class ClientService implements Runnable {
             	songservice.setSonglink(null);
                 this.out.writeObject(new Command(Command.STOP));
                 this.out.flush();
+				this.pushService.sendState();
             } catch (IOException e) {
                 logger.error("Unknown Error", e);
             }
@@ -269,6 +275,7 @@ public class ClientService implements Runnable {
             logger.debug("Sending Command: " + c);
             this.out.writeObject(c);
             this.out.flush();
+			this.pushService.sendState();
 
         } catch (IOException e) {
             logger.error("Unknown Exception", e);

@@ -3,6 +3,10 @@ package de.elite12.musikbot.server.api.v2;
 import de.elite12.musikbot.server.api.dto.SearchResult;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.Tuple;
@@ -26,4 +30,9 @@ public class Search {
         return al.toArray(new SearchResult[0]);
     }
 
+    @MessageMapping("/search")
+    @SendToUser("/queue/search")
+    public SearchResult[] autocomplete(Message<String> message) {
+        return this.autocomplete(message.getPayload());
+    }
 }

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.elite12.musikbot.server.data.UserPrincipal;
+import de.elite12.musikbot.server.services.PushService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,9 @@ public class Control {
 	private SongRepository songrepository;
 	
 	private static final Logger logger = LoggerFactory.getLogger(Control.class);
+
+	@Autowired
+	private PushService pushService;
 
 	@RequestMapping(path="/start", method = RequestMethod.POST)
 	public void start() {
@@ -90,7 +94,8 @@ public class Control {
 			t.setSort(b.getSecond());
 			songrepository.save(t);
 		}
-		
+
+		this.pushService.sendState();
         logger.info(String.format("Playlist shuffled by %s", ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
 	}
 }

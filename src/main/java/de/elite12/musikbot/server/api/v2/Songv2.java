@@ -7,6 +7,7 @@ import de.elite12.musikbot.server.data.entity.LockedSong;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
+import de.elite12.musikbot.server.services.PushService;
 import de.elite12.musikbot.server.services.SongService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,9 @@ public class Songv2 {
 
     @Autowired
 	private GuestSession guestinfo;
+
+    @Autowired
+    private PushService pushService;
 	
 	private static final Logger logger = LoggerFactory.getLogger(Songv2.class);
 
@@ -79,6 +83,7 @@ public class Songv2 {
                 
                 songrepository.delete(song.get());
             }
+            this.pushService.sendState();
             logger.info(String.format("Songs %s by %s: %s", lock ? "deleted" : "deleted and locked", ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(), Arrays.toString(a)));
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (NumberFormatException e) {
@@ -142,6 +147,7 @@ public class Songv2 {
                 }
             } while (iterator.hasNext());
 
+            this.pushService.sendState();
             logger.info(String.format("Playlist sorted by %s", ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
         } catch (NumberFormatException | NoSuchElementException e) {
         	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
