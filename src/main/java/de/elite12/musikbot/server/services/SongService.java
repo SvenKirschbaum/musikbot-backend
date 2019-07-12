@@ -132,7 +132,7 @@ public class SongService {
                 return new createSongResponse(false,false,"Dieser Song befindet sich bereits in der Playlist!");
             }
 
-            Long count = user != null ? songrepository.countByUserAuthor(user) : songrepository.countByGuestAuthor(gi.getId());
+            Long count = user != null ? songrepository.countByUserAuthorAndPlayed(user,false) : songrepository.countByGuestAuthorAndPlayed(gi.getId(),false);
             if(count > 2 && (user == null || !user.isAdmin())) {
                 logger.debug("Adding Song aborted, User reached maximum");
                 return new createSongResponse(false,false,"Du hast bereits die maximale Anzahl an Songs eingestellt!");

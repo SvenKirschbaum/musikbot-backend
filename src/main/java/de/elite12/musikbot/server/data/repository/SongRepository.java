@@ -33,10 +33,14 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>{
 	Long countByPlayed(Boolean played);
 	
 	Long countByLinkAndPlayed(String link, boolean played);
-	
+
 	Long countByUserAuthor(User author);
-	
+
 	Long countByGuestAuthor(String guest);
+
+    Long countByUserAuthorAndPlayed(User author, boolean played);
+
+    Long countByGuestAuthorAndPlayed(String guest, boolean played);
 	
 	Long countByUserAuthorAndSkipped(User author, boolean skipped);
 	
