@@ -31,7 +31,7 @@ public class TokenFilter implements Filter{
 		if(request instanceof HttpServletRequest) {
 			HttpServletRequest req = (HttpServletRequest) request;
 			String authheader = req.getHeader("Authorization");
-			String token = getToken(authheader);
+			String token = TokenFilter.parseHeader(authheader);
 			
 			User u = userservice.findUserbyToken(token);
 			if(u != null) {
@@ -46,8 +46,13 @@ public class TokenFilter implements Filter{
 			chain.doFilter(request, response);
 		}
 	}
-	
-	private String getToken(String raw) {
+
+	/**
+	 * Parses an Authorization Header and returns the token contained in it
+	 * @param raw The Header string
+	 * @return the Token or null if string is invalid
+	 */
+	public static String parseHeader(String raw) {
 		if (raw != null && raw.startsWith("Bearer ")) {
             return raw.substring(7);
         }
