@@ -3,9 +3,12 @@ package de.elite12.musikbot.server.api.v2;
 import de.elite12.musikbot.server.api.dto.TokenDTO;
 import de.elite12.musikbot.server.api.dto.UserDTO;
 import de.elite12.musikbot.server.data.UserPrincipal;
+import de.elite12.musikbot.server.data.entity.Token;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.SongRepository;
+import de.elite12.musikbot.server.data.repository.TokenRepository;
 import de.elite12.musikbot.server.exception.NotFoundException;
+import de.elite12.musikbot.server.filter.TokenFilter;
 import de.elite12.musikbot.server.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +19,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
+import java.util.Date;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
@@ -31,6 +37,9 @@ public class Userv2 {
 
     @Autowired
     private SongRepository songRepository;
+
+    @Autowired
+    private TokenRepository tokenRepository;
 
     @Autowired
     private Validator validator;
@@ -234,7 +243,18 @@ public class Userv2 {
 
     @GetMapping(path = "self")
     @PreAuthorize("isAuthenticated()")
-    public de.elite12.musikbot.server.data.entity.User getSelf() {
+    public de.elite12.musikbot.server.data.entity.User getSelf(HttpServletRequest httpServletRequest) {
+        //Refresh token duration
+        String authheader = httpServletRequest.getHeader("Authorization");
+        String tokenstring = TokenFilter.parseHeader(authheader);
+        Optional<Token> otoken = tokenRepository.findByToken(tokenstring);
+        if(otoken.isPresent()) {
+            Token token = otoken.get();
+            if(!token.isExternal()) {
+                token.setCreated(new Date());
+                tokenRepository.save(token);
+            }
+        }
         return ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
     }
 
