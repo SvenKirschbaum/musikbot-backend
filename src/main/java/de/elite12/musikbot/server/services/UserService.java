@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -118,6 +119,12 @@ public class UserService implements PasswordEncoder {
         token = tokenrepository.save(token);
 
         return token.getToken();
+    }
+
+    @Scheduled(fixedRate = 3600000)
+    //@Scheduled(fixedRate = 5000)
+    private void expireTokens() {
+        tokenrepository.deleteExpiredTokens();
     }
 
     @Deprecated
