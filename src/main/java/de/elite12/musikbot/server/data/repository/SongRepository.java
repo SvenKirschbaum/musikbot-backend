@@ -1,5 +1,6 @@
 package de.elite12.musikbot.server.data.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.persistence.Tuple;
@@ -47,6 +48,8 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>{
 	Long countByGuestAuthorAndSkipped(String guest, boolean skipped);
 	
 	Iterable<Song> findByPlayedOrderBySort(boolean played);
+
+	List<Song> findByGuestAuthor(String guest);
 	
 	@Query(value = "select title,link from song WHERE title LIKE concat('%', replace(replace(?1, '%', '\\\\%'), '_', '\\_'), '%') AND (USER_AUTHOR != 30 OR USER_AUTHOR IS NULL) GROUP BY link ORDER BY count(*) DESC LIMIT 10", nativeQuery = true)
 	Iterable<Tuple> findSearchResult(String search);
