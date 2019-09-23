@@ -6,10 +6,12 @@ import de.elite12.musikbot.server.api.dto.RegistrationRequest;
 import de.elite12.musikbot.server.data.GuestSession;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.entity.Token;
+import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.data.repository.TokenRepository;
 import de.elite12.musikbot.server.filter.TokenFilter;
 import de.elite12.musikbot.server.services.PushService;
+import de.elite12.musikbot.server.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +24,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.elite12.musikbot.server.data.entity.User;
-import de.elite12.musikbot.server.services.UserService;
-
-import javax.servlet.Registration;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RestController
@@ -95,7 +92,7 @@ public class Login {
     @PostMapping
     @RequestMapping("/v2/register")
     @PreAuthorize("isAnonymous()")
-    public LoginResponse registerAction(@RequestBody @Valid RegistrationRequest data, BindingResult bindingResult) {
+    public LoginResponse registerAction(@RequestBody @Valid RegistrationRequest data, BindingResult bindingResult, HttpServletRequest httpServletRequest) {
         User u = userservice.findUserbyName(data.getUsername());
         if(u != null) {
             return new LoginResponse(false,"Username already in use", null);
@@ -130,6 +127,7 @@ public class Login {
         }
 
         User user = userservice.createUser(data.getUsername(),data.getPassword(),data.getEmail());
+        logger.info(String.format("Successful Register by %s: %s", httpServletRequest.getRemoteAddr(), user.toString()));
         return new LoginResponse(true, "", userservice.getLoginToken(user));
     }
 
