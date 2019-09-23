@@ -1,8 +1,8 @@
 package de.elite12.musikbot.server.api.v2;
 
+import de.elite12.musikbot.server.api.dto.createSongResponse;
 import de.elite12.musikbot.server.data.GuestSession;
 import de.elite12.musikbot.server.data.UserPrincipal;
-import de.elite12.musikbot.server.api.dto.createSongResponse;
 import de.elite12.musikbot.server.data.entity.LockedSong;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
@@ -84,7 +84,7 @@ public class Songv2 {
                 songrepository.delete(song.get());
             }
             this.pushService.sendState();
-            logger.info(String.format("Songs %s by %s: %s", lock ? "deleted" : "deleted and locked", ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(), Arrays.toString(a)));
+            logger.info(String.format("Songs %s by %s: %s", lock ? "deleted and locked" : "deleted", ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(), Arrays.toString(a)));
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (NumberFormatException e) {
         	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
