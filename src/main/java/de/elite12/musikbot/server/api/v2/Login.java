@@ -77,8 +77,13 @@ public class Login {
         String authheader = httpServletRequest.getHeader("Authorization");
         String tokenstring = TokenFilter.parseHeader(authheader);
         Optional<Token> token = tokenRepository.findByToken(tokenstring);
-        tokenRepository.delete(token.orElseThrow());
-        return new LoginResponse(true, "", null);
+        if(!token.orElseThrow().isExternal()) {
+            tokenRepository.delete(token.orElseThrow());
+            return new LoginResponse(true, "", null);
+        }
+        else {
+            return new LoginResponse(false, "Provided Token is external", null);
+        }
     }
 
 }
