@@ -257,9 +257,14 @@ public class Userv2 {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
+        //Replace Song Author
         String guestid = UUID.randomUUID().toString();
         songRepository.replaceUserAuthor(target.get(), guestid);
 
+        //Delete Tokens
+        tokenRepository.deleteByOwner(target.get());
+
+        //Delete User
         userRepository.delete(target.get());
         logger.info(String.format("User deleted by %s: %s -> %s", user.toString(), target.get().toString(), guestid));
         return new ResponseEntity<>(HttpStatus.OK);
