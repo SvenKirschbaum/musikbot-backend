@@ -1,22 +1,26 @@
 package de.elite12.musikbot.server.data.repository;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.persistence.Tuple;
-
+import de.elite12.musikbot.server.data.entity.Song;
+import de.elite12.musikbot.server.data.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 
-import de.elite12.musikbot.server.data.entity.Song;
-import de.elite12.musikbot.server.data.entity.User;
+import javax.persistence.Tuple;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SongRepository extends PagingAndSortingRepository<Song, Long>{
+
+	@Modifying
+	@Query(value = "UPDATE Song s SET s.userAuthor = NULL, s.guestAuthor = ?2 WHERE s.userAuthor = ?1")
+	Integer replaceUserAuthor(User author, String guest);
+
 	@Nullable
 	@Query(value = "select * from song s where s.played = false order by s.sort asc limit 1", nativeQuery = true)
 	Song getNextSong();

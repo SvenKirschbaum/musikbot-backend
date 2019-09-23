@@ -7,6 +7,7 @@ import de.elite12.musikbot.server.data.entity.Token;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.data.repository.TokenRepository;
+import de.elite12.musikbot.server.data.repository.UserRepository;
 import de.elite12.musikbot.server.exception.NotFoundException;
 import de.elite12.musikbot.server.filter.TokenFilter;
 import de.elite12.musikbot.server.services.UserService;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,6 +36,9 @@ public class Userv2 {
 
     @Autowired
     private UserService userservice;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private SongRepository songRepository;
@@ -239,6 +244,25 @@ public class Userv2 {
                 return new ResponseEntity<>("Attribut ungültig", HttpStatus.BAD_REQUEST);
             }
         }
+    }
+
+    @DeleteMapping(path = "{userid}")
+    @PreAuthorize("hasRole('admin')")
+    @Transactional
+    public ResponseEntity<Object> deleteUser(@PathVariable("userid") Long userid) {
+        User user = ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        Optional<User> target = userRepository.findById(userid);
+
+        if(!target.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        String guestid = UUID.randomUUID().toString();
+        songRepository.replaceUserAuthor(target.get(), guestid);
+
+        userRepository.delete(target.get());
+        logger.info(String.format("User deleted by %s: %s -> %s", user.toString(), target.get().toString(), guestid));
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping(path = "self")
