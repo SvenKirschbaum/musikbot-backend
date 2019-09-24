@@ -58,13 +58,7 @@ public class Login {
             return new LoginResponse(false, "User not found", null);
         }
         if (userservice.checkPassword(u, loginRequest.getPassword())) { //Success
-            List<Song> songs = songRepository.findByGuestAuthor(guestinfo.getId());
-            songs.forEach(song -> {
-                song.setUserAuthor(u);
-                song.setGuestAuthor(null);
-            });
-            songRepository.saveAll(songs);
-            if(songs.size() > 0) pushService.sendState();
+            registerGuestSongs(u);
             logger.info(String.format("Successful Login by %s: %s", httpServletRequest.getRemoteAddr(), u.toString()));
             return new LoginResponse(true, "", userservice.getLoginToken(u));
         } else {
@@ -127,8 +121,19 @@ public class Login {
         }
 
         User user = userservice.createUser(data.getUsername(),data.getPassword(),data.getEmail());
+        registerGuestSongs(user);
         logger.info(String.format("Successful Register by %s: %s", httpServletRequest.getRemoteAddr(), user.toString()));
         return new LoginResponse(true, "", userservice.getLoginToken(user));
+    }
+
+    private void registerGuestSongs(User user) {
+        List<Song> songs = songRepository.findByGuestAuthor(guestinfo.getId());
+        songs.forEach(song -> {
+            song.setUserAuthor(user);
+            song.setGuestAuthor(null);
+        });
+        songRepository.saveAll(songs);
+        if(songs.size() > 0) pushService.sendState();
     }
 
 }
