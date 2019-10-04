@@ -6,6 +6,7 @@ import de.elite12.musikbot.server.filter.TokenFilter;
 import de.elite12.musikbot.server.services.UserService;
 import org.apache.catalina.filters.RemoteIpFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -49,9 +50,33 @@ import java.util.Collections;
 @EnableScheduling
 @EnableCaching
 public class MusikbotServiceConfig {
-	
+
+
 	@Configuration
 	@Order(1)
+	public static class ActuatorWebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
+		@Autowired
+		private TokenFilter tokenFilter;
+
+		@Override
+		protected void configure(HttpSecurity http) throws Exception {
+			http
+				.csrf().disable()
+				.cors().and()
+				.sessionManagement().disable()
+				.addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class)
+				.requestMatcher(EndpointRequest.toAnyEndpoint())
+					.authorizeRequests()
+						.anyRequest()
+							.hasRole("admin")
+				.and();
+
+		}
+	}
+
+
+	@Configuration
+	@Order(2)
 	public static class ApiWebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
 		@Autowired
 		private TokenFilter tokenFilter;
