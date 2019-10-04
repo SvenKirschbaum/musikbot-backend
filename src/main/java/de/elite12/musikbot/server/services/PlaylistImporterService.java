@@ -1,25 +1,25 @@
 package de.elite12.musikbot.server.services;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import de.elite12.musikbot.server.api.dto.PlaylistDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
 import com.wrapper.spotify.model_objects.specification.Album;
 import com.wrapper.spotify.model_objects.specification.Paging;
 import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
 import com.wrapper.spotify.model_objects.specification.TrackSimplified;
-
+import de.elite12.musikbot.server.api.dto.PlaylistDTO;
 import de.elite12.musikbot.server.api.dto.PlaylistDTO.Entry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
+@Cacheable("playlist")
 public class PlaylistImporterService {
 
     @Autowired

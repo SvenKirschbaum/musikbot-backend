@@ -1,21 +1,9 @@
 package de.elite12.musikbot.server.services;
 
-import java.io.IOException;
-import java.util.*;
-
-import javax.annotation.PostConstruct;
-
-import de.elite12.musikbot.server.data.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
 import com.wrapper.spotify.model_objects.specification.Track;
 import com.wrapper.spotify.model_objects.specification.TrackSimplified;
-
 import de.elite12.musikbot.server.data.UnifiedTrack;
 import de.elite12.musikbot.server.data.UnifiedTrack.InvalidURLException;
 import de.elite12.musikbot.server.data.UnifiedTrack.TrackNotAvailableException;
@@ -23,10 +11,19 @@ import de.elite12.musikbot.server.data.entity.Setting;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.repository.SettingRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
+import de.elite12.musikbot.server.data.repository.UserRepository;
 import de.elite12.musikbot.shared.SongIDParser;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.AccessLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.util.*;
 
 @Service
 public class GapcloserService {
@@ -221,7 +218,7 @@ public class GapcloserService {
         }
     }
 
-    private class Permutationhelper {
+    private static class Permutationhelper {
         private int p;
         private final List<Integer> list;
 

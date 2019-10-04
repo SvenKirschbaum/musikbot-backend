@@ -2,6 +2,7 @@ package de.elite12.musikbot.server.data.repository;
 
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.entity.User;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
@@ -68,16 +69,20 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>{
 	
 	@Query(value = "SELECT u.name,COUNT(*) FROM song s LEFT JOIN user u ON s.user_author = u.id WHERE (USER_AUTHOR != 30) GROUP BY user_author ORDER BY COUNT(*) DESC LIMIT 10", nativeQuery=true)
 	Iterable<Tuple> findTopUser();
-	
+
+	@Cacheable(cacheNames = "stats", key = "'u-t-'.concat(#u.id)",sync = true)
 	@Query(value = "SELECT title,link,COUNT(*) as count FROM song s WHERE user_author = ?1 GROUP BY link ORDER BY COUNT(*) DESC LIMIT 10", nativeQuery = true)
 	Iterable<TopResult> findTopByUser(User u);
-	
+
+	@Cacheable(cacheNames = "stats", key = "'g-t-'.concat(#u)",sync = true)
 	@Query(value = "SELECT title,link,COUNT(*) as count FROM song s WHERE guest_author = ?1 GROUP BY link ORDER BY COUNT(*) DESC LIMIT 10", nativeQuery = true)
 	Iterable<TopResult> findTopByGuest(String u);
-	
+
+	@Cacheable(cacheNames = "stats", key = "'u-ts-'.concat(#u.id)",sync = true)
 	@Query(value = "SELECT title,link,COUNT(*) as count FROM song s WHERE user_author = ?1 AND skipped = true GROUP BY link ORDER BY COUNT(*) DESC LIMIT 10", nativeQuery = true)
 	Iterable<TopResult> findTopSkippedByUser(User u);
-	
+
+	@Cacheable(cacheNames = "stats", key = "'g-ts-'.concat(#u)",sync = true)
 	@Query(value = "SELECT title,link,COUNT(*) as count FROM song s WHERE guest_author = ?1 AND skipped = true GROUP BY link ORDER BY COUNT(*) DESC LIMIT 10", nativeQuery = true)
 	Iterable<TopResult> findTopSkippedByGuest(String u);
 	
