@@ -1,31 +1,27 @@
 package de.elite12.musikbot.server.services;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
+import de.elite12.musikbot.server.core.MusikbotServiceProperties;
+import de.elite12.musikbot.server.data.entity.Song;
+import de.elite12.musikbot.shared.clientDTO.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.task.TaskExecutor;
+import org.springframework.context.event.EventListener;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
-import de.elite12.musikbot.server.core.MusikbotServiceProperties;
-import de.elite12.musikbot.server.data.entity.Song;
-import de.elite12.musikbot.shared.Command;
+import java.security.Principal;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 @Service
-public class ClientService implements Runnable {
-
-	@Autowired
-	private TaskExecutor taskExecutor;
+@Controller
+public class ClientService {
 
 	@Autowired
 	private SongService songservice;
@@ -36,166 +32,16 @@ public class ClientService implements Runnable {
 	@Autowired
 	private PushService pushService;
 
-	
-	private ServerSocket sock;
-	private Socket client;
+	@Autowired
+	private SimpMessagingTemplate template;
 
-	private ObjectOutputStream out;
+	private Set<String> authorizedClients = new CopyOnWriteArraySet<>();
+
     private boolean waitforsong = false;
     private boolean ispaused = false;
     private State state = State.STARTED;
-    private Thread thread;
 	
 	private static final Logger logger = LoggerFactory.getLogger(ClientService.class);
-
-	public ClientService() throws IOException {
-		logger.debug("Initializing ConnectionListener...");
-
-		try {
-			logger.debug("Creating Server Socket...");
-			sock = new ServerSocket(65534);
-		} catch (IOException e) {
-			logger.error("Error Creating ServerSocket", e);
-			throw e;
-		}
-	}
-	
-	@PostConstruct
-	private void postConstruct() {
-		logger.debug("Starting Thread...");
-		taskExecutor.execute(this);
-	}
-	
-	@PreDestroy
-	private void preDestroy() {
-		thread.interrupt();
-		try {
-			sock.close();
-		} catch(IOException e) {
-			logger.warn("Exception",e);
-		}
-		try {
-			client.close();
-		} catch(IOException e) {
-			logger.warn("Exception",e);
-		}
-	}
-
-	@Override
-	public void run() {
-		this.thread = Thread.currentThread();
-		while (!thread.isInterrupted()) {
-			try {
-				logger.debug("Wait for Connection...");
-				client = sock.accept();
-				logger.info("Incoming Connection");
-
-				this.out = new ObjectOutputStream(client.getOutputStream());
-	            this.out.flush();
-				ObjectInputStream in = new ObjectInputStream(client.getInputStream());
-	            
-	            Command authcmd;
-	            logger.debug("Requesting Auth");
-	            this.out.writeObject(new Command(Command.REQUEST_AUTH));
-	            this.out.flush();
-	            authcmd = (Command) in.readObject();
-	            
-	            if (authcmd.getCmd() != Command.AUTH || !authcmd.getdata().equals(config.getClientkey())) {
-	                try {
-	                    logger.warn("Authentification Failure, closing connection!");
-	                    this.out.writeObject(new Command(Command.INVALID));
-	                    this.out.flush();
-	                    this.client.close();
-	                } catch (IOException e) {
-	                    logger.error("Unknown Exception", e);
-	                }
-	                continue;
-	            } else {
-	                try {
-	                    this.out.writeObject(new Command(Command.AUTH));
-	                    this.out.flush();
-	                    logger.info("Authentification Succesfull");
-	                } catch (IOException e) {
-	                    logger.error("Unknown Exception", e);
-	                }
-	            }
-	            
-	            songservice.setState("Verbunden");
-	            
-	            while (!this.client.isClosed() && this.client.isConnected() && !thread.isInterrupted()) {
-	                try {
-	                    Command cmd = (Command) in.readObject();
-	                    logger.debug("Got CMD: " + cmd.getCmd());
-	                    switch (cmd.getCmd()) {
-		                    case Command.EMPTY:
-		                    case Command.INVALID: {
-		                        break;
-		                    }
-		                    case Command.REQUEST_SONG: {
-		                        logger.debug("Got Song Request");
-								handleRequestSong();
-								break;
-		                    }
-		                    case Command.SONG_FINISHED: {
-		                        logger.debug("Got Song finished");
-								handleRequestSong();
-		                        break;
-		                    }
-		    				case Command.PLAYBACK_ERROR: {
-		    					logger.error("Client reported PLAYBACK_ERROR: " + cmd.getdata());
-								handleRequestSong();
-		    					break;
-		    				}
-	                    }
-	                } catch (SocketException | EOFException e) {
-	                    logger.debug("Die Verbindung wurde vom Client getrennt!", e);
-	                    break;
-	                } catch (ClassNotFoundException | IOException e) {
-	                    logger.error("Unknown Error", e);
-	                    break;
-	                }
-	            }
-	            try {
-	            	client.close();
-	            }
-	            catch(IOException e) {
-	            	logger.error("Unknown Error", e);
-	            }
-	            logger.info("Connection closed");
-	            
-
-				songservice.setState("Keine Verbindung zum BOT");
-			} catch (SocketException e) {
-				logger.debug("Socket Exception", e);
-			} catch (IOException e) {
-				logger.error("Unknown IOException", e);
-			} catch (ClassNotFoundException e) {
-				logger.error("ClassNotFound", e);
-			}
-		}
-		logger.debug("Exiting Loop due to Interrupt");
-		try {
-			sock.close();
-		} catch (IOException e) {
-			logger.error("Unknown Exception while closing Socket", e);
-		}
-		logger.info("Shutting down ConnectionListener");
-	}
-
-	private void handleRequestSong() throws IOException {
-		Song song = songservice.getnextSong();
-		if (song != null) {
-			this.sendSong(song);
-		} else {
-			this.out.writeObject(new Command(Command.NO_SONG_AVAILABLE));
-			this.out.flush();
-			songservice.setState("Warte auf neue Lieder");
-			songservice.setSongtitle(null);
-			songservice.setSonglink(null);
-			this.waitforsong = true;
-			this.pushService.sendState();
-		}
-	}
 
 	public void notifynewSong() {
         logger.debug("Notify Song");
@@ -211,18 +57,16 @@ public class ClientService implements Runnable {
         if(isNotConnected()) return;
         if (this.state == State.STARTED) {
             this.ispaused = !this.ispaused;
-            try {
-                if (this.ispaused) {
-                    songservice.setState("Paused");
-                } else {
-                    songservice.setState("Playing");
-                }
-                this.out.writeObject(new Command(Command.PAUSE));
-                this.out.flush();
-				this.pushService.sendState();
-            } catch (IOException e) {
-                logger.error("Unknown Error", e);
-            }
+
+			if (this.ispaused) {
+				songservice.setState("Paused");
+			} else {
+				songservice.setState("Playing");
+			}
+
+			this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.PAUSE));
+
+			this.pushService.sendState();
         }
     }
 
@@ -231,16 +75,14 @@ public class ClientService implements Runnable {
         if(isNotConnected()) return;
         if (this.state == State.STARTED) {
             this.state = State.STOPPED;
-            try {
-            	songservice.setState("Stopped");
-            	songservice.setSongtitle("Kein Song");
-            	songservice.setSonglink(null);
-                this.out.writeObject(new Command(Command.STOP));
-                this.out.flush();
-				this.pushService.sendState();
-            } catch (IOException e) {
-                logger.error("Unknown Error", e);
-            }
+
+			songservice.setState("Stopped");
+			songservice.setSongtitle("Kein Song");
+			songservice.setSonglink(null);
+
+			this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.STOP));
+
+			this.pushService.sendState();
         }
     }
 
@@ -249,54 +91,83 @@ public class ClientService implements Runnable {
         if(isNotConnected()) return;
         if (this.state == State.STOPPED) {
             this.state = State.STARTED;
-            try {
-				handleRequestSong();
-			} catch (IOException e) {
-                logger.error("Unknown Error", e);
-            }
+			onRequestSong();
         }
     }
     
     private void sendSong(Song song) {
         logger.debug("Sending Song...");
         if(isNotConnected()) return;
-        try {
-        	this.waitforsong = false;
-        	songservice.setState("Playing");
-        	songservice.setSongtitle(song.getTitle());
-        	songservice.setSonglink(song.getLink());
-        	
-        	de.elite12.musikbot.shared.Song tmp = new de.elite12.musikbot.shared.Song();
-        	tmp.setLink(song.getLink());
-        	tmp.setTitle(song.getTitle());
-        	tmp.settype(song.getLink().contains("spotify") ? "spotify" : "youtube");
-        	
-            Command c = new Command(Command.SONG, tmp);
-            logger.debug("Sending Command: " + c);
-            this.out.writeObject(c);
-            this.out.flush();
-			this.pushService.sendState();
 
-        } catch (IOException e) {
-            logger.error("Unknown Exception", e);
-        }
+		this.waitforsong = false;
+		songservice.setState("Playing");
+		songservice.setSongtitle(song.getTitle());
+		songservice.setSonglink(song.getLink());
+
+		this.sendCommand(new de.elite12.musikbot.shared.clientDTO.Song(song.getLink(),song.getTitle(), song.getLink().contains("spotify") ? "spotify" : "youtube"));
+
+		this.pushService.sendState();
     }
 
     public void sendShutdown() {
         logger.debug("Sending Shutdown...");
         if(isNotConnected()) return;
-        try {
-            Command c = new Command(Command.SHUTDOWN);
-            this.out.writeObject(c);
-            this.out.flush();
-        } catch (IOException e) {
-            logger.error("Unknown Exception", e);
-        }
+        this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.SHUTDOWN));
     }
+
+	@MessageMapping("/client/song")
+	private void onRequestSong() {
+		Song song = songservice.getnextSong();
+		if (song != null) {
+			this.sendSong(song);
+		} else {
+			this.sendReply(new SimpleResponse(SimpleResponse.ResponseType.NO_SONG_AVAILABLE));
+			songservice.setState("Warte auf neue Lieder");
+			songservice.setSongtitle(null);
+			songservice.setSonglink(null);
+			this.waitforsong = true;
+			this.pushService.sendState();
+		}
+	}
+
+	@MessageMapping("/client/auth")
+    private void onAuthRequest(Principal principal, Message<AuthRequest> message) {
+		if(principal == null) return; //Client didn´t connect via correct endpoint
+
+		if(message.getPayload().getKey().equals(config.getClientkey())) {
+			if(this.authorizedClients.isEmpty()) songservice.setState("Verbunden");
+			this.authorizedClients.add(principal.getName());
+			this.template.convertAndSendToUser(principal.getName(),"/queue/reply", new AuthResponse(true), Map.of("type", AuthResponse.class.getSimpleName()));
+			return;
+		}
+		this.template.convertAndSendToUser(principal.getName(),"/queue/reply", new AuthResponse(false), Map.of("type", AuthResponse.class.getSimpleName()));
+	}
+
+	@EventListener
+	public void onDisconnectEvent(SessionDisconnectEvent event) {
+		if(event.getUser() != null) {
+			if(this.authorizedClients.contains(event.getUser().getName())) {
+				this.authorizedClients.remove(event.getUser().getName());
+				if(this.isNotConnected()) songservice.setState("Keine Verbindung zum BOT");
+			}
+		}
+	}
     
     private boolean isNotConnected() {
-    	return this.client == null || this.client.isClosed() || !this.client.isConnected();
+    	return this.authorizedClients.isEmpty();
     }
+
+    private void sendCommand(ClientDTO clientDTO) {
+		for(String client:authorizedClients) {
+			this.template.convertAndSendToUser(client,"/queue/command", clientDTO, Map.of("type", clientDTO.getClass().getSimpleName()));
+		}
+	}
+
+	private void sendReply(ClientDTO clientDTO) {
+		for(String client:authorizedClients) {
+			this.template.convertAndSendToUser(client,"/queue/reply", clientDTO, Map.of("type", clientDTO.getClass().getSimpleName()));
+		}
+	}
 	
 	public enum State {
 		STARTED,

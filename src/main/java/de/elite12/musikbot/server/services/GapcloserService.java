@@ -12,7 +12,7 @@ import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.repository.SettingRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.data.repository.UserRepository;
-import de.elite12.musikbot.shared.SongIDParser;
+import de.elite12.musikbot.shared.util.SongIDParser;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;

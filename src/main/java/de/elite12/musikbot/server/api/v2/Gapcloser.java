@@ -3,7 +3,7 @@ package de.elite12.musikbot.server.api.v2;
 import de.elite12.musikbot.server.api.dto.GapcloserDTO;
 import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.services.GapcloserService;
-import de.elite12.musikbot.shared.SongIDParser;
+import de.elite12.musikbot.shared.util.SongIDParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

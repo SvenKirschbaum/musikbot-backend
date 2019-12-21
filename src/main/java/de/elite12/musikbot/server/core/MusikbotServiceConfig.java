@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -36,13 +37,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
 
 @Configuration
 @EnableWebSecurity
@@ -139,6 +145,21 @@ public class MusikbotServiceConfig {
 		@Override
 		public void registerStompEndpoints(StompEndpointRegistry registry) {
 			registry.addEndpoint("/sock").setAllowedOrigins("*").withSockJS();
+			registry.addEndpoint("/client").setAllowedOrigins("*").setHandshakeHandler(new DefaultHandshakeHandler() {
+				@Override
+				protected Principal determineUser(ServerHttpRequest request,
+												  WebSocketHandler wsHandler,
+												  Map<String, Object> attributes) {
+					// Generate principal with UUID as name
+					return new Principal() {
+						private String name = UUID.randomUUID().toString();
+						@Override
+						public String getName() {
+							return this.name;
+						}
+					};
+				}
+			});
 		}
 
 		@Override

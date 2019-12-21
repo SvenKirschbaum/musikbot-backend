@@ -1,17 +1,16 @@
 package de.elite12.musikbot.server.data;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.util.List;
-
 import com.google.api.services.youtube.model.Video;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.specification.Track;
-
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.services.SpotifyService;
 import de.elite12.musikbot.server.services.YouTubeService;
-import de.elite12.musikbot.shared.SongIDParser;
+import de.elite12.musikbot.shared.util.SongIDParser;
+
+import java.io.IOException;
+import java.time.Duration;
+import java.util.List;
 
 public class UnifiedTrack {
 

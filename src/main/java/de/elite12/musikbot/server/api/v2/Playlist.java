@@ -8,7 +8,7 @@ import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.exception.NotFoundException;
 import de.elite12.musikbot.server.services.PlaylistImporterService;
 import de.elite12.musikbot.server.services.SongService;
-import de.elite12.musikbot.shared.SongIDParser;
+import de.elite12.musikbot.shared.util.SongIDParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
