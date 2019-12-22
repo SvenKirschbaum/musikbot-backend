@@ -135,7 +135,10 @@ public class ClientService {
 		if(principal == null) return; //Client didn´t connect via correct endpoint
 
 		if(message.getPayload().getKey().equals(config.getClientkey())) {
-			if(this.authorizedClients.isEmpty()) songservice.setState("Verbunden");
+			if(this.authorizedClients.isEmpty()) {
+				songservice.setState("Verbunden");
+				this.pushService.sendState();
+			}
 			this.authorizedClients.add(principal.getName());
 			this.template.convertAndSendToUser(principal.getName(),"/queue/reply", new AuthResponse(true), Map.of("type", AuthResponse.class.getSimpleName()));
 			return;
@@ -148,7 +151,10 @@ public class ClientService {
 		if(event.getUser() != null) {
 			if(this.authorizedClients.contains(event.getUser().getName())) {
 				this.authorizedClients.remove(event.getUser().getName());
-				if(this.isNotConnected()) songservice.setState("Keine Verbindung zum BOT");
+				if(this.isNotConnected()) {
+					songservice.setState("Keine Verbindung zum BOT");
+					this.pushService.sendState();
+				}
 			}
 		}
 	}

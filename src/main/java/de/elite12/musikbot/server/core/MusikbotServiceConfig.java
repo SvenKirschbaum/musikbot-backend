@@ -23,6 +23,7 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -136,9 +137,13 @@ public class MusikbotServiceConfig {
 		@Autowired
 		private UserService userservice;
 
+		@Autowired
+		private TaskScheduler messageBrokerTaskScheduler;
+
+
 		@Override
 		public void configureMessageBroker(MessageBrokerRegistry config) {
-			config.enableSimpleBroker("/topic","/queue");
+			config.enableSimpleBroker("/topic","/queue").setHeartbeatValue(new long[]{30000,30000}).setTaskScheduler(this.messageBrokerTaskScheduler);
 			config.setApplicationDestinationPrefixes("/app");
 		}
 
