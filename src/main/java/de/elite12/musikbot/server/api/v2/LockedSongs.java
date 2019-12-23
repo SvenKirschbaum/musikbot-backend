@@ -1,12 +1,12 @@
 package de.elite12.musikbot.server.api.v2;
 
-import de.elite12.musikbot.server.data.UnifiedTrack;
 import de.elite12.musikbot.server.api.dto.createSongResponse;
+import de.elite12.musikbot.server.data.UnifiedTrack;
 import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.data.entity.LockedSong;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.exception.NotFoundException;
-import de.elite12.musikbot.server.services.SpotifyService;
+import de.elite12.musikbot.server.services.SpotifyAPIService;
 import de.elite12.musikbot.server.services.YouTubeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ public class LockedSongs {
     private YouTubeService youtube;
 
     @Autowired
-    private SpotifyService spotify;
+    private SpotifyAPIService spotifyAPIService;
 
     @GetMapping
     public LockedSong[] getAction() {
@@ -54,7 +54,7 @@ public class LockedSongs {
     @PostMapping
     public createSongResponse postAction(@RequestBody String url) {
         try {
-            UnifiedTrack ut = UnifiedTrack.fromURL(url,youtube,spotify);
+            UnifiedTrack ut = UnifiedTrack.fromURL(url,youtube, spotifyAPIService);
             LockedSong ls = new LockedSong();
             ls.setTitle(ut.getTitle());
             ls.setUrl(ut.getLink());

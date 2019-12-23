@@ -1,14 +1,6 @@
 package de.elite12.musikbot.server.services;
 
-import java.io.IOException;
-import java.util.Date;
-
 import de.elite12.musikbot.server.api.dto.createSongResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import de.elite12.musikbot.server.core.MusikbotServiceProperties;
 import de.elite12.musikbot.server.data.GuestSession;
 import de.elite12.musikbot.server.data.UnifiedTrack;
@@ -21,6 +13,13 @@ import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.services.GapcloserService.Mode;
 import lombok.Getter;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.Date;
 
 @Service
 public class SongService {
@@ -53,7 +52,7 @@ public class SongService {
     private YouTubeService youtube;
 
     @Autowired
-    private SpotifyService spotify;
+    private SpotifyAPIService spotifyAPIService;
 
     @Autowired
     private ClientService client;
@@ -76,7 +75,7 @@ public class SongService {
         next = songrepository.save(next);
         
         try {
-        	UnifiedTrack.fromSong(next, youtube,spotify);
+        	UnifiedTrack.fromSong(next, youtube, spotifyAPIService);
         }
         catch(IOException e) {
         	logger.error("Error Loading Track", e);
@@ -109,7 +108,7 @@ public class SongService {
     public createSongResponse addSong(String url, User user, GuestSession gi) {
         try {
             logger.debug("Trying to Add Song "+url);
-            UnifiedTrack ut = UnifiedTrack.fromURL(url, youtube, spotify);
+            UnifiedTrack ut = UnifiedTrack.fromURL(url, youtube, spotifyAPIService);
             String notice = null;
 
             if (lockedrepository.countByUrl(ut.getLink()) > 0) {

@@ -52,7 +52,7 @@ public class GapcloserService {
     private YouTubeService youtube;
 
     @Autowired
-    private SpotifyService spotify;
+    private SpotifyAPIService spotifyAPIService;
 
     @Autowired
     private UserRepository userRepository;
@@ -98,7 +98,7 @@ public class GapcloserService {
         		UnifiedTrack ut;
 
         		try {
-        			ut = UnifiedTrack.fromURL(url,youtube,spotify);
+        			ut = UnifiedTrack.fromURL(url,youtube, spotifyAPIService);
         		}
         		catch(TrackNotAvailableException | InvalidURLException e) {
         			logger.debug("Generated invalid Song",e);
@@ -166,10 +166,10 @@ public class GapcloserService {
                     PlaylistItem item = r.getItems().get(id % 50);
                     return "https://www.youtube.com/watch?v=" + item.getSnippet().getResourceId().getVideoId();
                 } else if (spid != null) {
-                    Track t = spotify.getTrackfromPlaylist(spid, id);
+                    Track t = spotifyAPIService.getTrackfromPlaylist(spid, id);
                     return "https://open.spotify.com/track/" + t.getId();
                 } else if (said != null) {
-                	TrackSimplified t = spotify.getTrackfromAlbum(said, id);
+                	TrackSimplified t = spotifyAPIService.getTrackfromAlbum(said, id);
                     return "https://open.spotify.com/track/" + t.getId();
                 }
 			}
@@ -210,9 +210,9 @@ public class GapcloserService {
                 logger.error("Error loading Playlist count", e);
             }
         } else if (spid != null) {
-            this.permutation = new Permutationhelper(spotify.getPlaylistlength(spid));
+            this.permutation = new Permutationhelper(spotifyAPIService.getPlaylistlength(spid));
         } else if (said != null) {
-        	this.permutation = new Permutationhelper(spotify.getAlbumlength(said));
+        	this.permutation = new Permutationhelper(spotifyAPIService.getAlbumlength(said));
         } else {
             logger.error("Playlist invalid");
         }

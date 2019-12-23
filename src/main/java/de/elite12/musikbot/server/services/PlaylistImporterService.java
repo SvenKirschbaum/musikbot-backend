@@ -26,7 +26,7 @@ public class PlaylistImporterService {
 	private YouTubeService youtube;
 
     @Autowired
-	private SpotifyService spotify;
+	private SpotifyAPIService spotifyAPIService;
 	
 	private final Logger logger = LoggerFactory.getLogger(PlaylistImporterService.class);
 
@@ -79,7 +79,7 @@ public class PlaylistImporterService {
     }
 
     public PlaylistDTO getspotifyPlaylist(String spid) {
-        com.wrapper.spotify.model_objects.specification.Playlist sp = spotify.getPlaylist(spid);
+        com.wrapper.spotify.model_objects.specification.Playlist sp = spotifyAPIService.getPlaylist(spid);
         if (sp == null) {
             return null;
         }
@@ -92,7 +92,7 @@ public class PlaylistImporterService {
         List<Entry> entries = new ArrayList<>();
         
         for(int page = 0; page < Math.min(4,Math.ceil(sp.getTracks().getTotal()/100.0));page++) {
-        	Paging<PlaylistTrack> list = spotify.getPlaylistTracks(sp, page);
+        	Paging<PlaylistTrack> list = spotifyAPIService.getPlaylistTracks(sp, page);
         	if(list == null) return null;
         	for (int i = 0;i<list.getItems().length;i++) {
         		PlaylistTrack t = list.getItems()[i];
@@ -107,7 +107,7 @@ public class PlaylistImporterService {
     }
 
     public PlaylistDTO getspotifyAlbum(String said) {
-        Album a = spotify.getAlbum(said);
+        Album a = spotifyAPIService.getAlbum(said);
         if (a == null) {
             return null;
         }
@@ -121,7 +121,7 @@ public class PlaylistImporterService {
         List<Entry> entries = new ArrayList<>();
         
         for(int page = 0; page < Math.min(4,Math.ceil(a.getTracks().getTotal()/100.0));page++) {
-        	Paging<TrackSimplified> list = spotify.getAlbumTracks(a, page);
+        	Paging<TrackSimplified> list = spotifyAPIService.getAlbumTracks(a, page);
         	if(list == null) return null;
         	for (int i = 0;i<list.getItems().length;i++) {
         		TrackSimplified t = list.getItems()[i];
