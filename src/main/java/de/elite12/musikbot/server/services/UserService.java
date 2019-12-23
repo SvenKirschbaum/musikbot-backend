@@ -1,10 +1,11 @@
 package de.elite12.musikbot.server.services;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
-
+import de.elite12.musikbot.server.data.entity.Token;
+import de.elite12.musikbot.server.data.entity.User;
+import de.elite12.musikbot.server.data.repository.TokenRepository;
+import de.elite12.musikbot.server.data.repository.UserRepository;
+import de.mkammerer.argon2.Argon2;
+import de.mkammerer.argon2.Argon2Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +13,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import de.elite12.musikbot.server.data.entity.Token;
-import de.elite12.musikbot.server.data.entity.User;
-import de.elite12.musikbot.server.data.repository.TokenRepository;
-import de.elite12.musikbot.server.data.repository.UserRepository;
-import de.mkammerer.argon2.Argon2;
-import de.mkammerer.argon2.Argon2Factory;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService implements PasswordEncoder {
@@ -149,7 +148,7 @@ public class UserService implements PasswordEncoder {
     
     @Override
     public String encode(CharSequence rawPassword) {
-        return this.argon2.hash(2, 65536, 1, rawPassword.toString());
+        return this.argon2.hash(2, 65536, 1, rawPassword.toString().toCharArray());
     }
     
     @Override
@@ -157,7 +156,7 @@ public class UserService implements PasswordEncoder {
         if (rawPassword.length() == 32) {
             return encodedPassword.equals(this.MD5(rawPassword.toString()));
         } else {
-            return this.argon2.verify(encodedPassword, rawPassword.toString());
+            return this.argon2.verify(encodedPassword, rawPassword.toString().toCharArray());
         }
     }
 }
