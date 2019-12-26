@@ -1,26 +1,28 @@
 package de.elite12.musikbot.server.api;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
+import de.elite12.musikbot.server.api.dto.VolumeDTO;
 import de.elite12.musikbot.server.data.UserPrincipal;
+import de.elite12.musikbot.server.data.entity.Song;
+import de.elite12.musikbot.server.data.repository.SongRepository;
+import de.elite12.musikbot.server.services.ClientService;
 import de.elite12.musikbot.server.services.PushService;
+import de.elite12.musikbot.server.services.SongService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.elite12.musikbot.server.data.repository.SongRepository;
-import de.elite12.musikbot.server.services.ClientService;
-import de.elite12.musikbot.server.services.SongService;
-import de.elite12.musikbot.server.data.entity.Song;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RequestMapping("/control")
@@ -66,6 +68,12 @@ public class Control {
 		client.stop();
 		client.start();
 		logger.info(String.format("Song skipped by %s: [%s, %s]", ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(), songservice.getSongtitle(), songservice.getSonglink()));
+	}
+
+	@RequestMapping(path="/volume", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public void volume(@RequestBody VolumeDTO volume) {
+		this.client.sendVolume(volume.getVolume());
+		logger.info(String.format("Volume set to %d%% by User %s", volume.getVolume(), ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
 	}
 	
 	@RequestMapping(path="/shuffle", method = RequestMethod.POST)

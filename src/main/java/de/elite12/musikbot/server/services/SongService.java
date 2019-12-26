@@ -33,6 +33,9 @@ public class SongService {
 	@Getter
 	@Setter
     private String songlink;
+    @Getter
+    @Setter
+    private short volume = 38;
     
     private static final Logger logger = LoggerFactory.getLogger(SongService.class);
 

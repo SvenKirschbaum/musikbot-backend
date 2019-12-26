@@ -16,6 +16,7 @@ public class StatusUpdate {
     private String status;
     private String songtitle;
     private String songlink;
+    private short volume;
     private int playlistdauer;
     private ArrayList<Song> playlist;
 }
