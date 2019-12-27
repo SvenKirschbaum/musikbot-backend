@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -119,11 +120,15 @@ public class Login {
             }
             return new LoginResponse(false,message.toString(),null);
         }
-
-        User user = userservice.createUser(data.getUsername(),data.getPassword(),data.getEmail());
-        registerGuestSongs(user);
-        logger.info(String.format("Successful Register by %s: %s", httpServletRequest.getRemoteAddr(), user.toString()));
-        return new LoginResponse(true, "", userservice.getLoginToken(user));
+        try {
+            User user = userservice.createUser(data.getUsername(), data.getPassword(), data.getEmail());
+            registerGuestSongs(user);
+            logger.info(String.format("Successful Register by %s: %s", httpServletRequest.getRemoteAddr(), user.toString()));
+            return new LoginResponse(true, "", userservice.getLoginToken(user));
+        } catch(DataIntegrityViolationException e1) {
+            logger.warn("New User could not be saved");
+            return new LoginResponse(false,"The User could not be saved", null);
+        }
     }
 
     private void registerGuestSongs(User user) {

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -59,12 +60,14 @@ public class UserService implements PasswordEncoder {
         return userrepository.save(u);
     }
 
+    @Transactional
     public User createUser(String username, String password, String email) {
         User u = new User();
         u.setName(username);
         u.setPassword(this.encode(password));
         u.setAdmin(false);
         u.setEmail(email);
+
         u = userrepository.save(u);
         return u;
     }
@@ -117,7 +120,7 @@ public class UserService implements PasswordEncoder {
 
     @Scheduled(fixedRate = 3600000)
     //@Scheduled(fixedRate = 5000)
-    private void expireTokens() {
+    protected void expireTokens() {
         tokenrepository.deleteExpiredTokens();
     }
 

@@ -1,26 +1,16 @@
 package de.elite12.musikbot.server.data.entity;
 
-import java.io.Serializable;
-import java.security.Principal;
-import java.util.Locale;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.elite12.musikbot.server.util.Util;
+import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import de.elite12.musikbot.server.util.Util;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.Locale;
 
 @Entity
 @Getter
@@ -40,12 +30,14 @@ public class User implements Principal, Serializable {
     @NotBlank
     @Size(max = 64)
     @NotBlank
+    @Column(unique = true)
     private String name;
     private boolean admin;
     @ToString.Exclude
     @JsonIgnore
     private String password;
     @Email
+    @Column(unique = true)
     private String email;
     
     @Transient
