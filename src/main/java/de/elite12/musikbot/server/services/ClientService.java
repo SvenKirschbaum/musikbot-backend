@@ -97,9 +97,10 @@ public class ClientService {
 
     public void sendVolume(short volume) {
 		logger.debug("Sending Volume...");
-		if(isNotConnected()) return;
-		this.sendCommand(new VolumeCommand(volume));
-		this.songservice.setVolume(volume);
+		if(!isNotConnected()) {
+			this.sendCommand(new VolumeCommand(volume));
+			this.songservice.setVolume(volume);
+		}
 		this.pushService.sendState();
 	}
     
