@@ -1,4 +1,4 @@
-package de.elite12.musikbot.server.core;
+package de.elite12.musikbot.server.config;
 
 import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.data.entity.User;
@@ -7,13 +7,16 @@ import de.elite12.musikbot.server.services.UserService;
 import org.apache.catalina.filters.RemoteIpFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -35,6 +38,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -44,18 +48,29 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
+import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
+import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.builders.ResponseMessageBuilder;
+import springfox.documentation.service.*;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spi.service.contexts.SecurityContext;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger.web.UiConfiguration;
+import springfox.documentation.swagger.web.UiConfigurationBuilder;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.security.Principal;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableScheduling
 @EnableCaching
+@EntityScan("de.elite12.musikbot.server.data.entity")
+@EnableJpaRepositories("de.elite12.musikbot.server.data.repository")
 public class MusikbotServiceConfig {
 
 
@@ -202,6 +217,75 @@ public class MusikbotServiceConfig {
 			executor.setThreadNamePrefix("default_task_executor_thread");
 			executor.initialize();
 			return executor;
+		}
+	}
+
+	@Configuration
+	@EnableSwagger2
+	@Import(BeanValidatorPluginsConfiguration.class)
+	public static class Swgget2Config {
+		@Autowired
+		private MusikbotServiceProperties musikbotServiceProperties;
+
+		private List<ResponseMessage> defaultResponses = List.of(
+				new ResponseMessageBuilder()
+						.code(401)
+						.message("An invalid Authorization Token has been provided in the Authorization Header")
+						.build(),
+				new ResponseMessageBuilder()
+						.code(403)
+						.message("The provided Authorization Token has no Permission to access this resource, or no Token has been provided")
+						.build(),
+				new ResponseMessageBuilder()
+						.code(400)
+						.message("The Request does not fullfill the syntactic requirements for this endpoint")
+						.build()
+		);
+
+		@Bean
+		public Docket api() {
+			return new Docket(DocumentationType.SWAGGER_2)
+						.select()
+							.apis(RequestHandlerSelectors
+								.basePackage("de.elite12.musikbot.server.api")
+							)
+						.build()
+							.apiInfo(apiEndPointsInfo())
+							.protocols(Set.of("https"))
+							.host("musikbot.elite12.de")
+							.produces(Set.of("application/json","application/xml"))
+							.useDefaultResponseMessages(false)
+							.globalResponseMessage(RequestMethod.GET, this.defaultResponses)
+							.globalResponseMessage(RequestMethod.POST, this.defaultResponses)
+							.globalResponseMessage(RequestMethod.PUT, this.defaultResponses)
+							.globalResponseMessage(RequestMethod.DELETE, this.defaultResponses)
+							.securitySchemes(List.of(new ApiKey("Bearer Token","Authorization", "header")))
+							.securityContexts(List.of(
+								SecurityContext.builder()
+									.securityReferences(List.of(
+											new SecurityReference(
+												"Bearer Token",
+												new AuthorizationScope[]{
+													new AuthorizationScope("global","Beschreibung")
+												}
+											)
+									))
+									.forPaths(PathSelectors.any())
+								.build()
+							));
+		}
+		private ApiInfo apiEndPointsInfo() {
+			return new ApiInfoBuilder().title("Musikbot REST API")
+					.description("REST API to interact with the Musikbot Service")
+					.contact(new Contact("Sven Kirschbaum", "https://www.kirschbaum.me", "sven@kirschbaum.me"))
+					.version(musikbotServiceProperties.getVersion())
+					.build();
+		}
+		@Bean
+		UiConfiguration uiConfig() {
+			return UiConfigurationBuilder.builder()
+				.deepLinking(true)
+				.build();
 		}
 	}
 }

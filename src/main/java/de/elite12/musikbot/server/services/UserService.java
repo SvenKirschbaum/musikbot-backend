@@ -62,7 +62,7 @@ public class UserService implements PasswordEncoder {
     public User createUser(String username, String password, String email) {
         User u = new User();
         u.setName(username);
-        u.setPassword(this.argon2.hash(2, 65536, 1, password));
+        u.setPassword(this.encode(password));
         u.setAdmin(false);
         u.setEmail(email);
         u = userrepository.save(u);
@@ -96,17 +96,12 @@ public class UserService implements PasswordEncoder {
     }
 
     public boolean checkPassword(User user, String password) {
-        if (user.getPassword().length() == 32) {
-            if (user.getPassword().equals(this.MD5(password))) {
-                user.setPassword(this.argon2.hash(2, 65536, 1, password));
-                this.saveUser(user);
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return this.argon2.verify(user.getPassword(), password);
+        boolean r =  this.matches(password, user.getPassword());
+        if (r && user.getPassword().length() == 32) {
+            user.setPassword(this.encode(password));
+            this.saveUser(user);
         }
+        return r;
     }
 
     public String getLoginToken(User user) {

@@ -1,23 +1,17 @@
 package de.elite12.musikbot.server.filter;
 
-import java.io.IOException;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import de.elite12.musikbot.server.data.UserPrincipal;
+import de.elite12.musikbot.server.data.entity.User;
+import de.elite12.musikbot.server.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import de.elite12.musikbot.server.data.UserPrincipal;
-import de.elite12.musikbot.server.data.entity.User;
-import de.elite12.musikbot.server.services.UserService;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @Component
 public class TokenFilter implements Filter{
@@ -40,7 +34,7 @@ public class TokenFilter implements Filter{
 			}
 			else if(authheader != null && !authheader.isEmpty()) {
 				HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-				httpServletResponse.sendError(403,"Authorization Header invalid");
+				httpServletResponse.sendError(401,"Authorization Header invalid");
 				return;
 			}
 			chain.doFilter(request, response);

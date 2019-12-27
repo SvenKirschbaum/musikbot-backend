@@ -10,7 +10,7 @@ import com.wrapper.spotify.requests.data.albums.GetAlbumsTracksRequest;
 import com.wrapper.spotify.requests.data.playlists.GetPlaylistRequest;
 import com.wrapper.spotify.requests.data.playlists.GetPlaylistsTracksRequest;
 import com.wrapper.spotify.requests.data.tracks.GetTrackRequest;
-import de.elite12.musikbot.server.core.MusikbotServiceProperties;
+import de.elite12.musikbot.server.config.MusikbotServiceProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

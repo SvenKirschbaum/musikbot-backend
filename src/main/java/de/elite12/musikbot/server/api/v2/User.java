@@ -4,13 +4,14 @@ import de.elite12.musikbot.server.api.dto.TokenDTO;
 import de.elite12.musikbot.server.api.dto.UserDTO;
 import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.data.entity.Token;
-import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.data.repository.TokenRepository;
 import de.elite12.musikbot.server.data.repository.UserRepository;
 import de.elite12.musikbot.server.exception.NotFoundException;
 import de.elite12.musikbot.server.filter.TokenFilter;
 import de.elite12.musikbot.server.services.UserService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ import java.util.stream.StreamSupport;
 
 @RequestMapping("/v2/user")
 @RestController
-public class Userv2 {
+public class User {
 
     @Autowired
     private UserService userservice;
@@ -49,13 +50,14 @@ public class Userv2 {
     @Autowired
     private Validator validator;
 
-    private static final Logger logger = LoggerFactory.getLogger(Userv2.class);
+    private static final Logger logger = LoggerFactory.getLogger(User.class);
 
     @GetMapping("{username}")
-    public UserDTO getUserByName(@PathVariable("username") String username) {
-        User target = userservice.findUserbyName(username);
+    @ApiOperation(value = "Get a User Profile")
+    public UserDTO getUserByName(@ApiParam(value = "The Username of the User to get") @PathVariable("username") String username) {
+        de.elite12.musikbot.server.data.entity.User target = userservice.findUserbyName(username);
 
-        User user = null;
+        de.elite12.musikbot.server.data.entity.User user = null;
         boolean self = false;
         boolean guest = false;
 
@@ -68,7 +70,7 @@ public class Userv2 {
         if (target == null) {
             try {
                 String name = UUID.fromString(username).toString();
-                target = new User();
+                target = new de.elite12.musikbot.server.data.entity.User();
                 target.setName(name);
                 target.setEmail("gast@elite12.de");
                 guest = true;
@@ -171,8 +173,9 @@ public class Userv2 {
         return r;
     }
 
-    @RequestMapping(path = "{userid}/{attribute}", method = RequestMethod.POST, consumes = {"text/plain"})
-    public ResponseEntity<String> updateUser(@PathVariable("userid") Long userid, @PathVariable("attribute") String attr, @RequestBody String value) {
+    @RequestMapping(path = "{userid}/{attribute}", method = RequestMethod.PUT, consumes = {"text/plain"})
+    @ApiOperation(value = "Updates an attribute of a user", notes = "If the targeted User is not the one calling this API this requires Admin permissions.")
+    public ResponseEntity<String> updateUser(@ApiParam(value = "The Id of the User to update") @PathVariable("userid") Long userid, @ApiParam(value = "The Attribute to update") @PathVariable("attribute") String attr, @ApiParam(value = "The Value to set the attribute to") @RequestBody String value) {
         Object p = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         de.elite12.musikbot.server.data.entity.User user;
         if (p instanceof UserPrincipal) {
@@ -249,9 +252,10 @@ public class Userv2 {
     @DeleteMapping(path = "{userid}")
     @PreAuthorize("hasRole('admin')")
     @Transactional
-    public ResponseEntity<Object> deleteUser(@PathVariable("userid") Long userid) {
-        User user = ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
-        Optional<User> target = userRepository.findById(userid);
+    @ApiOperation(value = "Delete a User", notes = "Requires Admin Permissions.")
+    public ResponseEntity<Object> deleteUser(@ApiParam(value = "The Userid to delete") @PathVariable("userid") Long userid) {
+        de.elite12.musikbot.server.data.entity.User user = ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        Optional<de.elite12.musikbot.server.data.entity.User> target = userRepository.findById(userid);
 
         if(!target.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -272,6 +276,7 @@ public class Userv2 {
 
     @GetMapping(path = "self")
     @PreAuthorize("isAuthenticated()")
+    @ApiOperation(value = "Get the current User", notes = "Requires a valid Token")
     public de.elite12.musikbot.server.data.entity.User getSelf(HttpServletRequest httpServletRequest) {
         //Refresh token duration
         String authheader = httpServletRequest.getHeader("Authorization");
@@ -289,12 +294,14 @@ public class Userv2 {
 
     @GetMapping(path = "self/token")
     @PreAuthorize("isAuthenticated()")
+    @ApiOperation(value = "Get external API Token", notes = "Gets an API Token intended for use with external services. In contrast to the Tokens provided by the Login API, this Token is valid permanently.")
     public TokenDTO getToken() {
         return new TokenDTO(userservice.getExternalToken(((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser()));
     }
 
     @PostMapping(path = "self/token/reset")
     @PreAuthorize("isAuthenticated()")
+    @ApiOperation(value = "Resets the external Token", notes = "Regenerates the external Token")
     public TokenDTO resetToken() {
         userservice.resetExternalToken(((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser());
         logger.info(String.format("Token reset by %s", ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));

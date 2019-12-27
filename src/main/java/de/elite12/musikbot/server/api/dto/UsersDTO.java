@@ -17,7 +17,4 @@ public class UsersDTO {
     private int pages;
 
     private User[] list;
-
-
-
 }

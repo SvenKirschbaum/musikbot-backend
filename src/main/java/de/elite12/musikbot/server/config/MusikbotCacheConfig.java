@@ -1,4 +1,4 @@
-package de.elite12.musikbot.server.core;
+package de.elite12.musikbot.server.config;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cache.caffeine.CaffeineCache;

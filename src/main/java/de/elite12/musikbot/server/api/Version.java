@@ -1,7 +1,7 @@
 package de.elite12.musikbot.server.api;
 
 import de.elite12.musikbot.server.api.dto.VersionDTO;
-import de.elite12.musikbot.server.core.MusikbotServiceProperties;
+import de.elite12.musikbot.server.config.MusikbotServiceProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

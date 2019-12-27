@@ -1,13 +1,12 @@
-package de.elite12.musikbot.server.core;
+package de.elite12.musikbot.server.config;
 
-import java.util.Set;
-
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import lombok.Getter;
-import lombok.Setter;
+import java.util.Set;
 
 /**
  * Musikbot Configuration

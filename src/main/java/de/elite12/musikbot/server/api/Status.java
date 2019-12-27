@@ -4,7 +4,9 @@ import de.elite12.musikbot.server.api.dto.StatusUpdate;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.services.SongService;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,7 +26,8 @@ public class Status {
     @Autowired
     private SongRepository songrepository;
 
-    @RequestMapping(path = "", produces = {"application/json"})
+    @GetMapping()
+    @ApiOperation(value = "Get the current Status")
     public StatusUpdate getstatus() {
         StatusUpdate st = new StatusUpdate();
 

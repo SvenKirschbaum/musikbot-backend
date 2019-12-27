@@ -1,7 +1,7 @@
 package de.elite12.musikbot.server.services;
 
 import de.elite12.musikbot.server.api.dto.createSongResponse;
-import de.elite12.musikbot.server.core.MusikbotServiceProperties;
+import de.elite12.musikbot.server.config.MusikbotServiceProperties;
 import de.elite12.musikbot.server.data.GuestSession;
 import de.elite12.musikbot.server.data.UnifiedTrack;
 import de.elite12.musikbot.server.data.UnifiedTrack.InvalidURLException;

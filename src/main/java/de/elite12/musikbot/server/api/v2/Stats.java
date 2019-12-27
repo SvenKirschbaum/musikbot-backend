@@ -2,6 +2,7 @@ package de.elite12.musikbot.server.api.v2;
 
 import de.elite12.musikbot.server.api.dto.StatsDTO;
 import de.elite12.musikbot.server.data.repository.SongRepository;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +29,7 @@ public class Stats {
 
     @GetMapping
     @Cacheable(cacheNames = "stats", key = "'global'", sync = true)
+    @ApiOperation(value = "Get Stats", notes = "Retrieve various Statistics")
     public StatsDTO getAction() {
         StatsDTO dto = new StatsDTO();
 

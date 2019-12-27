@@ -12,6 +12,7 @@ import de.elite12.musikbot.server.data.repository.TokenRepository;
 import de.elite12.musikbot.server.filter.TokenFilter;
 import de.elite12.musikbot.server.services.PushService;
 import de.elite12.musikbot.server.services.UserService;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,8 +49,8 @@ public class Login {
     @Autowired
     private SongRepository songRepository;
 
-    @PostMapping
-    @RequestMapping("/v2/login")
+    @PostMapping("/v2/login")
+    @ApiOperation(value = "Login", notes = "Retrieves a Bearer Authentication Token by supplying Username and Password")
     public LoginResponse loginAction(@RequestBody LoginRequest loginRequest, HttpServletRequest httpServletRequest) {
         User u = userservice.findUserbyName(loginRequest.getUsername());
         if (u == null) {
@@ -67,9 +67,9 @@ public class Login {
         }
     }
 
-    @PostMapping
-    @RequestMapping("/v2/logout")
+    @PostMapping("/v2/logout")
     @PreAuthorize("isAuthenticated()")
+    @ApiOperation(value = "Logout", notes = "Deauthorizes the provided Token")
     public LoginResponse logoutAction(HttpServletRequest httpServletRequest) {
         String authheader = httpServletRequest.getHeader("Authorization");
         String tokenstring = TokenFilter.parseHeader(authheader);
@@ -83,9 +83,9 @@ public class Login {
         }
     }
 
-    @PostMapping
-    @RequestMapping("/v2/register")
+    @PostMapping("/v2/register")
     @PreAuthorize("isAnonymous()")
+    @ApiOperation(value = "Register", notes = "Creates a new User Account")
     public LoginResponse registerAction(@RequestBody @Valid RegistrationRequest data, BindingResult bindingResult, HttpServletRequest httpServletRequest) {
         User u = userservice.findUserbyName(data.getUsername());
         if(u != null) {

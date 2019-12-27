@@ -8,6 +8,7 @@ import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.exception.NotFoundException;
 import de.elite12.musikbot.server.services.SpotifyAPIService;
 import de.elite12.musikbot.server.services.YouTubeService;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,11 +37,13 @@ public class LockedSongs {
     private SpotifyAPIService spotifyAPIService;
 
     @GetMapping
+    @ApiOperation(value = "Gets the LockList", notes = "Requires Admin Permissions.")
     public LockedSong[] getAction() {
         return StreamSupport.stream(songs.findAll().spliterator(), false).toArray(LockedSong[]::new);
     }
 
     @DeleteMapping(path = "{id}")
+    @ApiOperation(value = "Deletes a Song from the Locklist", notes = "Requires Admin Permissions.")
     public void deleteAction(@PathVariable Long id) {
         Optional<LockedSong> s = songs.findById(id);
 
@@ -52,6 +55,7 @@ public class LockedSongs {
     }
 
     @PostMapping
+    @ApiOperation(value = "Adds a Song to the Locklist", notes = "Requires Admin Permissions.")
     public createSongResponse postAction(@RequestBody String url) {
         try {
             UnifiedTrack ut = UnifiedTrack.fromURL(url,youtube, spotifyAPIService);

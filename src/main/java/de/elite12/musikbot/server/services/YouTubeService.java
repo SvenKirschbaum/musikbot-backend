@@ -1,17 +1,15 @@
 package de.elite12.musikbot.server.services;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.YouTubeRequestInitializer;
+import de.elite12.musikbot.server.config.MusikbotServiceProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import de.elite12.musikbot.server.core.MusikbotServiceProperties;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 @Service
 public class YouTubeService {

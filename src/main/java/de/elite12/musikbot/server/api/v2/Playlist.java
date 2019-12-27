@@ -9,6 +9,8 @@ import de.elite12.musikbot.server.exception.NotFoundException;
 import de.elite12.musikbot.server.services.PlaylistImporterService;
 import de.elite12.musikbot.server.services.SongService;
 import de.elite12.musikbot.shared.util.SongIDParser;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +37,8 @@ public class Playlist {
     private static final Logger logger = LoggerFactory.getLogger(Playlist.class);
 
     @GetMapping
-    public PlaylistDTO getAction(@RequestParam String url) {
+    @ApiOperation(value = "Load playlist", notes = "Gets the Song of a Youtube Playlist, a Spotify Playlist or a Spotify Album. Requires Admin Permissions.")
+    public PlaylistDTO getAction(@ApiParam(name = "url", value = "The URL of the Playlist to be loaded") @RequestParam String url) {
         String pid = SongIDParser.getPID(url);
         String spid = SongIDParser.getSPID(url);
         String said = SongIDParser.getSAID(url);
@@ -61,6 +64,7 @@ public class Playlist {
     }
 
     @PostMapping
+    @ApiOperation(value = "Import Songs from a Playlist", notes = "Adds multiple Songs to the Playlist. Requires Admin Permissions.")
     public createSongResponse[] postAction(@RequestBody PlaylistDTO.Entry[] entries) {
         User u = ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 

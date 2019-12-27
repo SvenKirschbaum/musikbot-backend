@@ -1,31 +1,21 @@
 package de.elite12.musikbot.server.data.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Locale;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.annotations.Generated;
-import org.hibernate.annotations.GenerationTime;
-import org.springframework.lang.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import de.elite12.musikbot.server.util.Util;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
+import org.springframework.lang.Nullable;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Locale;
 
 @Entity
 @Getter
@@ -40,9 +30,12 @@ public class Song implements Serializable {
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @ApiModelProperty(notes = "The ID of the Song")
     private Long id;
+    @ApiModelProperty(notes = "If the Song has already been played")
     private boolean played;
     @NotNull
+    @ApiModelProperty(notes = "The Link of the Song")
     private String link;
     @ManyToOne
 	@JoinColumn(name="USER_AUTHOR")
@@ -54,15 +47,21 @@ public class Song implements Serializable {
     private String guestAuthor;
     @Temporal(TemporalType.TIMESTAMP)
     @NotNull
+    @ApiModelProperty(notes = "The Time the Song has been added")
     private Date insertedAt;
     @NotNull
+    @ApiModelProperty(notes = "The title of the Song")
     private String title;
+    @ApiModelProperty(notes = "If the Song has been skipped")
     private boolean skipped = false;
     @Temporal(TemporalType.TIMESTAMP)
     @Nullable
+    @ApiModelProperty(notes = "The Time the Song has been played")
     private Date playedAt;
     @Generated(GenerationTime.INSERT)
+    @ApiModelProperty(notes = "The sort order of the song")
     private Long sort;
+    @ApiModelProperty(notes = "The duration of the Song")
     private int duration;
     
     @Transient

@@ -9,6 +9,10 @@ import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.services.PushService;
 import de.elite12.musikbot.server.services.SongService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +29,7 @@ import java.util.Optional;
 
 @RequestMapping("/v2/songs")
 @RestController
-public class Songv2 {
+public class Songs {
 
     @Autowired
 	private SongService songservice;
@@ -42,11 +46,13 @@ public class Songv2 {
     @Autowired
     private PushService pushService;
 	
-	private static final Logger logger = LoggerFactory.getLogger(Songv2.class);
+	private static final Logger logger = LoggerFactory.getLogger(Songs.class);
 
 
-    @RequestMapping(path="{ids}", method = RequestMethod.GET, produces = {"application/json"})
-    public ResponseEntity<de.elite12.musikbot.server.data.entity.Song[]> getSong(@PathVariable String ids) {
+    @GetMapping(path="{ids}", produces = {"application/json"})
+    @ApiOperation(value = "Get Songs")
+    @ApiResponses({@ApiResponse(code = 404, message = "One of the requested Songs could not been found")})
+    public ResponseEntity<de.elite12.musikbot.server.data.entity.Song[]> getSong(@ApiParam(value = "Comma-seperated List of Song Ids to get") @PathVariable String ids) {
         String[] a = ids.split(",");
         de.elite12.musikbot.server.data.entity.Song[] r = new de.elite12.musikbot.server.data.entity.Song[a.length];
         try {
@@ -63,8 +69,10 @@ public class Songv2 {
     }
     
     @PreAuthorize("hasRole('admin')")
-    @RequestMapping(path="{ids}", method = RequestMethod.DELETE, produces = {"application/json"})
-    public ResponseEntity<Object> deleteSong(@PathVariable String ids, @RequestParam(value = "lock",required = false) Boolean lock) {
+    @DeleteMapping(path="{ids}", produces = {"application/json"})
+    @ApiOperation(value = "Delete Songs", notes = "Requires Admin permissions.")
+    @ApiResponses({@ApiResponse(code = 404, message = "One of the requested Songs could not been found")})
+    public ResponseEntity<Object> deleteSong(@ApiParam(value = "Comma-seperated List of Song Ids to get") @PathVariable String ids, @ApiParam(value = "If the Songs should be locked in addition to being deleted") @RequestParam(value = "lock",required = false) Boolean lock) {
         String[] a = ids.split("/");
         lock = lock == null ? false : lock;
         try {
@@ -91,8 +99,9 @@ public class Songv2 {
         }
     }
     
-    @RequestMapping(path="", method = RequestMethod.POST, consumes = {"text/plain"}, produces = {"application/json"})
-    public createSongResponse createSong(@RequestBody(required = false) String url) {
+    @PostMapping(path="", consumes = {"text/plain"}, produces = {"application/json"})
+    @ApiOperation(value = "Add a Song")
+    public createSongResponse createSong(@ApiParam(value = "The URL of the Song to add") @RequestBody(required = false) String url) {
     	Object p = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     	User u = p instanceof UserPrincipal ? ((UserPrincipal) p).getUser() : null;
 
@@ -105,8 +114,9 @@ public class Songv2 {
 
 
     @PreAuthorize("hasRole('admin')")
-    @RequestMapping(path="{ids}", method = RequestMethod.PUT)
-    public ResponseEntity<Object> sortsong(@PathVariable("ids") String sid, @RequestBody(required=false) String prev) {
+    @PutMapping(path="{ids}")
+    @ApiOperation(value = "Sort Songs", notes = "Requires Admin permissions.")
+    public ResponseEntity<Object> sortsong(@ApiParam(value = "The ID of the Song to resort") @PathVariable("ids") String sid, @ApiParam(value = "The ID of the Song after which the Song should be sorted") @RequestBody(required=false) String prev) {
         try {
         	long id = Long.parseLong(sid);
         	long pr;
