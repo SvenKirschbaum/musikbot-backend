@@ -78,4 +78,9 @@ public class Song implements Serializable {
     public String getAuthor() {
         return this.getUserAuthor()==null ? "Gast" : this.getUserAuthor().getName();
     }
+
+    @PostPersist
+    private void postPersist() {
+        this.sort = this.id;
+    }
 }

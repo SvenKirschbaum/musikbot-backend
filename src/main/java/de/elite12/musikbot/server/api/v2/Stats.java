@@ -81,7 +81,7 @@ public class Stats {
                 new StatsDTO.GeneralEntry("Gäste", list[2].toString()),
                 new StatsDTO.GeneralEntry("Wünsche", list[3].toString()),
                 new StatsDTO.GeneralEntry("Skippes", list[4].toString()),
-                new StatsDTO.GeneralEntry("Gesamte Dauer", String.format("%d Stunden",((BigDecimal)list[5]).intValue()/3600))
+                new StatsDTO.GeneralEntry("Gesamte Dauer", String.format("%d Stunden",list[5] == null ? 0 : ((BigDecimal)list[5]).intValue()/3600))
             )
         );
 

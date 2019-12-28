@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 @RestController
 @RequestMapping("/status")
@@ -41,12 +42,14 @@ public class Status {
         int dauer = 0;
         
         Iterable<Song> songs = songrepository.findByPlayedOrderBySort(false);
-
        
         for (Song s: songs) {
             dauer += s.getDuration();
             list.add(s);
         }
+
+        //Resort songs because if a song has been added just now the sort field hasnt been persisted to the database yet, and is therefore not respected by the repository query
+        list.sort(Comparator.comparingLong(Song::getSort));
 
         st.setPlaylist(list);
 
