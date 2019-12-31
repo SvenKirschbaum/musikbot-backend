@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -81,7 +80,7 @@ public class Stats {
                 new StatsDTO.GeneralEntry("Gäste", list[2].toString()),
                 new StatsDTO.GeneralEntry("Wünsche", list[3].toString()),
                 new StatsDTO.GeneralEntry("Skippes", list[4].toString()),
-                new StatsDTO.GeneralEntry("Gesamte Dauer", String.format("%d Stunden",list[5] == null ? 0 : ((BigDecimal)list[5]).intValue()/3600))
+                new StatsDTO.GeneralEntry("Gesamte Dauer", String.format("%d Stunden",list[5] == null ? 0 : ((Number)list[5]).intValue()/3600))
             )
         );
 

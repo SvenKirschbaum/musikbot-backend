@@ -5,10 +5,7 @@
 /client-log.txt
 /log.txt
 /log.txt.*
-/musikbotdb.lck
-/musikbotdb.log
-/musikbotdb.properties
-/musikbotdb.script
+/musikbotdb.*
 /sessions/
 /application.properties
 
