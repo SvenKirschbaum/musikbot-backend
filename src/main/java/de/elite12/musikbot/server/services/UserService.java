@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Optional;
@@ -33,6 +34,16 @@ public class UserService implements PasswordEncoder {
 
     public UserService() {
         this.argon2 = Argon2Factory.create();
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        if(userrepository.countAll() == 0L) {
+            User u = this.createUser("admin","admin","admin@example.com");
+            u.setAdmin(true);
+            this.saveUser(u);
+            logger.info("There are no Users in the Databse. A default Admin User has been created.");
+        }
     }
 
     public User findUserbyId(Long id) {
