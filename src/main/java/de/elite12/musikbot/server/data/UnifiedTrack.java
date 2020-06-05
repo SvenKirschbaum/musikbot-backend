@@ -7,9 +7,11 @@ import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.services.SpotifyAPIService;
 import de.elite12.musikbot.server.services.YouTubeService;
 import de.elite12.musikbot.shared.util.SongIDParser;
+import org.apache.hc.core5.http.ParseException;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 
 public class UnifiedTrack {
@@ -30,8 +32,8 @@ public class UnifiedTrack {
 		}
 		if (VID != null) {
 			this.type = Type.YOUTUBE;
-			List<Video> list = youTubeService.api().videos().list("status,snippet,contentDetails")
-					.setId(SongIDParser.getVID(s.getLink()))
+			List<Video> list = youTubeService.api().videos().list(List.of("status","snippet","contentDetails"))
+					.setId(Collections.singletonList(SongIDParser.getVID(s.getLink())))
 					.setFields(
 							"items/status/uploadStatus,items/status/privacyStatus,items/contentDetails/duration,items/snippet/categoryId,items/snippet/title,items/contentDetails/regionRestriction")
 					.execute().getItems();
@@ -63,7 +65,7 @@ public class UnifiedTrack {
 			this.type = Type.SPOTIFY;
 			try {
 				this.track = spotifyAPIService.getTrackRaw(SongIDParser.getSID(s.getLink()));
-			} catch (SpotifyWebApiException e) {
+			} catch (SpotifyWebApiException | ParseException e) {
 				throw new TrackNotAvailableException("Error loading Track", e);
 			}
 			if (this.track == null) {

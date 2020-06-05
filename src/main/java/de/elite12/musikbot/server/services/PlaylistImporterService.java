@@ -2,10 +2,7 @@ package de.elite12.musikbot.server.services;
 
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
-import com.wrapper.spotify.model_objects.specification.Album;
-import com.wrapper.spotify.model_objects.specification.Paging;
-import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
-import com.wrapper.spotify.model_objects.specification.TrackSimplified;
+import com.wrapper.spotify.model_objects.specification.*;
 import de.elite12.musikbot.server.api.dto.PlaylistDTO;
 import de.elite12.musikbot.server.api.dto.PlaylistDTO.Entry;
 import org.slf4j.Logger;
@@ -16,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -35,7 +33,7 @@ public class PlaylistImporterService {
             logger.debug("Querying Youtube...");
             PlaylistDTO p = new PlaylistDTO();
             List<com.google.api.services.youtube.model.Playlist> plist = youtube.api().playlists()
-                    .list("snippet,contentDetails").setId(id).setFields("items/snippet/title,items/id,items/contentDetails/itemCount")
+                    .list(List.of("snippet","contentDetails")).setId(Collections.singletonList(id)).setFields("items/snippet/title,items/id,items/contentDetails/itemCount")
                     .execute().getItems();
             if(plist == null) {
             	throw new IOException("Playlist not found");
@@ -51,7 +49,7 @@ public class PlaylistImporterService {
             List<Entry> entries = new ArrayList<>();
            	
             PlaylistItemListResponse r = youtube.api().playlistItems()
-                    .list("snippet,status").setPlaylistId(id).setMaxResults(50L)
+                    .list(List.of("snippet","status")).setPlaylistId(id).setMaxResults(50L)
                     .setFields("items/snippet/title,items/snippet/resourceId/videoId,items/snippet/position,nextPageToken,pageInfo")
                     .execute();
             for(int page = 0; page < pages; page++) {
@@ -63,7 +61,7 @@ public class PlaylistImporterService {
                     entries.add(e);
                 }
            		if(page!=pages-1) {
-           			r = youtube.api().playlistItems().list("snippet,status")
+           			r = youtube.api().playlistItems().list(List.of("snippet","status"))
                             .setPlaylistId(id).setMaxResults(50L)
                             .setPageToken(r.getNextPageToken())
                             .setFields("items/snippet/title,items/snippet/resourceId/videoId,items/snippet/position,nextPageToken,pageInfo")
@@ -79,7 +77,7 @@ public class PlaylistImporterService {
     }
 
     public PlaylistDTO getspotifyPlaylist(String spid) {
-        com.wrapper.spotify.model_objects.specification.Playlist sp = spotifyAPIService.getPlaylist(spid);
+        Playlist sp = spotifyAPIService.getPlaylist(spid);
         if (sp == null) {
             return null;
         }
@@ -96,9 +94,10 @@ public class PlaylistImporterService {
         	if(list == null) return null;
         	for (int i = 0;i<list.getItems().length;i++) {
         		PlaylistTrack t = list.getItems()[i];
+        		Track track = (Track) t.getTrack();
                 Entry e = new Entry();
-                e.link = "https://open.spotify.com/track/" + t.getTrack().getId();
-                e.name = "[" + t.getTrack().getArtists()[0].getName() + "] " + t.getTrack().getName();
+                e.link = "https://open.spotify.com/track/" + track.getId();
+                e.name = "[" + track.getArtists()[0].getName() + "] " + track.getName();
                 entries.add(e);
             }
         }

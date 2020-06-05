@@ -8,9 +8,10 @@ import com.wrapper.spotify.requests.authorization.client_credentials.ClientCrede
 import com.wrapper.spotify.requests.data.albums.GetAlbumRequest;
 import com.wrapper.spotify.requests.data.albums.GetAlbumsTracksRequest;
 import com.wrapper.spotify.requests.data.playlists.GetPlaylistRequest;
-import com.wrapper.spotify.requests.data.playlists.GetPlaylistsTracksRequest;
+import com.wrapper.spotify.requests.data.playlists.GetPlaylistsItemsRequest;
 import com.wrapper.spotify.requests.data.tracks.GetTrackRequest;
 import de.elite12.musikbot.server.config.MusikbotServiceProperties;
+import org.apache.hc.core5.http.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +54,7 @@ public class SpotifyAPIService {
                 }
             }, (long) (c.getExpiresIn() * 1000 * 0.8));
             authorized = true;
-        } catch (IOException | SpotifyWebApiException e) {
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
             logger.error("Error refreshing Token", e);
         }
     }
@@ -66,13 +67,13 @@ public class SpotifyAPIService {
         GetTrackRequest r = api.getTrack(sid).build();
         try {
             return r.execute();
-        } catch (IOException | SpotifyWebApiException e) {
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
             logger.error("Error reading Track", e);
             return null;
         }
     }
     
-    public Track getTrackRaw(String sid) throws SpotifyWebApiException, IOException {
+    public Track getTrackRaw(String sid) throws SpotifyWebApiException, IOException, ParseException {
         if (sid == null || sid.isEmpty()) {
             return null;
         }
@@ -89,7 +90,7 @@ public class SpotifyAPIService {
         GetAlbumRequest r = api.getAlbum(sid).build();
         try {
             return r.execute();
-        } catch (IOException | SpotifyWebApiException e) {
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
             logger.error("Error reading Album", e);
             return null;
         }
@@ -104,7 +105,7 @@ public class SpotifyAPIService {
         GetPlaylistRequest r = api.getPlaylist(spid).build();
         try {
             return r.execute();
-        } catch (IOException | SpotifyWebApiException e) {
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
             logger.error("Error reading Playlist", e);
             return null;
         }
@@ -113,8 +114,8 @@ public class SpotifyAPIService {
     public Paging<PlaylistTrack> getPlaylistTracks(Playlist p, int page) {
     	check();
     	try {
-    		return api.getPlaylistsTracks(p.getId()).offset(page*100).build().execute();
-    	} catch (IOException | SpotifyWebApiException e) {
+    	    return api.getPlaylistsItems(p.getId()).offset(page*100).build().execute();
+    	} catch (IOException | SpotifyWebApiException | ParseException e) {
             logger.error("Error reading Playlist", e);
             return null;
         }
@@ -124,7 +125,7 @@ public class SpotifyAPIService {
     	check();
     	try {
     		return api.getAlbumsTracks(p.getId()).offset(page*100).build().execute();
-    	} catch (IOException | SpotifyWebApiException e) {
+    	} catch (IOException | SpotifyWebApiException | ParseException e) {
             logger.error("Error reading Playlist", e);
             return null;
         }
@@ -136,11 +137,11 @@ public class SpotifyAPIService {
         }
         check();
 
-        GetPlaylistsTracksRequest r = api.getPlaylistsTracks(spid).limit(1).offset(id).build();
+        GetPlaylistsItemsRequest r = api.getPlaylistsItems(spid).limit(1).offset(id).build();
         try {
         	Paging<PlaylistTrack> t = r.execute();
-            return t.getItems()[0].getTrack();
-        } catch (IOException | SpotifyWebApiException | ArrayIndexOutOfBoundsException e) {
+            return (Track) t.getItems()[0].getTrack();
+        } catch (IOException | SpotifyWebApiException | ArrayIndexOutOfBoundsException | ParseException e) {
             logger.error("Error reading Playlist", e);
             return null;
         }
@@ -174,7 +175,7 @@ public class SpotifyAPIService {
 		try {
         	Paging<TrackSimplified> t = r.execute();
             return t.getItems()[0];
-        } catch (IOException | SpotifyWebApiException | ArrayIndexOutOfBoundsException e) {
+        } catch (IOException | SpotifyWebApiException | ArrayIndexOutOfBoundsException | ParseException e) {
             logger.error("Error reading Album", e);
             return null;
         }

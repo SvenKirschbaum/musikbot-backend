@@ -153,11 +153,11 @@ public class GapcloserService {
                 if (pid != null) {
                     int page = (int) Math.floor(id / 50.0);
                     PlaylistItemListResponse r = youtube.api().playlistItems()
-                        .list("snippet,status").setPlaylistId(pid).setMaxResults(50L)
+                        .list(List.of("snippet","status")).setPlaylistId(pid).setMaxResults(50L)
                         .setFields("items/snippet/resourceId/videoId,items/snippet/position,nextPageToken,pageInfo")
                         .execute();
                     for (int i = 0; i < page; i++) {
-                        r = youtube.api().playlistItems().list("snippet,status")
+                        r = youtube.api().playlistItems().list(List.of("snippet","status"))
                             .setPlaylistId(pid).setMaxResults(50L)
                             .setPageToken(r.getNextPageToken())
                             .setFields("items/snippet/resourceId/videoId,items/snippet/position,nextPageToken,pageInfo")
@@ -202,7 +202,7 @@ public class GapcloserService {
         String said = SongIDParser.getSAID(this.getPlaylist());
         if (pid != null) {
             try {
-            	PlaylistItemListResponse r = youtube.api().playlistItems().list("snippet")
+            	PlaylistItemListResponse r = youtube.api().playlistItems().list(Collections.singletonList("snippet"))
                         .setPlaylistId(pid).setMaxResults(1L).setFields("pageInfo/totalResults")
                         .execute();
                 this.permutation = new Permutationhelper(r.getPageInfo().getTotalResults());
