@@ -60,7 +60,7 @@ public class Login {
         }
         if (userservice.checkPassword(u, loginRequest.getPassword())) { //Success
             registerGuestSongs(u);
-            logger.info(String.format("Successful Login by %s: %s", httpServletRequest.getRemoteAddr(), u.toString()));
+            logger.info(String.format("Successful Login from %s: %s, previous Guest: %s", httpServletRequest.getRemoteAddr(), u.toString(), guestinfo.toString()));
             return new LoginResponse(true, "", userservice.getLoginToken(u));
         } else {
             logger.info(String.format("Login failed (Wrong Password) by %s: %s", httpServletRequest.getRemoteAddr(), loginRequest.getUsername()));
@@ -123,7 +123,7 @@ public class Login {
         try {
             User user = userservice.createUser(data.getUsername(), data.getPassword(), data.getEmail());
             registerGuestSongs(user);
-            logger.info(String.format("Successful Register by %s: %s", httpServletRequest.getRemoteAddr(), user.toString()));
+            logger.info(String.format("Successful Register from %s: %s, previous Guest: %s", httpServletRequest.getRemoteAddr(), user.toString(), guestinfo.toString()));
             return new LoginResponse(true, "", userservice.getLoginToken(user));
         } catch(DataIntegrityViolationException e1) {
             logger.warn("New User could not be saved");
