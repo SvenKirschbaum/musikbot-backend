@@ -4,6 +4,7 @@ import de.elite12.musikbot.server.api.dto.createSongResponse;
 import de.elite12.musikbot.server.data.GuestSession;
 import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.data.entity.LockedSong;
+import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
@@ -22,10 +23,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 @RequestMapping("/v2/songs")
 @RestController
@@ -76,21 +74,28 @@ public class Songs {
         String[] a = ids.split("/");
         lock = lock == null ? false : lock;
         try {
+            ArrayList<Song> songs = new ArrayList<>();
             for (String b : a) {
                 long id = Long.parseLong(b);
-                Optional<de.elite12.musikbot.server.data.entity.Song> song = songrepository.findById(id);
-                if(!song.isPresent()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                Optional<Song> song = songrepository.findById(id);
+                if(song.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                if(song.get().isPlayed()) return new ResponseEntity<>(HttpStatus.FORBIDDEN);
                 
+                songs.add(song.get());
+            }
+
+            for(Song song: songs) {
                 if (lock) {
                     LockedSong ls = new LockedSong();
-                    ls.setTitle(song.get().getTitle());
-                    ls.setUrl(song.get().getLink());
-                    
+                    ls.setTitle(song.getTitle());
+                    ls.setUrl(song.getLink());
+
                     lockedsongrepository.save(ls);
                 }
-                
-                songrepository.delete(song.get());
+
+                songrepository.delete(song);
             }
+
             this.pushService.sendState();
             logger.info(String.format("Songs %s by %s: %s", lock ? "deleted and locked" : "deleted", ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(), Arrays.toString(a)));
             return new ResponseEntity<>(HttpStatus.OK);
@@ -141,6 +146,7 @@ public class Songs {
             }
             
             de.elite12.musikbot.server.data.entity.Song s = songrepository.findById(id).orElseThrow();
+            if(s.isPlayed()) return  new ResponseEntity<>(HttpStatus.FORBIDDEN);
             s.setSort(pr +1);
             songrepository.save(s);
             do {
