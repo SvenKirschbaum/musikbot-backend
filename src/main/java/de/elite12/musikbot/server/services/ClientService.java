@@ -59,9 +59,9 @@ public class ClientService {
             this.ispaused = !this.ispaused;
 
 			if (this.ispaused) {
-				songservice.setState("Paused");
+				songservice.setState(SongService.State.PAUSED);
 			} else {
-				songservice.setState("Playing");
+				songservice.setState(SongService.State.PLAYING);
 			}
 
 			this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.PAUSE));
@@ -75,9 +75,10 @@ public class ClientService {
         if(isNotConnected()) return;
         if (this.state == State.STARTED) {
             this.state = State.STOPPED;
+            this.ispaused = false;
 
-			songservice.setState("Stopped");
-			songservice.setSongtitle("Kein Song");
+			songservice.setState(SongService.State.STOPPED);
+			songservice.setSongtitle(null);
 			songservice.setSonglink(null);
 
 			this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.STOP));
@@ -109,7 +110,7 @@ public class ClientService {
         if(isNotConnected()) return;
 
 		this.waitforsong = false;
-		songservice.setState("Playing");
+		songservice.setState(SongService.State.PLAYING);
 		songservice.setSongtitle(song.getTitle());
 		songservice.setSonglink(song.getLink());
 
@@ -131,7 +132,7 @@ public class ClientService {
 			this.sendSong(song);
 		} else {
 			this.sendReply(new SimpleResponse(SimpleResponse.ResponseType.NO_SONG_AVAILABLE));
-			songservice.setState("Warte auf neue Lieder");
+			songservice.setState(SongService.State.WAITING_FOR_SONGS);
 			songservice.setSongtitle(null);
 			songservice.setSonglink(null);
 			this.waitforsong = true;
@@ -145,7 +146,7 @@ public class ClientService {
 
 		if(message.getPayload().getKey().equals(config.getClientkey())) {
 			if(this.authorizedClients.isEmpty()) {
-				songservice.setState("Verbunden");
+				songservice.setState(SongService.State.CONNECTED);
 				this.pushService.sendState();
 			}
 			this.authorizedClients.add(principal.getName());
@@ -162,7 +163,7 @@ public class ClientService {
 			if(this.authorizedClients.contains(event.getUser().getName())) {
 				this.authorizedClients.remove(event.getUser().getName());
 				if(this.isNotConnected()) {
-					songservice.setState("Keine Verbindung zum BOT");
+					songservice.setState(SongService.State.NOT_CONNECTED);
 					this.pushService.sendState();
 				}
 			}

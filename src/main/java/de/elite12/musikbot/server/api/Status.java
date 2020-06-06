@@ -32,7 +32,7 @@ public class Status {
     public StatusUpdate getstatus() {
         StatusUpdate st = new StatusUpdate();
 
-        st.setStatus(songservice.getState());
+        st.setStatus(songservice.getState().toString());
         st.setSongtitle(songservice.getSongtitle());
         st.setSonglink(songservice.getSonglink());
         st.setVolume(songservice.getVolume());

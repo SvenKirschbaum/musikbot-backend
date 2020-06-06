@@ -30,10 +30,10 @@ public class SongService {
 	
 	@Getter
 	@Setter
-    private String songtitle = "Kein Song";
+    private String songtitle = null;
 	@Getter
 	@Setter
-    private String state = "Keine Verbindung zum BOT";
+    private State state = State.NOT_CONNECTED;
 	@Getter
 	@Setter
     private String songlink;
@@ -222,5 +222,35 @@ public class SongService {
         Setting volumesetting = new Setting("volume", Short.toString(volume));
 
         settings.save(volumesetting);
+    }
+
+    public enum State {
+        NOT_CONNECTED,
+        CONNECTED,
+        PAUSED,
+        STOPPED,
+        PLAYING,
+        WAITING_FOR_SONGS;
+
+
+        @Override
+        public String toString() {
+            switch (this) {
+                case NOT_CONNECTED:
+                    return "Keine Verbindung zum BOT";
+                case CONNECTED:
+                    return "Verbunden";
+                case PAUSED:
+                    return "Pausiert";
+                case STOPPED:
+                    return "Gestoppt";
+                case PLAYING:
+                    return "Playing";
+                case WAITING_FOR_SONGS:
+                    return "Warte auf neue Lieder";
+                default:
+                    return "";
+            }
+        }
     }
 }

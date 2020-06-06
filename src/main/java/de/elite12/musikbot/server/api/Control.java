@@ -56,6 +56,9 @@ public class Control {
 	@RequestMapping(path="/stop", method = RequestMethod.POST)
 	@ApiOperation(value = "Start Playback", notes = "Instructs the connected Client to start Playback. Requires Admin Permissions.")
 	public void stop() {
+		if(songservice.getState() != SongService.State.NOT_CONNECTED && songservice.getState() != SongService.State.WAITING_FOR_SONGS) {
+			songservice.markskipped();
+		}
 		client.stop();
 		logger.info(String.format("Botstop by %s", ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
 	}
@@ -70,7 +73,9 @@ public class Control {
 	@RequestMapping(path="/skip", method = RequestMethod.POST)
 	@ApiOperation(value = "Skip Song", notes = "Instructs the connected Client to stop the current Song and continue with the next Song in queue. Requires Admin Permissions.")
 	public void skip() {
-		songservice.markskipped();
+		if(songservice.getState() != SongService.State.NOT_CONNECTED && songservice.getState() != SongService.State.WAITING_FOR_SONGS) {
+			songservice.markskipped();
+		}
 		client.stop();
 		client.start();
 		logger.info(String.format("Song skipped by %s: [%s, %s]", ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(), songservice.getSongtitle(), songservice.getSonglink()));
