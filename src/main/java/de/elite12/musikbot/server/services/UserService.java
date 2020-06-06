@@ -38,11 +38,11 @@ public class UserService implements PasswordEncoder {
 
     @PostConstruct
     public void postConstruct() {
-        if(userrepository.countAll() == 0L) {
+        if(userrepository.count() == 0L) {
             User u = this.createUser("admin","admin","admin@example.com");
             u.setAdmin(true);
             this.saveUser(u);
-            logger.info("There are no Users in the Databse. A default Admin User has been created.");
+            logger.info("There are no Users in the Database. A default Admin User has been created.");
         }
     }
 

@@ -2,19 +2,17 @@ package de.elite12.musikbot.server.api.v2;
 
 import de.elite12.musikbot.server.api.dto.StatsDTO;
 import de.elite12.musikbot.server.data.repository.SongRepository;
+import de.elite12.musikbot.server.data.repository.UserRepository;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping(path = "/v2/stats")
@@ -26,61 +24,27 @@ public class Stats {
     @Autowired
     private SongRepository songs;
 
+    @Autowired
+    private UserRepository users;
+
     @GetMapping
     @Cacheable(cacheNames = "stats", key = "'global'", sync = true)
     @ApiOperation(value = "Get Stats", notes = "Retrieve various Statistics")
     public StatsDTO getAction() {
         StatsDTO dto = new StatsDTO();
 
-        dto.setMostplayed(
-                StreamSupport.stream(songs.findTopMostPlayed().spliterator(), false)
-                        .map(
-                                tuple ->
-                                        new StatsDTO.TopSong(
-                                                tuple.get(0, String.class),
-                                                tuple.get(1, String.class),
-                                                tuple.get(2, BigInteger.class).intValue()
-                                        )
-                        )
-                        .collect(Collectors.toList())
-        );
+        dto.setMostplayed(songs.findTopMostPlayed(PageRequest.of(0,10)).getContent());
+        dto.setMostskipped(songs.findTopMostSkipped(PageRequest.of(0,10)).getContent());
+        dto.setTopuser(songs.findTopUser(PageRequest.of(0,10)).getContent());
 
-        dto.setMostskipped(
-                StreamSupport.stream(songs.findTopMostSkipped().spliterator(), false)
-                        .map(
-                                tuple ->
-                                        new StatsDTO.TopSong(
-                                                tuple.get(0, String.class),
-                                                tuple.get(1, String.class),
-                                                tuple.get(2, BigInteger.class).intValue()
-                                        )
-                        )
-                        .collect(Collectors.toList())
-        );
-
-        dto.setTopuser(
-                StreamSupport.stream(songs.findTopUser().spliterator(), false)
-                        .map(
-                                tuple ->
-                                        new StatsDTO.TopUser(
-                                                tuple.get(0, String.class),
-                                                tuple.get(1, BigInteger.class).intValue()
-                                        )
-                        )
-                        .collect(Collectors.toList())
-        );
-
-        Query q = em.createNativeQuery("select count(*) from user UNION ALL select count(*) from user WHERE admin = TRUE UNION ALL SELECT Count(*) FROM (SELECT guest_author FROM song WHERE CHAR_LENGTH(guest_author) = 36 GROUP BY guest_author) AS T UNION ALL select count(*) from song WHERE (USER_AUTHOR != 30 OR USER_AUTHOR IS NULL) UNION ALL select count(*) from song WHERE skipped = TRUE UNION ALL select sum(duration) from song WHERE skipped = FALSE;");
-
-        Object[] list = q.getResultList().toArray();
         dto.setGeneral(
             Arrays.asList(
-                new StatsDTO.GeneralEntry("User", list[0].toString()),
-                new StatsDTO.GeneralEntry("Admins", list[1].toString()),
-                new StatsDTO.GeneralEntry("Gäste", list[2].toString()),
-                new StatsDTO.GeneralEntry("Wünsche", list[3].toString()),
-                new StatsDTO.GeneralEntry("Skippes", list[4].toString()),
-                new StatsDTO.GeneralEntry("Gesamte Dauer", String.format("%d Stunden",list[5] == null ? 0 : ((Number)list[5]).intValue()/3600))
+                new StatsDTO.GeneralEntry("User", users.count()),
+                new StatsDTO.GeneralEntry("Admins", users.countByAdmin(true)),
+                new StatsDTO.GeneralEntry("Gäste", songs.countGuests()),
+                new StatsDTO.GeneralEntry("Wünsche", songs.count()),
+                new StatsDTO.GeneralEntry("Skippes", songs.countBySkipped(true)),
+                new StatsDTO.GeneralEntry("Gesamte Dauer", String.format("%d Stunden", songs.getCompleteDuration()/3600))
             )
         );
 

@@ -30,4 +30,15 @@ public class MusikbotCacheConfig {
                         .build()
         );
     }
+
+    @Bean
+    public CaffeineCache searchCache() {
+        return new CaffeineCache(
+                "search",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(15, TimeUnit.MINUTES)
+                        .recordStats()
+                        .build()
+        );
+    }
 }

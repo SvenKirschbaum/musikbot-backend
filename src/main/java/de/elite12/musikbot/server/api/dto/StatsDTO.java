@@ -1,5 +1,7 @@
 package de.elite12.musikbot.server.api.dto;
 
+import de.elite12.musikbot.server.data.projection.TopSong;
+import de.elite12.musikbot.server.data.projection.TopUser;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,34 +28,14 @@ public class StatsDTO {
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class TopSong {
-        @ApiModelProperty(notes = "Title of the Song")
-        private String title;
-        @ApiModelProperty(notes = "Link of the Song")
-        private String link;
-        @ApiModelProperty(notes = "How oftern the Song has been requested/skipped")
-        private Integer count;
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class TopUser {
-        @ApiModelProperty(notes = "Name of the User")
-        private String name;
-        @ApiModelProperty(notes = "How many Songs the User requested")
-        private Integer count;
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class GeneralEntry {
         @ApiModelProperty(notes = "The Title of the Statistik")
         private String title;
         @ApiModelProperty(notes = "The Value of the Statistik")
         private String value;
+
+        public GeneralEntry(String user, long count) {
+            this(user, Long.toString(count));
+        }
     }
 }

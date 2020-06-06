@@ -1,4 +1,4 @@
-package de.elite12.musikbot.server.api.dto;
+package de.elite12.musikbot.server.data.projection;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

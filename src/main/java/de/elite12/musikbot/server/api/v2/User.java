@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -111,8 +112,8 @@ public class User {
                 StreamSupport
                         .stream(
                                 (guest ?
-                                        songRepository.findRecentByGuest(username) :
-                                        songRepository.findRecentByUser(target)
+                                        songRepository.findRecentByGuest(username, PageRequest.of(0,10)) :
+                                        songRepository.findRecentByUser(target, PageRequest.of(0,10))
                                 )
                                         .spliterator(),
                                 false
@@ -120,9 +121,9 @@ public class User {
                         .map(
                                 tuple ->
                                         new UserDTO.GeneralEntry(
-                                                tuple.getid(),
-                                                tuple.gettitle(),
-                                                tuple.getlink()
+                                                tuple.getId(),
+                                                tuple.getTitle(),
+                                                tuple.getLink()
                                         )
                         )
                         .toArray(UserDTO.GeneralEntry[]::new)
@@ -132,8 +133,8 @@ public class User {
                 StreamSupport
                         .stream(
                                 (guest ?
-                                        songRepository.findTopByGuest(username) :
-                                        songRepository.findTopByUser(target)
+                                        songRepository.findTopForGuest(username, PageRequest.of(0,10)) :
+                                        songRepository.findTopForUser(target, PageRequest.of(0,10))
                                 )
                                         .spliterator(),
                                 false
@@ -141,9 +142,9 @@ public class User {
                         .map(
                                 tuple ->
                                         new UserDTO.TopEntry(
-                                                tuple.gettitle(),
-                                                tuple.getlink(),
-                                                tuple.getcount()
+                                                tuple.getTitle(),
+                                                tuple.getLink(),
+                                                tuple.getCount()
                                         )
                         )
                         .toArray(UserDTO.TopEntry[]::new)
@@ -153,8 +154,8 @@ public class User {
                 StreamSupport
                         .stream(
                                 (guest ?
-                                        songRepository.findTopSkippedByGuest(username) :
-                                        songRepository.findTopSkippedByUser(target)
+                                        songRepository.findTopSkippedForGuest(username, PageRequest.of(0,10)) :
+                                        songRepository.findTopSkippedForUser(target, PageRequest.of(0,10))
                                 )
                                         .spliterator(),
                                 false
@@ -162,9 +163,9 @@ public class User {
                         .map(
                                 tuple ->
                                         new UserDTO.TopEntry(
-                                                tuple.gettitle(),
-                                                tuple.getlink(),
-                                                tuple.getcount()
+                                                tuple.getTitle(),
+                                                tuple.getLink(),
+                                                tuple.getCount()
                                         )
                         )
                         .toArray(UserDTO.TopEntry[]::new)
