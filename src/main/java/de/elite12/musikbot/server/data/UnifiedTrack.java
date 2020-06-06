@@ -71,6 +71,7 @@ public class UnifiedTrack {
 			if (this.track == null) {
 				throw new IOException("Identified as spotify, but no sid");// This should be impossible to reach
 			}
+			if(!this.track.getIsPlayable()) throw new TrackNotAvailableException("Not playable");
 		}
 	}
 

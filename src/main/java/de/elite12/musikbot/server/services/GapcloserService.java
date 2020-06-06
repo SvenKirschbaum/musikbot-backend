@@ -9,6 +9,7 @@ import de.elite12.musikbot.server.data.UnifiedTrack.InvalidURLException;
 import de.elite12.musikbot.server.data.UnifiedTrack.TrackNotAvailableException;
 import de.elite12.musikbot.server.data.entity.Setting;
 import de.elite12.musikbot.server.data.entity.Song;
+import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.data.repository.SettingRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.data.repository.UserRepository;
@@ -57,6 +58,9 @@ public class GapcloserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private LockedSongRepository lockedSongRepository;
+
 
     private static final Logger logger = LoggerFactory.getLogger(GapcloserService.class);
 
@@ -89,7 +93,7 @@ public class GapcloserService {
 
     public Song getnextSong() {
         try {
-        	for(int i = 0; i < 3; i++) {
+        	for(int i = 0; i < 5; i++) {
         		String url = selectCandidate();
         		if(url == null) {
     				return null;
@@ -101,9 +105,14 @@ public class GapcloserService {
         			ut = UnifiedTrack.fromURL(url,youtube, spotifyAPIService);
         		}
         		catch(TrackNotAvailableException | InvalidURLException e) {
-        			logger.debug("Generated invalid Song",e);
+        			logger.debug("Gapcloser generated invalid Song",e);
         			continue;
         		}
+
+                if (lockedSongRepository.countByUrl(ut.getLink()) > 0) {
+                    logger.debug("Gapcloser generated locked Song");
+                    continue;
+                }
 
         		Song s = new Song();
         		s.setPlayed(true);
@@ -123,7 +132,7 @@ public class GapcloserService {
                 return s;
         	}
 
-        	logger.error("Loading Song Failed three times");
+        	logger.error("Loading Song Failed five times");
         	return null;
         } catch (IOException e) {
         	logger.error("Error loading Gapcloser Song", e);

@@ -1,5 +1,6 @@
 package de.elite12.musikbot.server.services;
 
+import com.neovisionaries.i18n.CountryCode;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.credentials.ClientCredentials;
@@ -64,7 +65,7 @@ public class SpotifyAPIService {
             return null;
         }
         check();
-        GetTrackRequest r = api.getTrack(sid).build();
+        GetTrackRequest r = api.getTrack(sid).market(CountryCode.DE).build();
         try {
             return r.execute();
         } catch (IOException | SpotifyWebApiException | ParseException e) {
@@ -78,7 +79,7 @@ public class SpotifyAPIService {
             return null;
         }
         check();
-        GetTrackRequest r = api.getTrack(sid).build();
+        GetTrackRequest r = api.getTrack(sid).market(CountryCode.DE).build();
         return r.execute();
     }
 
@@ -87,7 +88,7 @@ public class SpotifyAPIService {
             return null;
         }
         check();
-        GetAlbumRequest r = api.getAlbum(sid).build();
+        GetAlbumRequest r = api.getAlbum(sid).market(CountryCode.DE).build();
         try {
             return r.execute();
         } catch (IOException | SpotifyWebApiException | ParseException e) {
@@ -102,7 +103,7 @@ public class SpotifyAPIService {
         }
         check();
 
-        GetPlaylistRequest r = api.getPlaylist(spid).build();
+        GetPlaylistRequest r = api.getPlaylist(spid).market(CountryCode.DE).build();
         try {
             return r.execute();
         } catch (IOException | SpotifyWebApiException | ParseException e) {
@@ -114,7 +115,7 @@ public class SpotifyAPIService {
     public Paging<PlaylistTrack> getPlaylistTracks(Playlist p, int page) {
     	check();
     	try {
-    	    return api.getPlaylistsItems(p.getId()).offset(page*100).build().execute();
+    	    return api.getPlaylistsItems(p.getId()).market(CountryCode.DE).offset(page*100).build().execute();
     	} catch (IOException | SpotifyWebApiException | ParseException e) {
             logger.error("Error reading Playlist", e);
             return null;
@@ -124,7 +125,7 @@ public class SpotifyAPIService {
     public Paging<TrackSimplified> getAlbumTracks(Album p, int page) {
     	check();
     	try {
-    		return api.getAlbumsTracks(p.getId()).offset(page*100).build().execute();
+    		return api.getAlbumsTracks(p.getId()).market(CountryCode.DE).offset(page*100).build().execute();
     	} catch (IOException | SpotifyWebApiException | ParseException e) {
             logger.error("Error reading Playlist", e);
             return null;
@@ -137,7 +138,7 @@ public class SpotifyAPIService {
         }
         check();
 
-        GetPlaylistsItemsRequest r = api.getPlaylistsItems(spid).limit(1).offset(id).build();
+        GetPlaylistsItemsRequest r = api.getPlaylistsItems(spid).market(CountryCode.DE).limit(1).offset(id).build();
         try {
         	Paging<PlaylistTrack> t = r.execute();
             return (Track) t.getItems()[0].getTrack();
@@ -171,7 +172,7 @@ public class SpotifyAPIService {
 		}
 		check();
 		
-		GetAlbumsTracksRequest r = api.getAlbumsTracks(said).limit(1).offset(id).build();
+		GetAlbumsTracksRequest r = api.getAlbumsTracks(said).market(CountryCode.DE).limit(1).offset(id).build();
 		try {
         	Paging<TrackSimplified> t = r.execute();
             return t.getItems()[0];

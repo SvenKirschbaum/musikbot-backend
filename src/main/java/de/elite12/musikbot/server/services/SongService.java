@@ -91,6 +91,7 @@ public class SongService {
                 return null;
             }
     	}
+
         next.setPlayed(true);
         next.setPlayedAt(new Date());
         next = songrepository.save(next);
@@ -104,6 +105,8 @@ public class SongService {
         }
         catch(TrackNotAvailableException e) {
         	logger.warn("Song seems to got deleted, skipping", e);
+            next.setSkipped(true);
+            songrepository.save(next);
             return this.getnextSong();
         } catch (InvalidURLException e) {
         	logger.error("Impossible Error",e);
