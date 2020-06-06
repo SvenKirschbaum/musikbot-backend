@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -54,6 +55,19 @@ public class Status {
         st.setPlaylist(list);
 
         st.setPlaylistdauer(dauer / 60);
+
+        SongService.ProgressInfo progressInfo = songservice.getProgressInfo();
+
+        if(progressInfo != null) {
+            StatusUpdate.SongProgress sp = new StatusUpdate.SongProgress();
+            sp.setStart(songservice.getProgressInfo().getStart());
+            sp.setCurrent(Instant.now());
+            sp.setDuration(songservice.getProgressInfo().getDuration());
+            sp.setPaused(songservice.getProgressInfo().isPaused());
+            sp.setPrepausedDuration(songservice.getProgressInfo().getPrepausedDuration());
+            st.setProgress(sp);
+        }
+
 
         return st;
     }

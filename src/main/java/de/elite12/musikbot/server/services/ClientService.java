@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.security.Principal;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -60,8 +62,10 @@ public class ClientService {
 
 			if (this.ispaused) {
 				songservice.setState(SongService.State.PAUSED);
+				songservice.getProgressInfo().pause();
 			} else {
 				songservice.setState(SongService.State.PLAYING);
+				songservice.getProgressInfo().unpause();
 			}
 
 			this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.PAUSE));
@@ -80,6 +84,7 @@ public class ClientService {
 			songservice.setState(SongService.State.STOPPED);
 			songservice.setSongtitle(null);
 			songservice.setSonglink(null);
+			songservice.setProgressInfo(null);
 
 			this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.STOP));
 
@@ -113,6 +118,7 @@ public class ClientService {
 		songservice.setState(SongService.State.PLAYING);
 		songservice.setSongtitle(song.getTitle());
 		songservice.setSonglink(song.getLink());
+		songservice.setProgressInfo(new SongService.ProgressInfo(Instant.now(), Duration.ofSeconds(song.getDuration()),Duration.ZERO, false));
 
 		this.sendCommand(new de.elite12.musikbot.shared.clientDTO.Song(song.getLink(),song.getTitle(), song.getLink().contains("spotify") ? "spotify" : "youtube"));
 
@@ -135,6 +141,7 @@ public class ClientService {
 			songservice.setState(SongService.State.WAITING_FOR_SONGS);
 			songservice.setSongtitle(null);
 			songservice.setSonglink(null);
+			songservice.setProgressInfo(null);
 			this.waitforsong = true;
 			this.pushService.sendState();
 		}
@@ -164,6 +171,9 @@ public class ClientService {
 				this.authorizedClients.remove(event.getUser().getName());
 				if(this.isNotConnected()) {
 					songservice.setState(SongService.State.NOT_CONNECTED);
+					songservice.setSonglink(null);
+					songservice.setSongtitle(null);
+					songservice.setProgressInfo(null);
 					this.pushService.sendState();
 				}
 			}

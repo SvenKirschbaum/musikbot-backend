@@ -13,7 +13,9 @@ import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.data.repository.SettingRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.services.GapcloserService.Mode;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
@@ -39,6 +43,10 @@ public class SongService {
     private String songlink;
     @Getter
     private short volume = 38;
+
+    @Getter
+    @Setter
+    private ProgressInfo progressInfo = null;
     
     private static final Logger logger = LoggerFactory.getLogger(SongService.class);
 
@@ -251,6 +259,27 @@ public class SongService {
                 default:
                     return "";
             }
+        }
+    }
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    public static class ProgressInfo {
+        Instant start;
+        Duration duration;
+        Duration prepausedDuration;
+        boolean paused;
+
+        public void pause() {
+            prepausedDuration = prepausedDuration.plus(Duration.between(start, Instant.now()));
+            this.paused = true;
+        }
+
+        public void unpause() {
+            this.start = Instant.now();
+            this.paused = false;
         }
     }
 }
