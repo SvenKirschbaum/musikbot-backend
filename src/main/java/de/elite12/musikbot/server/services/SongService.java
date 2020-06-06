@@ -6,9 +6,11 @@ import de.elite12.musikbot.server.data.GuestSession;
 import de.elite12.musikbot.server.data.UnifiedTrack;
 import de.elite12.musikbot.server.data.UnifiedTrack.InvalidURLException;
 import de.elite12.musikbot.server.data.UnifiedTrack.TrackNotAvailableException;
+import de.elite12.musikbot.server.data.entity.Setting;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
+import de.elite12.musikbot.server.data.repository.SettingRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.services.GapcloserService.Mode;
 import lombok.Getter;
@@ -18,8 +20,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class SongService {
@@ -34,7 +38,6 @@ public class SongService {
 	@Setter
     private String songlink;
     @Getter
-    @Setter
     private short volume = 38;
     
     private static final Logger logger = LoggerFactory.getLogger(SongService.class);
@@ -62,6 +65,21 @@ public class SongService {
 
     @Autowired
     private PushService pushService;
+
+    @Autowired
+    private SettingRepository settings;
+
+    @PostConstruct
+    public void postConstruct() {
+        Optional<Setting> volume = settings.findById("volume");
+
+        if(volume.isPresent()) {
+            this.volume = Short.parseShort(volume.get().getValue());
+        }
+        else {
+            this.setVolume((short) 38);
+        }
+    }
 
     public Song getnextSong() {
     	Song next = songrepository.getNextSong();
@@ -193,5 +211,13 @@ public class SongService {
             logger.debug("Invalid URL",e);
             return new createSongResponse(false,false, "URL ungültig");
         }
+    }
+
+    public void setVolume(short volume) {
+        this.volume = volume;
+
+        Setting volumesetting = new Setting("volume", Short.toString(volume));
+
+        settings.save(volumesetting);
     }
 }

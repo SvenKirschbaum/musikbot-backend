@@ -150,6 +150,7 @@ public class ClientService {
 			}
 			this.authorizedClients.add(principal.getName());
 			this.template.convertAndSendToUser(principal.getName(),"/queue/reply", new AuthResponse(true), Map.of("type", AuthResponse.class.getSimpleName()));
+			this.template.convertAndSendToUser(principal.getName(),"/queue/reply", new VolumeCommand(songservice.getVolume()), Map.of("type", VolumeCommand.class.getSimpleName()));
 			return;
 		}
 		this.template.convertAndSendToUser(principal.getName(),"/queue/reply", new AuthResponse(false), Map.of("type", AuthResponse.class.getSimpleName()));
