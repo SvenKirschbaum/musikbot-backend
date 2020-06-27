@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class PlaylistImporterService {
 	
 	private final Logger logger = LoggerFactory.getLogger(PlaylistImporterService.class);
 
-    public PlaylistDTO getyoutubePlaylist(String id) {
+    public PlaylistDTO getYoutubePlaylist(String id) {
         try {
             logger.debug("Querying Youtube...");
             PlaylistDTO p = new PlaylistDTO();
@@ -76,7 +77,7 @@ public class PlaylistImporterService {
         }
     }
 
-    public PlaylistDTO getspotifyPlaylist(String spid) {
+    public PlaylistDTO getSpotifyPlaylist(String spid) {
         Playlist sp = spotifyAPIService.getPlaylist(spid);
         if (sp == null) {
             return null;
@@ -105,7 +106,7 @@ public class PlaylistImporterService {
         return p;
     }
 
-    public PlaylistDTO getspotifyAlbum(String said) {
+    public PlaylistDTO getSpotifyAlbum(String said) {
         Album a = spotifyAPIService.getAlbum(said);
         if (a == null) {
             return null;
@@ -131,6 +132,21 @@ public class PlaylistImporterService {
             }
         }
         p.songs = entries.toArray(new Entry[0]);
+        return p;
+    }
+
+    public PlaylistDTO getSpotifyArtist(String sarid) {
+        Artist artist = spotifyAPIService.getArtist(sarid);
+        Track[] artistTracks = spotifyAPIService.getArtistTracks(sarid);
+        if(artistTracks == null) return null;
+
+        PlaylistDTO p = new PlaylistDTO();
+        p.id = sarid;
+        p.typ = "spotifyartist";
+        p.name = artist.getName();
+        p.link = "https://open.spotify.com/artist/"+artist.getId();
+        p.songs = Arrays.stream(artistTracks).map(track -> new PlaylistDTO.Entry(track.getName(), "https://open.spotify.com/track/"+track.getId())).toArray(PlaylistDTO.Entry[]::new);
+
         return p;
     }
 }

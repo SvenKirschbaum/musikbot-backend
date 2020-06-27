@@ -1,10 +1,14 @@
 package de.elite12.musikbot.server.api.dto;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @ToString(exclude = {"songs"})
 public class PlaylistDTO {
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Entry {
         @ApiModelProperty(notes = "The name of the Song")
         public String name;

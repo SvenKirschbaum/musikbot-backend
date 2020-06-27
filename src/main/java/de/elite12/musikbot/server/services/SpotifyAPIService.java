@@ -8,6 +8,8 @@ import com.wrapper.spotify.model_objects.specification.*;
 import com.wrapper.spotify.requests.authorization.client_credentials.ClientCredentialsRequest;
 import com.wrapper.spotify.requests.data.albums.GetAlbumRequest;
 import com.wrapper.spotify.requests.data.albums.GetAlbumsTracksRequest;
+import com.wrapper.spotify.requests.data.artists.GetArtistRequest;
+import com.wrapper.spotify.requests.data.artists.GetArtistsTopTracksRequest;
 import com.wrapper.spotify.requests.data.playlists.GetPlaylistRequest;
 import com.wrapper.spotify.requests.data.playlists.GetPlaylistsItemsRequest;
 import com.wrapper.spotify.requests.data.tracks.GetTrackRequest;
@@ -108,6 +110,38 @@ public class SpotifyAPIService {
             return r.execute();
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             logger.error("Error reading Playlist", e);
+            return null;
+        }
+    }
+
+    public Artist getArtist(String sarid) {
+        if(sarid == null || sarid.isEmpty()) {
+            return null;
+        }
+        check();
+
+        GetArtistRequest r = api.getArtist(sarid).build();
+        try {
+            return r.execute();
+        }
+        catch (IOException | SpotifyWebApiException | ParseException e) {
+            logger.error("Error reading Artist", e);
+            return null;
+        }
+    }
+
+    public Track[] getArtistTracks(String sarid) {
+        if(sarid == null || sarid.isEmpty()) {
+            return null;
+        }
+        check();
+
+        GetArtistsTopTracksRequest tracksRequest = api.getArtistsTopTracks(sarid, CountryCode.DE).build();
+        try {
+            return tracksRequest.execute();
+        }
+        catch (IOException | SpotifyWebApiException | ParseException e) {
+            logger.error("Error reading ArtistTracks", e);
             return null;
         }
     }

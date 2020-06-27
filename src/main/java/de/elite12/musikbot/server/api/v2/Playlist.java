@@ -37,28 +37,32 @@ public class Playlist {
     private static final Logger logger = LoggerFactory.getLogger(Playlist.class);
 
     @GetMapping
-    @ApiOperation(value = "Load playlist", notes = "Gets the Song of a Youtube Playlist, a Spotify Playlist or a Spotify Album. Requires Admin Permissions.")
+    @ApiOperation(value = "Load playlist", notes = "Gets the Song of a Youtube Playlist, a Spotify Playlist, a Spotify Artist or a Spotify Album. Requires Admin Permissions.")
     public PlaylistDTO getAction(@ApiParam(name = "url", value = "The URL of the Playlist to be loaded") @RequestParam String url) {
         String pid = SongIDParser.getPID(url);
         String spid = SongIDParser.getSPID(url);
         String said = SongIDParser.getSAID(url);
+        String sarid = SongIDParser.getSARID(url);
 
-        if (pid == null && spid == null && said == null) {
+        if (pid == null && spid == null && said == null && sarid == null) {
             throw new NotFoundException();
         }
 
         PlaylistDTO p = null;
         if (pid != null) {
-            p = playlistImporterService.getyoutubePlaylist(pid);
+            p = playlistImporterService.getYoutubePlaylist(pid);
         }
         if (spid != null) {
-            p = playlistImporterService.getspotifyPlaylist(spid);
+            p = playlistImporterService.getSpotifyPlaylist(spid);
         }
         if (said != null) {
-            p = playlistImporterService.getspotifyAlbum(said);
+            p = playlistImporterService.getSpotifyAlbum(said);
+        }
+        if (sarid != null) {
+            p = playlistImporterService.getSpotifyArtist(sarid);
         }
 
-        logger.info(String.format("Playlist loaded by %s: %s",((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(),p.toString()));
+        logger.info(String.format("Playlist loaded by %s: %s",((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(), p.toString()));
 
         return p;
     }
