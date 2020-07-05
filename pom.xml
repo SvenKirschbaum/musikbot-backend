@@ -11,15 +11,6 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-eclipse-plugin</artifactId>
-				<configuration>
-					<downloadSources>true</downloadSources>
-					<downloadJavadocs>true</downloadJavadocs>
-				</configuration>
-				<version>2.9</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<source>11</source>
@@ -57,7 +48,6 @@
 			<artifactId>spotify-web-api-java</artifactId>
 			<version>6.0.0</version>
 		</dependency>
-		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>libmusikbot</artifactId>

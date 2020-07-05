@@ -224,7 +224,7 @@ public class MusikbotServiceConfig {
 	@Configuration
 	@EnableSwagger2
 	@Import(BeanValidatorPluginsConfiguration.class)
-	public static class Swgget2Config {
+	public static class Swagger2Config {
 		@Autowired
 		private MusikbotServiceProperties musikbotServiceProperties;
 
