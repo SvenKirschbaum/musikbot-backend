@@ -41,6 +41,9 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>{
 	@Query(value = "SELECT SUM(s.duration) FROM Song s")
 	Long getCompleteDuration();
 
+	@Query(value = "SELECT SUM(s.duration) FROM Song s WHERE s.userAuthor = ?1")
+	Long getDurationByUserAuthor(User author);
+
 	Long countByPlayed(Boolean played);
 	
 	Long countByLinkAndPlayed(String link, boolean played);
@@ -58,6 +61,10 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>{
 	Long countByGuestAuthorAndSkipped(String guest, boolean skipped);
 
 	Long countBySkipped(boolean skipped);
+
+	Long countByUserAuthorNot(User author);
+
+	Long countByUserAuthorNotAndSkipped(User author, boolean skipped);
 
 	@Query(value = "SELECT COUNT(DISTINCT s.guestAuthor) FROM Song s")
 	Long countGuests();
