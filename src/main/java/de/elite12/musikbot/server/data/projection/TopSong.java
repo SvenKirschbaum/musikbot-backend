@@ -15,6 +15,6 @@ public class TopSong {
     private String title;
     @ApiModelProperty(notes = "Link of the Song")
     private String link;
-    @ApiModelProperty(notes = "How oftern the Song has been requested/skipped")
+    @ApiModelProperty(notes = "How often the Song has been requested/skipped")
     private Long count;
 }

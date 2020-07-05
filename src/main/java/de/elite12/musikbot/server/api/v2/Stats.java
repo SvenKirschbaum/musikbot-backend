@@ -2,6 +2,7 @@ package de.elite12.musikbot.server.api.v2;
 
 import de.elite12.musikbot.server.api.dto.StatsDTO;
 import de.elite12.musikbot.server.data.entity.User;
+import de.elite12.musikbot.server.data.projection.TopSong;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.data.repository.UserRepository;
 import io.swagger.annotations.ApiOperation;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.EntityManager;
 import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "/v2/stats")
@@ -34,9 +36,9 @@ public class Stats {
     public StatsDTO getAction() {
         StatsDTO dto = new StatsDTO();
 
-        dto.setMostplayed(songs.findTopMostPlayed(PageRequest.of(0,10)).getContent());
-        dto.setMostskipped(songs.findTopMostSkipped(PageRequest.of(0,10)).getContent());
-        dto.setTopuser(songs.findTopUser(PageRequest.of(0,10)).getContent());
+        dto.setMostPlayed(songs.findTopMostPlayed(PageRequest.of(0,10)).getContent());
+        dto.setMostSkipped(songs.findTopMostSkipped(PageRequest.of(0,10)).getContent());
+        dto.setTopUsers(songs.findTopUser(PageRequest.of(0,10)).getContent());
 
         User gapcloser = users.findByName("Automatisch");
         Long gaplcoserDuration = songs.getDurationByUserAuthor(gapcloser);
@@ -56,6 +58,16 @@ public class Stats {
         );
 
         return dto;
+    }
+
+    @GetMapping(path = "/played")
+    public List<TopSong> getMostPlayedAction() {
+        return songs.findTopMostPlayed(PageRequest.of(0,100)).getContent();
+    }
+
+    @GetMapping(path = "/skipped")
+    public List<TopSong> getMostSkippedAction() {
+        return songs.findTopMostSkipped(PageRequest.of(0,100)).getContent();
     }
 
 }

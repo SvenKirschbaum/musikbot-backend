@@ -16,11 +16,11 @@ import java.util.List;
 @AllArgsConstructor
 public class StatsDTO {
     @ApiModelProperty(notes = "List of the most played Songs")
-    private List<TopSong> mostplayed;
+    private List<TopSong> mostPlayed;
     @ApiModelProperty(notes = "List of the most skipped Songs")
-    private List<TopSong> mostskipped;
+    private List<TopSong> mostSkipped;
     @ApiModelProperty(notes = "List of the most active Users")
-    private List<TopUser> topuser;
+    private List<TopUser> topUsers;
     @ApiModelProperty(notes = "General statistics")
     private List<GeneralEntry> general;
 
