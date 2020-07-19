@@ -61,11 +61,13 @@ public class Stats {
     }
 
     @GetMapping(path = "/played")
+    @Cacheable(cacheNames = "stats", key = "'played'", sync = true)
     public List<TopSong> getMostPlayedAction() {
         return songs.findTopMostPlayed(PageRequest.of(0,100)).getContent();
     }
 
     @GetMapping(path = "/skipped")
+    @Cacheable(cacheNames = "stats", key = "'skipped'", sync = true)
     public List<TopSong> getMostSkippedAction() {
         return songs.findTopMostSkipped(PageRequest.of(0,100)).getContent();
     }
