@@ -39,9 +39,12 @@ public class UserService implements PasswordEncoder {
     @PostConstruct
     public void postConstruct() {
         if(userrepository.count() == 0L) {
-            User u = this.createUser("admin","admin","admin@example.com");
+            User u = this.createUser("admin", "admin", "admin@example.com");
             u.setAdmin(true);
             this.saveUser(u);
+            User g = this.createUser("Automatisch", null, "gapcloser@example.com");
+            g.setAdmin(true);
+            this.saveUser(g);
             logger.info("There are no Users in the Database. A default Admin User has been created.");
         }
     }
@@ -75,7 +78,8 @@ public class UserService implements PasswordEncoder {
     public User createUser(String username, String password, String email) {
         User u = new User();
         u.setName(username);
-        u.setPassword(this.encode(password));
+        if (password != null) u.setPassword(this.encode(password));
+        else u.setPassword("null");
         u.setAdmin(false);
         u.setEmail(email);
 
@@ -86,7 +90,7 @@ public class UserService implements PasswordEncoder {
     public String getExternalToken(User u) {
         Optional<Token> t = tokenrepository.findByOwnerAndExternal(u, true);
         String r;
-        if (!t.isPresent()) {
+        if (t.isEmpty()) {
             r = resetExternalToken(u);
         } else {
             r = t.get().getToken();

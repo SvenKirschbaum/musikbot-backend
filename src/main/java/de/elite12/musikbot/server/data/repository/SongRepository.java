@@ -25,27 +25,27 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>{
 	Integer replaceUserAuthor(User author, String guest);
 
 	@Nullable
-	@Query(value = "select * from song s where s.played = false order by s.sort asc limit 1", nativeQuery = true)
+	@Query(value = "select * from song s where s.played = false order by s.sort limit 1", nativeQuery = true)
 	Song getNextSong();
-	
+
 	@Nullable
 	@Query(value = "select * from song s where s.played = true order by s.sort desc limit 1", nativeQuery = true)
 	Song getLastSong();
-	
+
 	@Query(value = "select * from song s WHERE s.user_author != 30 order by RAND() limit 1", nativeQuery = true)
 	Optional<Song> getRandomSong();
-	
+
 	@Query(value = "SELECT * FROM (SELECT * FROM song s WHERE s.user_author != 30 GROUP BY s.link ORDER BY COUNT(*) DESC LIMIT 100) as a ORDER BY RAND() LIMIT 1", nativeQuery = true)
 	Optional<Song> getRandomTop100Song();
 
-	@Query(value = "SELECT SUM(s.duration) FROM Song s")
+	@Query(value = "SELECT COALESCE(SUM(s.duration),0) FROM Song s")
 	Long getCompleteDuration();
 
-	@Query(value = "SELECT SUM(s.duration) FROM Song s WHERE s.userAuthor = ?1")
+	@Query(value = "SELECT COALESCE(SUM(s.duration),0) FROM Song s WHERE s.userAuthor = ?1")
 	Long getDurationByUserAuthor(User author);
 
 	Long countByPlayed(Boolean played);
-	
+
 	Long countByLinkAndPlayed(String link, boolean played);
 
 	Long countByUserAuthor(User author);
