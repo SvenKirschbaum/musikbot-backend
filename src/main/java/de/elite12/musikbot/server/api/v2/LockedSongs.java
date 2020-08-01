@@ -6,7 +6,7 @@ import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.data.entity.LockedSong;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.exception.NotFoundException;
-import de.elite12.musikbot.server.services.SpotifyAPIService;
+import de.elite12.musikbot.server.services.SpotifyService;
 import de.elite12.musikbot.server.services.YouTubeService;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -34,7 +34,7 @@ public class LockedSongs {
     private YouTubeService youtube;
 
     @Autowired
-    private SpotifyAPIService spotifyAPIService;
+    private SpotifyService spotifyService;
 
     @GetMapping
     @ApiOperation(value = "Gets the LockList", notes = "Requires Admin Permissions.")
@@ -58,7 +58,7 @@ public class LockedSongs {
     @ApiOperation(value = "Adds a Song to the Locklist", notes = "Requires Admin Permissions.")
     public createSongResponse postAction(@RequestBody String url) {
         try {
-            UnifiedTrack ut = UnifiedTrack.fromURL(url,youtube, spotifyAPIService);
+            UnifiedTrack ut = UnifiedTrack.fromURL(url, youtube, spotifyService);
             LockedSong ls = new LockedSong();
             ls.setTitle(ut.getTitle());
             ls.setUrl(ut.getLink());

@@ -53,7 +53,7 @@ public class GapcloserService {
     private YouTubeService youtube;
 
     @Autowired
-    private SpotifyAPIService spotifyAPIService;
+    private SpotifyService spotifyService;
 
     @Autowired
     private UserRepository userRepository;
@@ -102,8 +102,8 @@ public class GapcloserService {
         		UnifiedTrack ut;
 
         		try {
-        			ut = UnifiedTrack.fromURL(url,youtube, spotifyAPIService);
-        		}
+                    ut = UnifiedTrack.fromURL(url, youtube, spotifyService);
+                }
         		catch(TrackNotAvailableException | InvalidURLException e) {
         			logger.debug("Gapcloser generated invalid Song",e);
         			continue;
@@ -174,10 +174,10 @@ public class GapcloserService {
                     PlaylistItem item = r.getItems().get(id % 50);
                     return "https://www.youtube.com/watch?v=" + item.getSnippet().getResourceId().getVideoId();
                 } else if (spid != null) {
-                    Track t = spotifyAPIService.getTrackfromPlaylist(spid, id);
+                    Track t = spotifyService.getTrackfromPlaylist(spid, id);
                     return "https://open.spotify.com/track/" + t.getId();
                 } else if (said != null) {
-                	TrackSimplified t = spotifyAPIService.getTrackfromAlbum(said, id);
+                    TrackSimplified t = spotifyService.getTrackfromAlbum(said, id);
                     return "https://open.spotify.com/track/" + t.getId();
                 }
 			}
@@ -218,9 +218,9 @@ public class GapcloserService {
                 logger.error("Error loading Playlist count", e);
             }
         } else if (spid != null) {
-            this.permutation = new Permutationhelper(spotifyAPIService.getPlaylistlength(spid));
+            this.permutation = new Permutationhelper(spotifyService.getPlaylistlength(spid));
         } else if (said != null) {
-        	this.permutation = new Permutationhelper(spotifyAPIService.getAlbumlength(said));
+            this.permutation = new Permutationhelper(spotifyService.getAlbumlength(said));
         } else {
             logger.error("Playlist invalid");
         }

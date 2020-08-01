@@ -26,16 +26,17 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 @Service
-public class SpotifyAPIService {
+public class SpotifyService {
 
     @Autowired
-	private MusikbotServiceProperties config;
+    private MusikbotServiceProperties config;
 
     private SpotifyApi api;
 
     private boolean authorized = false;
-    
-    private final Logger logger = LoggerFactory.getLogger(SpotifyAPIService.class);
+
+    private final Logger logger = LoggerFactory.getLogger(SpotifyService.class);
+
     @PostConstruct
     public void postConstruct() {
     	api = new SpotifyApi.Builder().setClientId(config.getSpotify().getId()).setClientSecret(config.getSpotify().getSecret()).build();

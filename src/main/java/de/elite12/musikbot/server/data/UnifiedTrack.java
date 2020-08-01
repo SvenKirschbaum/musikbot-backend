@@ -4,7 +4,7 @@ import com.google.api.services.youtube.model.Video;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.specification.Track;
 import de.elite12.musikbot.server.data.entity.Song;
-import de.elite12.musikbot.server.services.SpotifyAPIService;
+import de.elite12.musikbot.server.services.SpotifyService;
 import de.elite12.musikbot.server.services.YouTubeService;
 import de.elite12.musikbot.shared.util.SongIDParser;
 import org.apache.hc.core5.http.ParseException;
@@ -20,10 +20,10 @@ public class UnifiedTrack {
 
 	private Video video = null;
 	private Track track = null;
-	private Type type;
+	private final Type type;
 
 	//TODO: Move to Service
-	private UnifiedTrack(Song s, YouTubeService youTubeService, SpotifyAPIService spotifyAPIService) throws IOException, TrackNotAvailableException, InvalidURLException {
+	private UnifiedTrack(Song s, YouTubeService youTubeService, SpotifyService spotifyService) throws IOException, TrackNotAvailableException, InvalidURLException {
 		this.song = s;
 		String VID = SongIDParser.getVID(s.getLink());
 		String SID = SongIDParser.getSID(s.getLink());
@@ -32,7 +32,7 @@ public class UnifiedTrack {
 		}
 		if (VID != null) {
 			this.type = Type.YOUTUBE;
-			List<Video> list = youTubeService.api().videos().list(List.of("status","snippet","contentDetails"))
+			List<Video> list = youTubeService.api().videos().list(List.of("status", "snippet", "contentDetails"))
 					.setId(Collections.singletonList(SongIDParser.getVID(s.getLink())))
 					.setFields(
 							"items/status/uploadStatus,items/status/privacyStatus,items/contentDetails/duration,items/snippet/categoryId,items/snippet/title,items/contentDetails/regionRestriction")
@@ -64,25 +64,25 @@ public class UnifiedTrack {
 		else {
 			this.type = Type.SPOTIFY;
 			try {
-				this.track = spotifyAPIService.getTrackRaw(SongIDParser.getSID(s.getLink()));
+				this.track = spotifyService.getTrackRaw(SongIDParser.getSID(s.getLink()));
 			} catch (SpotifyWebApiException | ParseException e) {
 				throw new TrackNotAvailableException("Error loading Track", e);
 			}
 			if (this.track == null) {
 				throw new IOException("Identified as spotify, but no sid");// This should be impossible to reach
 			}
-			if(!this.track.getIsPlayable()) throw new TrackNotAvailableException("Not playable");
+			if (!this.track.getIsPlayable()) throw new TrackNotAvailableException("Not playable");
 		}
 	}
 
-	public static UnifiedTrack fromSong(Song s, YouTubeService youTubeService, SpotifyAPIService spotifyAPIService) throws IOException, TrackNotAvailableException, InvalidURLException {
-		return new UnifiedTrack(s, youTubeService, spotifyAPIService);
+	public static UnifiedTrack fromSong(Song s, YouTubeService youTubeService, SpotifyService spotifyService) throws IOException, TrackNotAvailableException, InvalidURLException {
+		return new UnifiedTrack(s, youTubeService, spotifyService);
 	}
 
-	public static UnifiedTrack fromURL(String url, YouTubeService youTubeService, SpotifyAPIService spotifyAPIService) throws IOException, TrackNotAvailableException, InvalidURLException {
+	public static UnifiedTrack fromURL(String url, YouTubeService youTubeService, SpotifyService spotifyService) throws IOException, TrackNotAvailableException, InvalidURLException {
 		Song song = new Song();
 		song.setLink(url);
-		return new UnifiedTrack(song, youTubeService, spotifyAPIService);
+		return new UnifiedTrack(song, youTubeService, spotifyService);
 	}
 
 	public Integer getDuration() {

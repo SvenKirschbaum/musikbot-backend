@@ -66,7 +66,7 @@ public class SongService {
     private YouTubeService youtube;
 
     @Autowired
-    private SpotifyAPIService spotifyAPIService;
+    private SpotifyService spotifyService;
 
     @Autowired
     private ClientService client;
@@ -105,7 +105,7 @@ public class SongService {
         next = songrepository.save(next);
         
         try {
-        	UnifiedTrack.fromSong(next, youtube, spotifyAPIService);
+            UnifiedTrack.fromSong(next, youtube, spotifyService);
         }
         catch(IOException e) {
         	logger.error("Error Loading Track", e);
@@ -140,7 +140,7 @@ public class SongService {
     public createSongResponse addSong(String url, User user, GuestSession gi) {
         try {
             logger.debug("Trying to Add Song "+url);
-            UnifiedTrack ut = UnifiedTrack.fromURL(url, youtube, spotifyAPIService);
+            UnifiedTrack ut = UnifiedTrack.fromURL(url, youtube, spotifyService);
             String notice = null;
 
             if (lockedrepository.countByUrl(ut.getLink()) > 0) {

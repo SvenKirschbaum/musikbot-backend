@@ -25,7 +25,7 @@ public class PlaylistImporterService {
 	private YouTubeService youtube;
 
     @Autowired
-	private SpotifyAPIService spotifyAPIService;
+    private SpotifyService spotifyService;
 	
 	private final Logger logger = LoggerFactory.getLogger(PlaylistImporterService.class);
 
@@ -78,7 +78,7 @@ public class PlaylistImporterService {
     }
 
     public PlaylistDTO getSpotifyPlaylist(String spid) {
-        Playlist sp = spotifyAPIService.getPlaylist(spid);
+        Playlist sp = spotifyService.getPlaylist(spid);
         if (sp == null) {
             return null;
         }
@@ -91,11 +91,11 @@ public class PlaylistImporterService {
         List<Entry> entries = new ArrayList<>();
         
         for(int page = 0; page < Math.min(4,Math.ceil(sp.getTracks().getTotal()/100.0));page++) {
-        	Paging<PlaylistTrack> list = spotifyAPIService.getPlaylistTracks(sp, page);
-        	if(list == null) return null;
-        	for (int i = 0;i<list.getItems().length;i++) {
-        		PlaylistTrack t = list.getItems()[i];
-        		Track track = (Track) t.getTrack();
+            Paging<PlaylistTrack> list = spotifyService.getPlaylistTracks(sp, page);
+            if (list == null) return null;
+            for (int i = 0; i < list.getItems().length; i++) {
+                PlaylistTrack t = list.getItems()[i];
+                Track track = (Track) t.getTrack();
                 Entry e = new Entry();
                 e.link = "https://open.spotify.com/track/" + track.getId();
                 e.name = "[" + track.getArtists()[0].getName() + "] " + track.getName();
@@ -107,7 +107,7 @@ public class PlaylistImporterService {
     }
 
     public PlaylistDTO getSpotifyAlbum(String said) {
-        Album a = spotifyAPIService.getAlbum(said);
+        Album a = spotifyService.getAlbum(said);
         if (a == null) {
             return null;
         }
@@ -121,10 +121,10 @@ public class PlaylistImporterService {
         List<Entry> entries = new ArrayList<>();
         
         for(int page = 0; page < Math.min(4,Math.ceil(a.getTracks().getTotal()/100.0));page++) {
-        	Paging<TrackSimplified> list = spotifyAPIService.getAlbumTracks(a, page);
-        	if(list == null) return null;
-        	for (int i = 0;i<list.getItems().length;i++) {
-        		TrackSimplified t = list.getItems()[i];
+            Paging<TrackSimplified> list = spotifyService.getAlbumTracks(a, page);
+            if (list == null) return null;
+            for (int i = 0; i < list.getItems().length; i++) {
+                TrackSimplified t = list.getItems()[i];
                 Entry e = new Entry();
                 e.link = "https://open.spotify.com/track/" + t.getId();
                 e.name = "[" + t.getArtists()[0].getName() + "] " + t.getName();
@@ -136,16 +136,16 @@ public class PlaylistImporterService {
     }
 
     public PlaylistDTO getSpotifyArtist(String sarid) {
-        Artist artist = spotifyAPIService.getArtist(sarid);
-        Track[] artistTracks = spotifyAPIService.getArtistTracks(sarid);
-        if(artistTracks == null) return null;
+        Artist artist = spotifyService.getArtist(sarid);
+        Track[] artistTracks = spotifyService.getArtistTracks(sarid);
+        if (artistTracks == null) return null;
 
         PlaylistDTO p = new PlaylistDTO();
         p.id = sarid;
         p.typ = "spotifyartist";
         p.name = artist.getName();
-        p.link = "https://open.spotify.com/artist/"+artist.getId();
-        p.songs = Arrays.stream(artistTracks).map(track -> new PlaylistDTO.Entry(track.getName(), "https://open.spotify.com/track/"+track.getId())).toArray(PlaylistDTO.Entry[]::new);
+        p.link = "https://open.spotify.com/artist/" + artist.getId();
+        p.songs = Arrays.stream(artistTracks).map(track -> new PlaylistDTO.Entry(track.getName(), "https://open.spotify.com/track/" + track.getId())).toArray(PlaylistDTO.Entry[]::new);
 
         return p;
     }
