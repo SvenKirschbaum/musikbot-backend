@@ -1,7 +1,6 @@
 package de.elite12.musikbot.server.api.v2;
 
 import de.elite12.musikbot.server.api.dto.StatsDTO;
-import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.projection.TopSong;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.data.repository.UserRepository;
@@ -40,20 +39,19 @@ public class Stats {
         dto.setMostSkipped(songs.findTopMostSkipped(PageRequest.of(0,10)).getContent());
         dto.setTopUsers(songs.findTopUser(PageRequest.of(0,10)).getContent());
 
-        User gapcloser = users.findByName("Automatisch");
-        Long gaplcoserDuration = songs.getDurationByUserAuthor(gapcloser);
+        Long gaplcoserDuration = songs.getSystemSongsDuration();
 
         dto.setGeneral(
             Arrays.asList(
-                new StatsDTO.GeneralEntry("User", users.count()),
-                new StatsDTO.GeneralEntry("Admins", users.countByAdmin(true)),
-                new StatsDTO.GeneralEntry("Gäste", songs.countGuests()),
-                new StatsDTO.GeneralEntry("Wünsche", songs.countByUserAuthorNot(gapcloser)),
-                new StatsDTO.GeneralEntry("Davon übersprungen", songs.countByUserAuthorNotAndSkipped(gapcloser, true)),
-                new StatsDTO.GeneralEntry("Generierte Songs", songs.countByUserAuthor(gapcloser)),
-                new StatsDTO.GeneralEntry("Davon übersprungen", songs.countByUserAuthorAndSkipped(gapcloser, true)),
-                new StatsDTO.GeneralEntry("Gesamte Wunsch-Dauer", String.format("%d Stunden", (songs.getCompleteDuration()-gaplcoserDuration)/3600)),
-                new StatsDTO.GeneralEntry("Gesamte Generierte-Dauer", String.format("%d Stunden", gaplcoserDuration/3600))
+                    new StatsDTO.GeneralEntry("User", users.count()),
+                    new StatsDTO.GeneralEntry("Admins", users.countByAdmin(true)),
+                    new StatsDTO.GeneralEntry("Gäste", songs.countGuests()),
+                    new StatsDTO.GeneralEntry("Wünsche", songs.countNonSystem()),
+                    new StatsDTO.GeneralEntry("Davon übersprungen", songs.countNonSystemSkipped()),
+                    new StatsDTO.GeneralEntry("Generierte Songs", songs.countSystem()),
+                    new StatsDTO.GeneralEntry("Davon übersprungen", songs.countSystemSkipped()),
+                    new StatsDTO.GeneralEntry("Gesamte Wunsch-Dauer", String.format("%d Stunden", (songs.getCompleteDuration() - gaplcoserDuration) / 3600)),
+                    new StatsDTO.GeneralEntry("Gesamte Generierte-Dauer", String.format("%d Stunden", gaplcoserDuration / 3600))
             )
         );
 

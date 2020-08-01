@@ -120,7 +120,6 @@ public class GapcloserService {
         		s.setPlayedAt(new Date());
         		s.setLink(ut.getLink());
         		s.setTitle(ut.getTitle());
-        		s.setUserAuthor(userRepository.findByName("Automatisch"));
         		s.setDuration(ut.getDuration());
 
         		s = songs.save(s);

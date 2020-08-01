@@ -42,9 +42,6 @@ public class UserService implements PasswordEncoder {
             User u = this.createUser("admin", "admin", "admin@example.com");
             u.setAdmin(true);
             this.saveUser(u);
-            User g = this.createUser("Automatisch", null, "gapcloser@example.com");
-            g.setAdmin(true);
-            this.saveUser(g);
             logger.info("There are no Users in the Database. A default Admin User has been created.");
         }
     }

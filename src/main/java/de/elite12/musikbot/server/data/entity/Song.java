@@ -71,12 +71,12 @@ public class Song implements Serializable {
     
     @Transient
     public String getAuthorLink() {
-    	return this.getUserAuthor()==null ? this.getGuestAuthor() : this.getUserAuthor().getName();
+        return this.getUserAuthor() == null ? (this.getGuestAuthor() == null ? null : this.getGuestAuthor()) : this.getUserAuthor().getName();
     }
     
     @Transient
     public String getAuthor() {
-        return this.getUserAuthor()==null ? "Gast" : this.getUserAuthor().getName();
+        return this.getUserAuthor() == null ? (this.getGuestAuthor() == null ? "System" : "Gast") : this.getUserAuthor().getName();
     }
 
     @PostPersist
