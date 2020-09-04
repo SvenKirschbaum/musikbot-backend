@@ -3,9 +3,9 @@ package de.elite12.musikbot.server.api.v2;
 import de.elite12.musikbot.server.api.dto.PlaylistDTO;
 import de.elite12.musikbot.server.api.dto.createSongResponse;
 import de.elite12.musikbot.server.data.GuestSession;
-import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.exception.NotFoundException;
+import de.elite12.musikbot.server.services.JWTUserService;
 import de.elite12.musikbot.server.services.PlaylistImporterService;
 import de.elite12.musikbot.server.services.SongService;
 import de.elite12.musikbot.shared.util.SongIDParser;
@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -33,6 +34,9 @@ public class Playlist {
 
     @Autowired
     private GuestSession guestinfo;
+
+    @Autowired
+    private JWTUserService jwtUserService;
 
     private static final Logger logger = LoggerFactory.getLogger(Playlist.class);
 
@@ -62,7 +66,7 @@ public class Playlist {
             p = playlistImporterService.getSpotifyArtist(sarid);
         }
 
-        logger.info(String.format("Playlist loaded by %s: %s",((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(), p.toString()));
+        logger.info(String.format("Playlist loaded by %s: %s", SecurityContextHolder.getContext().getAuthentication().getName(), p.toString()));
 
         return p;
     }
@@ -70,7 +74,7 @@ public class Playlist {
     @PostMapping
     @ApiOperation(value = "Import Songs from a Playlist", notes = "Adds multiple Songs to the Playlist. Requires Admin Permissions.")
     public createSongResponse[] postAction(@RequestBody PlaylistDTO.Entry[] entries) {
-        User u = ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        User u = jwtUserService.loadUserFromJWT((Jwt) SecurityContextHolder.getContext().getAuthentication().getCredentials());
 
         logger.info(String.format("Playlist imported by %s", u.toString()));
 

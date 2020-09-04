@@ -1,7 +1,6 @@
 package de.elite12.musikbot.server.api.v2;
 
 import de.elite12.musikbot.server.api.dto.GapcloserDTO;
-import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.services.GapcloserService;
 import de.elite12.musikbot.shared.util.SongIDParser;
 import io.swagger.annotations.ApiOperation;
@@ -49,7 +48,7 @@ public class Gapcloser {
 
         GapcloserDTO newstate = getAction();
 
-        logger.info(String.format("Gapcloser changed by %s: %s", ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(), newstate.toString()));
+        logger.info(String.format("Gapcloser changed by %s: %s", SecurityContextHolder.getContext().getAuthentication().getName(), newstate.toString()));
 
         return newstate;
     }

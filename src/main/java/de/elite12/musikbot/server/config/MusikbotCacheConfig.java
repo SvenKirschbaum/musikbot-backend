@@ -41,4 +41,15 @@ public class MusikbotCacheConfig {
                         .build()
         );
     }
+
+    @Bean
+    public CaffeineCache authenticationCache() {
+        return new CaffeineCache(
+                "oauth",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(1, TimeUnit.HOURS)
+                        .recordStats()
+                        .build()
+        );
+    }
 }

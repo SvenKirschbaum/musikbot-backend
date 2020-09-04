@@ -1,20 +1,17 @@
 package de.elite12.musikbot.server.config;
 
-import de.elite12.musikbot.server.data.UserPrincipal;
-import de.elite12.musikbot.server.data.entity.User;
-import de.elite12.musikbot.server.filter.TokenFilter;
-import de.elite12.musikbot.server.services.UserService;
+import de.elite12.musikbot.server.util.CustomJwtAuthenticationConverter;
 import org.apache.catalina.filters.RemoteIpFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.annotation.Order;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.server.ServerHttpRequest;
@@ -29,14 +26,11 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.cors.CorsConfiguration;
@@ -73,58 +67,28 @@ import java.util.*;
 @EnableJpaRepositories("de.elite12.musikbot.server.data.repository")
 public class MusikbotServiceConfig {
 
-
 	@Configuration
-	@Order(1)
-	public static class ActuatorWebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
-		@Autowired
-		private TokenFilter tokenFilter;
-
-		@Override
-		protected void configure(HttpSecurity http) throws Exception {
-			http
-				.csrf().disable()
-				.cors().and()
-				.sessionManagement().disable()
-				.addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class)
-				.requestMatcher(EndpointRequest.toAnyEndpoint())
-					.authorizeRequests()
-						.anyRequest()
-							.hasRole("admin")
-				.and();
-
-		}
-	}
-
-
-	@Configuration
-	@Order(2)
 	public static class ApiWebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
+
 		@Autowired
-		private TokenFilter tokenFilter;
+		CustomJwtAuthenticationConverter jwtAuthenticationConverter;
 
 		@Override
 	    protected void configure(HttpSecurity http) throws Exception {
 			http
-				.csrf().disable()
-				.cors().and()
-				.sessionManagement().maximumSessions(1).and().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-				.addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class)
-				.headers()
+					.csrf().disable()
+					.cors().and()
+					.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+					.oauth2ResourceServer().jwt().jwtAuthenticationConverter(jwtAuthenticationConverter).and().and()
+					.headers()
 					.xssProtection()
-						.disable()
+					.disable()
 					.contentTypeOptions()
-						.disable()
+					.disable()
 					.frameOptions()
-						.disable()
-					.and();
-	    }
-		
-		@Bean
-		public FilterRegistrationBean<TokenFilter> TokenFilterRegistration() {
-		    FilterRegistrationBean<TokenFilter> registration = new FilterRegistrationBean<>(tokenFilter);
-		    registration.setEnabled(false);
-		    return registration;
+					.disable()
+					.and()
+					.authorizeRequests().requestMatchers(EndpointRequest.toAnyEndpoint()).hasRole("admin");
 		}
 
 		@Bean
@@ -150,16 +114,15 @@ public class MusikbotServiceConfig {
 	@EnableWebSocketMessageBroker
 	@Controller
 	public static class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-		@Autowired
-		private UserService userservice;
+
+		private static final Logger logger = LoggerFactory.getLogger(WebSocketConfig.class);
 
 		@Autowired
 		private TaskScheduler messageBrokerTaskScheduler;
 
-
 		@Override
 		public void configureMessageBroker(MessageBrokerRegistry config) {
-			config.enableSimpleBroker("/topic","/queue").setHeartbeatValue(new long[]{30000,30000}).setTaskScheduler(this.messageBrokerTaskScheduler);
+			config.enableSimpleBroker("/topic", "/queue").setHeartbeatValue(new long[]{30000, 30000}).setTaskScheduler(this.messageBrokerTaskScheduler);
 			config.setApplicationDestinationPrefixes("/app");
 		}
 
@@ -173,7 +136,8 @@ public class MusikbotServiceConfig {
 												  Map<String, Object> attributes) {
 					// Generate principal with UUID as name
 					return new Principal() {
-						private String name = UUID.randomUUID().toString();
+						private final String name = UUID.randomUUID().toString();
+
 						@Override
 						public String getName() {
 							return this.name;
@@ -191,14 +155,15 @@ public class MusikbotServiceConfig {
 					StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 					if(StompCommand.CONNECT.equals(accessor.getCommand())) {
 						final String header = accessor.getFirstNativeHeader("Authorization");
-						User u = userservice.findUserbyToken(TokenFilter.parseHeader(header));
-						if(u != null) {
-							UserPrincipal up = new UserPrincipal(u);
-							accessor.setUser(new UsernamePasswordAuthenticationToken(up, "", up.getAuthorities()));
-						}
-						else if(header != null && !header.isEmpty()) {
-							throw new BadCredentialsException("Invalid Token supplied");
-						}
+						//TODO: Handle websocket authentication
+						//User u = null;
+						//if(u != null) {
+						//	UserPrincipal up = new UserPrincipal(u);
+						//	accessor.setUser(new UsernamePasswordAuthenticationToken(up, "", up.getAuthorities()));
+						//}
+						//else if(header != null && !header.isEmpty()) {
+						//	throw new BadCredentialsException("Invalid Token supplied");
+						//}
 					}
 					return message;
 				}
@@ -228,7 +193,7 @@ public class MusikbotServiceConfig {
 		@Autowired
 		private MusikbotServiceProperties musikbotServiceProperties;
 
-		private List<ResponseMessage> defaultResponses = List.of(
+		private final List<ResponseMessage> defaultResponses = List.of(
 				new ResponseMessageBuilder()
 						.code(401)
 						.message("An invalid Authorization Token has been provided in the Authorization Header")

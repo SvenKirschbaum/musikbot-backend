@@ -5,13 +5,17 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface UserRepository extends PagingAndSortingRepository<User, Long> {
-	
-	User findByName(String name);
-	
-	User findByEmail(String email);
 
-	@Cacheable(cacheNames = "stats", key = "'admins-'.concat(#admin)",sync = true)
-	Long countByAdmin(boolean admin);
+    Optional<User> findBySubject(String subject);
+
+    User findByName(String name);
+
+    User findByEmail(String email);
+
+    @Cacheable(cacheNames = "stats", key = "'admins-'.concat(#admin)", sync = true)
+    Long countByAdmin(boolean admin);
 }

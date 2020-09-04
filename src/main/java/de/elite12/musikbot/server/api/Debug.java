@@ -1,6 +1,5 @@
 package de.elite12.musikbot.server.api;
 
-import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.services.ClientService;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -33,14 +32,14 @@ public class Debug {
 	@PostMapping("/client")
 	@ApiOperation(value = "Shutdown the Client Application", notes = "Sends a Shutdown Request to the Client. Requires Admin Permissions.")
 	public void doClient() {
-		logger.warn(String.format("Shutting down Client by %s", ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
+		logger.warn(String.format("Shutting down Client by %s", SecurityContextHolder.getContext().getAuthentication().getName()));
 		client.sendShutdown();
 	}
 
 	@PostMapping("/server")
 	@ApiOperation(value = "Shutdown the Server Application", notes = "Shutdown the Server. Requires Admin Permissions.")
 	public void doServer() {
-		logger.warn(String.format("Shutting down Server by %s", ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
+		logger.warn(String.format("Shutting down Server by %s", SecurityContextHolder.getContext().getAuthentication().getName()));
 		new Timer().schedule(new TimerTask() {
 
 			@Override
@@ -50,7 +49,7 @@ public class Debug {
 		}, 2500);
 		new Timer().schedule(new TimerTask() {
 
-					@Override
+			@Override
 					public void run() {
 						System.exit(0);
 					}

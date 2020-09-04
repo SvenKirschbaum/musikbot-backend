@@ -2,7 +2,6 @@ package de.elite12.musikbot.server.api.v2;
 
 import de.elite12.musikbot.server.api.dto.createSongResponse;
 import de.elite12.musikbot.server.data.UnifiedTrack;
-import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.data.entity.LockedSong;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.exception.NotFoundException;
@@ -51,7 +50,7 @@ public class LockedSongs {
 
         songs.deleteById(id);
 
-        logger.info(String.format("Locked Song removed by %s: %s",((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(),s.toString()));
+        logger.info(String.format("Locked Song removed by %s: %s", SecurityContextHolder.getContext().getAuthentication().getName(), s.toString()));
     }
 
     @PostMapping
@@ -65,7 +64,7 @@ public class LockedSongs {
             songs.save(ls);
 
 
-            logger.info(String.format("Song locked by %s: %s",((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(),ls.toString()));
+            logger.info(String.format("Song locked by %s: %s", SecurityContextHolder.getContext().getAuthentication().getName(), ls.toString()));
             return new createSongResponse(true,false,"Song hinzugefügt");
         } catch (UnifiedTrack.TrackNotAvailableException e) {
             return new createSongResponse(false,false,"Der eingegebene Song existiert nicht");

@@ -29,26 +29,30 @@ public class MusikbotServiceProperties {
 	 * Key used to authenticate Client
 	 */
 	private String clientkey;
-	
-	/**
-	 * Youtube related Configuration
-	 */
-	private Youtube youtube;
-	
-	/**
-	 * Youtube related Configuration
-	 */
-	private Spotify spotify;
-	
-	
-	
-	@Getter
-	@Setter
-	public static class Youtube {
-		
-		/**
-		 * API-Key used to Access the Youtube-API
-		 */
+
+    /**
+     * Youtube related Configuration
+     */
+    private Youtube youtube;
+
+    /**
+     * Youtube related Configuration
+     */
+    private Spotify spotify;
+
+    /**
+     * Resource Name to convert roles from
+     */
+    private String oauthResourceName;
+
+
+    @Getter
+    @Setter
+    public static class Youtube {
+
+        /**
+         * API-Key used to Access the Youtube-API
+         */
 		@Getter
 		private String apikey;
 		

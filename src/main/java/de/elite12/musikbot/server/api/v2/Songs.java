@@ -2,12 +2,12 @@ package de.elite12.musikbot.server.api.v2;
 
 import de.elite12.musikbot.server.api.dto.createSongResponse;
 import de.elite12.musikbot.server.data.GuestSession;
-import de.elite12.musikbot.server.data.UserPrincipal;
 import de.elite12.musikbot.server.data.entity.LockedSong;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
+import de.elite12.musikbot.server.services.JWTUserService;
 import de.elite12.musikbot.server.services.PushService;
 import de.elite12.musikbot.server.services.SongService;
 import io.swagger.annotations.ApiOperation;
@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -33,21 +34,24 @@ public class Songs {
 	private SongService songservice;
 
     @Autowired
-	private SongRepository songrepository;
+    private SongRepository songrepository;
 
     @Autowired
-	private LockedSongRepository lockedsongrepository;
+    private LockedSongRepository lockedsongrepository;
 
     @Autowired
-	private GuestSession guestinfo;
+    private GuestSession guestinfo;
 
     @Autowired
     private PushService pushService;
-	
-	private static final Logger logger = LoggerFactory.getLogger(Songs.class);
+
+    @Autowired
+    private JWTUserService jwtUserService;
+
+    private static final Logger logger = LoggerFactory.getLogger(Songs.class);
 
 
-    @GetMapping(path="{ids}", produces = {"application/json"})
+    @GetMapping(path = "{ids}", produces = {"application/json"})
     @ApiOperation(value = "Get Songs")
     @ApiResponses({@ApiResponse(code = 404, message = "One of the requested Songs could not been found")})
     public ResponseEntity<de.elite12.musikbot.server.data.entity.Song[]> getSong(@ApiParam(value = "Comma-seperated List of Song Ids to get") @PathVariable String ids) {
@@ -72,7 +76,7 @@ public class Songs {
     @ApiResponses({@ApiResponse(code = 404, message = "One of the requested Songs could not been found")})
     public ResponseEntity<Object> deleteSong(@ApiParam(value = "Comma-seperated List of Song Ids to get") @PathVariable String ids, @ApiParam(value = "If the Songs should be locked in addition to being deleted") @RequestParam(value = "lock",required = false) Boolean lock) {
         String[] a = ids.split("/");
-        lock = lock == null ? false : lock;
+        lock = lock != null && lock;
         try {
             ArrayList<Song> songs = new ArrayList<>();
             for (String b : a) {
@@ -97,7 +101,7 @@ public class Songs {
             }
 
             this.pushService.sendState();
-            logger.info(String.format("Songs %s by %s: %s", lock ? "deleted and locked" : "deleted", ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString(), Arrays.toString(a)));
+            logger.info(String.format("Songs %s by %s: %s", lock ? "deleted and locked" : "deleted", SecurityContextHolder.getContext().getAuthentication().getName(), Arrays.toString(a)));
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (NumberFormatException e) {
         	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -107,10 +111,14 @@ public class Songs {
     @PostMapping(path="", consumes = {"text/plain"}, produces = {"application/json"})
     @ApiOperation(value = "Add a Song")
     public createSongResponse createSong(@ApiParam(value = "The URL of the Song to add") @RequestBody(required = false) String url) {
-    	Object p = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    	User u = p instanceof UserPrincipal ? ((UserPrincipal) p).getUser() : null;
+        User u = null;
+        Object credentials = SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
-    	if(url == null) {
+        if (credentials instanceof Jwt) {
+            u = jwtUserService.loadUserFromJWT((Jwt) credentials);
+        }
+
+        if (url == null) {
             return new createSongResponse(false, false, "Songlink kann nicht leer sein");
         }
 
@@ -164,7 +172,7 @@ public class Songs {
             } while (iterator.hasNext());
 
             this.pushService.sendState();
-            logger.info(String.format("Playlist sorted by %s", ((UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().toString()));
+            logger.info(String.format("Playlist sorted by %s", SecurityContextHolder.getContext().getAuthentication().getName()));
         } catch (NumberFormatException | NoSuchElementException e) {
         	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
