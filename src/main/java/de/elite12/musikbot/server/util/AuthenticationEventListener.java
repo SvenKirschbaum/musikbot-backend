@@ -34,7 +34,7 @@ public class AuthenticationEventListener {
         if (credentials instanceof Jwt) {
             Jwt jwt = (Jwt) credentials;
             if (authenticationCache.get(jwt.getClaim("jti")) == null) {
-                jwtUserService.loadUserFromJWT(jwt);
+                jwtUserService.loadUserFromJWT(jwt, true);
                 authenticationCache.put(jwt.getClaim("jti"), true);
             }
         }
