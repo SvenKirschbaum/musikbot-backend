@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.lang.NonNull;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -88,7 +89,7 @@ public class MusikbotServiceConfig {
 					.frameOptions()
 					.disable()
 					.and()
-					.authorizeRequests().requestMatchers(EndpointRequest.toAnyEndpoint()).hasRole("admin");
+					.authorizeRequests().requestMatchers(EndpointRequest.toAnyEndpoint()).hasRole("actuator");
 		}
 
 		@Bean
@@ -131,9 +132,9 @@ public class MusikbotServiceConfig {
 			registry.addEndpoint("/sock").setAllowedOrigins("*").withSockJS().setSessionCookieNeeded(false).setClientLibraryUrl("https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.min.js");
 			registry.addEndpoint("/client").setAllowedOrigins("*").setHandshakeHandler(new DefaultHandshakeHandler() {
 				@Override
-				protected Principal determineUser(ServerHttpRequest request,
-												  WebSocketHandler wsHandler,
-												  Map<String, Object> attributes) {
+				protected Principal determineUser(@NonNull ServerHttpRequest request,
+												  @NonNull WebSocketHandler wsHandler,
+												  @NonNull Map<String, Object> attributes) {
 					// Generate principal with UUID as name
 					return new Principal() {
 						private final String name = UUID.randomUUID().toString();
@@ -151,9 +152,9 @@ public class MusikbotServiceConfig {
 		public void configureClientInboundChannel(ChannelRegistration registration) {
 			registration.interceptors(new ChannelInterceptor() {
 				@Override
-				public Message<?> preSend(Message<?> message, MessageChannel channel) {
+				public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
 					StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-					if(StompCommand.CONNECT.equals(accessor.getCommand())) {
+					if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
 						final String header = accessor.getFirstNativeHeader("Authorization");
 						//TODO: Handle websocket authentication
 						//User u = null;
