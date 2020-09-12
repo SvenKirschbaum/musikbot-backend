@@ -33,7 +33,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -45,16 +44,13 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
 import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.builders.ResponseMessageBuilder;
 import springfox.documentation.service.*;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger.web.UiConfiguration;
 import springfox.documentation.swagger.web.UiConfigurationBuilder;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.security.Principal;
 import java.util.*;
@@ -188,57 +184,35 @@ public class MusikbotServiceConfig {
 	}
 
 	@Configuration
-	@EnableSwagger2
 	@Import(BeanValidatorPluginsConfiguration.class)
 	public static class Swagger2Config {
 		@Autowired
 		private MusikbotServiceProperties musikbotServiceProperties;
 
-		private final List<ResponseMessage> defaultResponses = List.of(
-				new ResponseMessageBuilder()
-						.code(401)
-						.message("An invalid Authorization Token has been provided in the Authorization Header")
-						.build(),
-				new ResponseMessageBuilder()
-						.code(403)
-						.message("The provided Authorization Token has no Permission to access this resource, or no Token has been provided")
-						.build(),
-				new ResponseMessageBuilder()
-						.code(400)
-						.message("The Request does not fullfill the syntactic requirements for this endpoint")
-						.build()
-		);
-
 		@Bean
 		public Docket api() {
 			return new Docket(DocumentationType.SWAGGER_2)
-						.select()
-							.apis(RequestHandlerSelectors
-								.basePackage("de.elite12.musikbot.server.api")
-							)
-						.build()
-							.apiInfo(apiEndPointsInfo())
-							.protocols(Set.of("https"))
-							.host("musikbot.elite12.de")
-							.produces(Set.of("application/json","application/xml"))
-							.useDefaultResponseMessages(false)
-							.globalResponseMessage(RequestMethod.GET, this.defaultResponses)
-							.globalResponseMessage(RequestMethod.POST, this.defaultResponses)
-							.globalResponseMessage(RequestMethod.PUT, this.defaultResponses)
-							.globalResponseMessage(RequestMethod.DELETE, this.defaultResponses)
-							.securitySchemes(List.of(new ApiKey("Bearer Token","Authorization", "header")))
+					.select()
+					.apis(RequestHandlerSelectors
+							.basePackage("de.elite12.musikbot.server.api")
+					)
+					.build()
+					.apiInfo(apiEndPointsInfo())
+					.protocols(Set.of("https"))
+					.host("musikbot.elite12.de")
+					.produces(Set.of("application/json", "application/xml"))
+					.useDefaultResponseMessages(true)
+					.securitySchemes(Collections.singletonList(
+							new ApiKey("jwt", "jwt", "header")
+					))
 							.securityContexts(List.of(
-								SecurityContext.builder()
-									.securityReferences(List.of(
-											new SecurityReference(
-												"Bearer Token",
-												new AuthorizationScope[]{
-													new AuthorizationScope("global","Beschreibung")
-												}
-											)
-									))
-									.forPaths(PathSelectors.any())
-								.build()
+									SecurityContext.builder()
+											.securityReferences(List.of(new SecurityReference(
+													"global",
+													new AuthorizationScope[]{
+															new AuthorizationScope("global", "global")
+													}
+											))).operationSelector(operationContext -> true).build()
 							));
 		}
 		private ApiInfo apiEndPointsInfo() {
