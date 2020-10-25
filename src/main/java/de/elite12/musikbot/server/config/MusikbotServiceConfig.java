@@ -49,6 +49,8 @@ import springfox.documentation.service.*;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger.web.SecurityConfiguration;
+import springfox.documentation.swagger.web.SecurityConfigurationBuilder;
 import springfox.documentation.swagger.web.UiConfiguration;
 import springfox.documentation.swagger.web.UiConfigurationBuilder;
 
@@ -199,22 +201,25 @@ public class MusikbotServiceConfig {
 					.build()
 					.apiInfo(apiEndPointsInfo())
 					.protocols(Set.of("https"))
-					.host("musikbot.elite12.de")
 					.produces(Set.of("application/json", "application/xml"))
 					.useDefaultResponseMessages(true)
 					.securitySchemes(Collections.singletonList(
-							new ApiKey("jwt", "jwt", "header")
+							new OAuth("Elite12 Identity",
+									Collections.emptyList(),
+									Collections.singletonList(new ImplicitGrant(
+											new LoginEndpoint("https://id.elite12.de/auth/realms/elite12/protocol/openid-connect/auth"),
+											"tokenName"
+									))
+							)
 					))
-							.securityContexts(List.of(
-									SecurityContext.builder()
-											.securityReferences(List.of(new SecurityReference(
-													"global",
-													new AuthorizationScope[]{
-															new AuthorizationScope("global", "global")
-													}
-											))).operationSelector(operationContext -> true).build()
-							));
+					.securityContexts(Collections.singletonList(
+							SecurityContext.builder()
+									.securityReferences(Collections.singletonList(new SecurityReference("Elite12 Identity", new AuthorizationScope[0])))
+									.operationSelector(operationContext -> true)
+									.build()
+					));
 		}
+
 		private ApiInfo apiEndPointsInfo() {
 			return new ApiInfoBuilder().title("Musikbot REST API")
 					.description("REST API to interact with the Musikbot Service")
@@ -222,11 +227,19 @@ public class MusikbotServiceConfig {
 					.version(musikbotServiceProperties.getVersion())
 					.build();
 		}
+
+		@Bean
+		SecurityConfiguration security() {
+			return SecurityConfigurationBuilder.builder()
+					.clientId("musikbot-frontend")
+					.build();
+		}
+
 		@Bean
 		UiConfiguration uiConfig() {
 			return UiConfigurationBuilder.builder()
-				.deepLinking(true)
-				.build();
+					.deepLinking(true)
+					.build();
 		}
 	}
 }
