@@ -8,6 +8,8 @@ import de.elite12.musikbot.server.services.SpotifyService;
 import de.elite12.musikbot.server.services.YouTubeService;
 import de.elite12.musikbot.shared.util.SongIDParser;
 import org.apache.hc.core5.http.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -15,6 +17,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class UnifiedTrack {
+
+	private static final Logger logger = LoggerFactory.getLogger(UnifiedTrack.class);
 
 	private final Song song;
 
@@ -71,7 +75,12 @@ public class UnifiedTrack {
 			if (this.track == null) {
 				throw new IOException("Identified as spotify, but no sid");// This should be impossible to reach
 			}
-			if (!this.track.getIsPlayable()) throw new TrackNotAvailableException("Not playable");
+			if (!this.track.getIsPlayable()) {
+				if (!"explicit".equals(this.track.getRestrictions().getReason()))
+					throw new TrackNotAvailableException("Not playable");
+				else
+					logger.warn("Track triggered explicit exemption");
+			}
 		}
 	}
 
