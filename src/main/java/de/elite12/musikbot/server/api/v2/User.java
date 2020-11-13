@@ -22,7 +22,7 @@ import javax.validation.Validator;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 
-@RequestMapping("/v2/user")
+@RequestMapping("/v2/user/{username}")
 @RestController
 public class User {
 
@@ -40,7 +40,7 @@ public class User {
 
     private static final Logger logger = LoggerFactory.getLogger(User.class);
 
-    @GetMapping("{username}")
+    @GetMapping
     @ApiOperation(value = "Get a User Profile")
     public UserDTO getUserByName(@ApiParam(value = "The Username of the User to get") @PathVariable("username") String username) {
         de.elite12.musikbot.server.data.entity.User target = userRepository.findByName(username);
@@ -159,5 +159,77 @@ public class User {
         );
 
         return r;
+    }
+
+    @GetMapping(path = "/played")
+    @ApiOperation(value = "Get a Users most wished songs")
+    public UserDTO.TopEntry[] getMostPlayedAction(@ApiParam(value = "The Username of the User to get") @PathVariable("username") String username) {
+        de.elite12.musikbot.server.data.entity.User target = userRepository.findByName(username);
+        boolean guest = false;
+
+        if (target == null) {
+            try {
+                //noinspection ResultOfMethodCallIgnored
+                UUID.fromString(username);
+                guest = true;
+            } catch (IllegalArgumentException e) {
+                throw new NotFoundException();
+            }
+        }
+
+        return StreamSupport
+                .stream(
+                        (guest ?
+                                songRepository.findTopForGuest(username, PageRequest.of(0, 100)) :
+                                songRepository.findTopForUser(target, PageRequest.of(0, 100))
+                        )
+                                .spliterator(),
+                        false
+                )
+                .map(
+                        tuple ->
+                                new UserDTO.TopEntry(
+                                        tuple.getTitle(),
+                                        tuple.getLink(),
+                                        tuple.getCount()
+                                )
+                )
+                .toArray(UserDTO.TopEntry[]::new);
+    }
+
+    @GetMapping(path = "/skipped")
+    @ApiOperation(value = "Get a Users most skipped songs")
+    public UserDTO.TopEntry[] getMostSkippedAction(@ApiParam(value = "The Username of the User to get") @PathVariable("username") String username) {
+        de.elite12.musikbot.server.data.entity.User target = userRepository.findByName(username);
+        boolean guest = false;
+
+        if (target == null) {
+            try {
+                //noinspection ResultOfMethodCallIgnored
+                UUID.fromString(username);
+                guest = true;
+            } catch (IllegalArgumentException e) {
+                throw new NotFoundException();
+            }
+        }
+
+        return StreamSupport
+                .stream(
+                        (guest ?
+                                songRepository.findTopSkippedForGuest(username, PageRequest.of(0, 100)) :
+                                songRepository.findTopSkippedForUser(target, PageRequest.of(0, 100))
+                        )
+                                .spliterator(),
+                        false
+                )
+                .map(
+                        tuple ->
+                                new UserDTO.TopEntry(
+                                        tuple.getTitle(),
+                                        tuple.getLink(),
+                                        tuple.getCount()
+                                )
+                )
+                .toArray(UserDTO.TopEntry[]::new);
     }
 }

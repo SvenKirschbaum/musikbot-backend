@@ -103,25 +103,25 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>{
 	@Query(value = "SELECT new de.elite12.musikbot.server.data.projection.TopUser(u.name, COUNT(s)) FROM Song s INNER JOIN User u ON s.userAuthor = u GROUP BY s.userAuthor ORDER BY COUNT(s) DESC")
 	Page<TopUser> findTopUser(Pageable pageable);
 
-	//@Cacheable(cacheNames = "stats", key = "'u-t-'.concat(#u.id)",sync = true)
+	//@Cacheable(cacheNames = "stats", key = "'u-t-'.concat(#u.id).concat(#pageable.pageSize)",sync = true)
 	@Query(value = "SELECT new de.elite12.musikbot.server.data.projection.TopSong(s.title, s.link, COUNT(s)) FROM Song s WHERE s.userAuthor = ?1 GROUP BY s.link ORDER BY COUNT(s) DESC")
 	Page<TopSong> findTopForUser(User u, Pageable pageable);
 
-	@Cacheable(cacheNames = "stats", key = "'g-t-'.concat(#u)", sync = true)
+	@Cacheable(cacheNames = "stats", key = "'g-t-'.concat(#u).concat(#pageable.pageSize)", sync = true)
 	@Query(value = "SELECT new de.elite12.musikbot.server.data.projection.TopSong(s.title, s.link, COUNT(s)) FROM Song s WHERE s.guestAuthor = ?1 GROUP BY s.link ORDER BY COUNT(s) DESC")
 	Page<TopSong> findTopForGuest(String u, Pageable pageable);
 
-	@Cacheable(cacheNames = "stats", key = "'u-ts-'.concat(#u.id)", sync = true)
+	@Cacheable(cacheNames = "stats", key = "'u-ts-'.concat(#u.id).concat(#pageable.pageSize)", sync = true)
 	@Query(value = "SELECT new de.elite12.musikbot.server.data.projection.TopSong(s.title, s.link, COUNT(s)) FROM Song s WHERE s.userAuthor = ?1 AND s.skipped = true GROUP BY s.link ORDER BY COUNT(s) DESC")
 	Page<TopSong> findTopSkippedForUser(User u, Pageable pageable);
 
-	@Cacheable(cacheNames = "stats", key = "'g-ts-'.concat(#u)", sync = true)
+	@Cacheable(cacheNames = "stats", key = "'g-ts-'.concat(#u).concat(#pageable.pageSize)", sync = true)
 	@Query(value = "SELECT new de.elite12.musikbot.server.data.projection.TopSong(s.title, s.link, COUNT(s)) FROM Song s WHERE s.guestAuthor = ?1 AND s.skipped = true GROUP BY s.link ORDER BY COUNT(s) DESC")
 	Page<TopSong> findTopSkippedForGuest(String u, Pageable pageable);
-	
+
 	@Query(value = "SELECT s FROM Song s WHERE s.userAuthor = ?1 ORDER BY s.sort DESC")
 	Page<Song> findRecentByUser(User u, Pageable pageable);
-	
+
 	@Query(value = "SELECT s FROM Song s WHERE s.guestAuthor = ?1 ORDER BY s.sort DESC")
 	Page<Song> findRecentByGuest(String u, Pageable pageable);
 }
