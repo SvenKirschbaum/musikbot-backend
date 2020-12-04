@@ -6,6 +6,8 @@ import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.data.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,6 +19,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class JWTUserService {
+
+    private static final Logger logger = LoggerFactory.getLogger(JWTUserService.class);
 
     private final String resourceId;
     private final UserRepository userRepository;
@@ -82,6 +86,9 @@ public class JWTUserService {
             song.setGuestAuthor(null);
         });
         songRepository.saveAll(songs);
-        if (songs.size() > 0) pushService.sendState();
+        if (songs.size() > 0) {
+            pushService.sendState();
+            logger.info(String.format("Rewrote Songs from Guest-Session %s to %s", guestSession.getId(), user.getName()));
+        }
     }
 }
