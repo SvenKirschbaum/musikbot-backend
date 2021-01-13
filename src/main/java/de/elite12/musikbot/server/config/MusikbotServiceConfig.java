@@ -98,7 +98,7 @@ public class MusikbotServiceConfig {
 		@Bean
 		CorsConfigurationSource corsConfigurationSource() {
 			CorsConfiguration configuration = new CorsConfiguration();
-			configuration.setAllowedOrigins(Collections.singletonList("*"));
+			configuration.setAllowedOriginPatterns(Collections.singletonList("*"));
 			configuration.setAllowedHeaders(Arrays.asList("origin", "content-type", "accept", "authorization"));
 			configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
 			configuration.setAllowCredentials(true);
@@ -127,8 +127,8 @@ public class MusikbotServiceConfig {
 
 		@Override
 		public void registerStompEndpoints(StompEndpointRegistry registry) {
-			registry.addEndpoint("/sock").setAllowedOrigins("*").withSockJS().setSessionCookieNeeded(false).setClientLibraryUrl("https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.min.js");
-			registry.addEndpoint("/client").setAllowedOrigins("*").setHandshakeHandler(new DefaultHandshakeHandler() {
+			registry.addEndpoint("/sock").setAllowedOriginPatterns("*").withSockJS().setSessionCookieNeeded(false).setClientLibraryUrl("https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.min.js");
+			registry.addEndpoint("/client").setAllowedOriginPatterns("*").setHandshakeHandler(new DefaultHandshakeHandler() {
 				@Override
 				protected Principal determineUser(@NonNull ServerHttpRequest request,
 												  @NonNull WebSocketHandler wsHandler,
