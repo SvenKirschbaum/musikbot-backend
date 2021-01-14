@@ -1,26 +1,26 @@
 package de.elite12.musikbot.server.services;
 
-import de.elite12.musikbot.server.config.ServiceProperties;
 import de.elite12.musikbot.server.data.entity.Song;
-import de.elite12.musikbot.shared.clientDTO.*;
+import de.elite12.musikbot.shared.clientDTO.ClientDTO;
+import de.elite12.musikbot.shared.clientDTO.SimpleCommand;
+import de.elite12.musikbot.shared.clientDTO.VolumeCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
-import org.springframework.messaging.Message;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
-import java.security.Principal;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-
 @Service
 @Controller
 public class ClientService {
@@ -29,15 +29,12 @@ public class ClientService {
 	private SongService songservice;
 
 	@Autowired
-	private ServiceProperties config;
-
-	@Autowired
 	private PushService pushService;
 
 	@Autowired
 	private SimpMessagingTemplate template;
 
-	private Set<String> authorizedClients = new CopyOnWriteArraySet<>();
+	private final Set<String> clients = new CopyOnWriteArraySet<>();
 
     private boolean waitforsong = false;
     private boolean ispaused = false;
@@ -97,7 +94,7 @@ public class ClientService {
         if(isNotConnected()) return;
         if (this.state == State.STOPPED) {
             this.state = State.STARTED;
-			onRequestSong();
+			sendSong();
         }
     }
 
@@ -131,13 +128,23 @@ public class ClientService {
         this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.SHUTDOWN));
     }
 
-	@MessageMapping("/client/song")
-	private void onRequestSong() {
+	@MessageMapping("/client")
+	private void onRequestSong(@Payload SimpleCommand command, @Header("simpSessionId") String sessionId) {
+		if(!this.clients.contains(sessionId)) {
+			this.sendCommand(new VolumeCommand(songservice.getVolume()));
+			this.clients.add(sessionId);
+		}
+
+		if(command.getCommand() == SimpleCommand.CommandType.REQUEST_SONG) {
+			sendSong();
+		}
+	}
+
+	private void sendSong() {
 		Song song = songservice.getnextSong();
 		if (song != null) {
 			this.sendSong(song);
 		} else {
-			this.sendReply(new SimpleResponse(SimpleResponse.ResponseType.NO_SONG_AVAILABLE));
 			songservice.setState(SongService.State.WAITING_FOR_SONGS);
 			songservice.setSongtitle(null);
 			songservice.setSonglink(null);
@@ -147,53 +154,25 @@ public class ClientService {
 		}
 	}
 
-	@MessageMapping("/client/auth")
-    private void onAuthRequest(Principal principal, Message<AuthRequest> message) {
-		if(principal == null) return; //Client didn´t connect via correct endpoint
-
-		if(message.getPayload().getKey().equals(config.getClientkey())) {
-			if(this.authorizedClients.isEmpty()) {
-				songservice.setState(SongService.State.CONNECTED);
-				this.pushService.sendState();
-			}
-			this.authorizedClients.add(principal.getName());
-			this.template.convertAndSendToUser(principal.getName(),"/queue/reply", new AuthResponse(true), Map.of("type", AuthResponse.class.getSimpleName()));
-			this.template.convertAndSendToUser(principal.getName(),"/queue/reply", new VolumeCommand(songservice.getVolume()), Map.of("type", VolumeCommand.class.getSimpleName()));
-			return;
-		}
-		this.template.convertAndSendToUser(principal.getName(),"/queue/reply", new AuthResponse(false), Map.of("type", AuthResponse.class.getSimpleName()));
-	}
-
 	@EventListener
 	public void onDisconnectEvent(SessionDisconnectEvent event) {
-		if(event.getUser() != null) {
-			if(this.authorizedClients.contains(event.getUser().getName())) {
-				this.authorizedClients.remove(event.getUser().getName());
-				if(this.isNotConnected()) {
-					songservice.setState(SongService.State.NOT_CONNECTED);
-					songservice.setSonglink(null);
-					songservice.setSongtitle(null);
-					songservice.setProgressInfo(null);
-					this.pushService.sendState();
-				}
-			}
+		this.clients.remove(event.getSessionId());
+
+		if(this.isNotConnected()) {
+			songservice.setState(SongService.State.NOT_CONNECTED);
+			songservice.setSonglink(null);
+			songservice.setSongtitle(null);
+			songservice.setProgressInfo(null);
+			this.pushService.sendState();
 		}
 	}
     
     private boolean isNotConnected() {
-    	return this.authorizedClients.isEmpty();
+    	return this.clients.isEmpty();
     }
 
     private void sendCommand(ClientDTO clientDTO) {
-		for(String client:authorizedClients) {
-			this.template.convertAndSendToUser(client,"/queue/command", clientDTO, Map.of("type", clientDTO.getClass().getSimpleName()));
-		}
-	}
-
-	private void sendReply(ClientDTO clientDTO) {
-		for(String client:authorizedClients) {
-			this.template.convertAndSendToUser(client,"/queue/reply", clientDTO, Map.of("type", clientDTO.getClass().getSimpleName()));
-		}
+		this.template.convertAndSend("/topic/client", clientDTO, Map.of("type", clientDTO.getClass().getSimpleName()));
 	}
 	
 	public enum State {

@@ -10,6 +10,7 @@ import org.springframework.security.authentication.event.AuthenticationSuccessEv
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 @Component
@@ -34,7 +35,9 @@ public class AuthenticationEventListener {
         if (credentials instanceof Jwt) {
             Jwt jwt = (Jwt) credentials;
             if (authenticationCache.get(jwt.getClaim("jti")) == null) {
-                jwtUserService.loadUserFromJWT(jwt, true);
+                if(Arrays.asList(jwt.getClaimAsString("scope").split(" ")).contains("profile")) {
+                    jwtUserService.loadUserFromJWT(jwt, true);
+                }
                 authenticationCache.put(jwt.getClaim("jti"), true);
             }
         }

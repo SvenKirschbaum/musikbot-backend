@@ -30,7 +30,7 @@ public class StatusController {
 
     @GetMapping()
     @ApiOperation(value = "Get the current Status")
-    public StatusUpdate getstatus() {
+    public StatusUpdate getStatus() {
         StatusUpdate st = new StatusUpdate();
 
         st.setStatus(songservice.getState().toString());
