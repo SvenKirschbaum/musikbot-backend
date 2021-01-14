@@ -22,9 +22,9 @@ import java.util.stream.StreamSupport;
 @RestController
 @PreAuthorize("hasRole('admin')")
 @RequestMapping(path = "/v2/lockedsongs")
-public class LockedSongs {
+public class LockedSongsController {
 
-    private final Logger logger = LoggerFactory.getLogger(LockedSongs.class);
+    private final Logger logger = LoggerFactory.getLogger(LockedSongsController.class);
 
     @Autowired
     private LockedSongRepository songs;

@@ -24,7 +24,7 @@ import java.util.Arrays;
 @RestController
 @RequestMapping(path = "/v2/playlist")
 @PreAuthorize("hasRole('admin')")
-public class Playlist {
+public class PlaylistController {
 
     @Autowired
     private PlaylistImporterService playlistImporterService;
@@ -38,7 +38,7 @@ public class Playlist {
     @Autowired
     private JWTUserService jwtUserService;
 
-    private static final Logger logger = LoggerFactory.getLogger(Playlist.class);
+    private static final Logger logger = LoggerFactory.getLogger(PlaylistController.class);
 
     @GetMapping
     @ApiOperation(value = "Load playlist", notes = "Gets the Song of a Youtube Playlist, a Spotify Playlist, a Spotify Artist or a Spotify Album. Requires Admin Permissions.")

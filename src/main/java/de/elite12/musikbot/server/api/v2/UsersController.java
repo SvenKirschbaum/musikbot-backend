@@ -20,12 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/v2/users")
 @RestController
 @PreAuthorize("hasRole('admin')")
-public class Users {
+public class UsersController {
 
     @Autowired
     private UserRepository userRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(Users.class);
+    private static final Logger logger = LoggerFactory.getLogger(UsersController.class);
 
     @GetMapping(value = {"", "{page}"})
     @ApiOperation(value = "Get the list of Users", notes = "Retrieves up to 25 Users. Use the page parameter to get more. Requires Admin Permissions.")

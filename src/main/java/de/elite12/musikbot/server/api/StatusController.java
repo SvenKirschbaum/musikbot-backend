@@ -18,7 +18,7 @@ import java.util.Comparator;
 
 @RestController
 @RequestMapping("/status")
-public class Status {
+public class StatusController {
     @Context
     private HttpServletRequest req;
 

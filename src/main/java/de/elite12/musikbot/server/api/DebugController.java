@@ -19,7 +19,7 @@ import java.util.TimerTask;
 @RestController
 @RequestMapping("/debug")
 @PreAuthorize("hasRole('admin')")
-public class Debug {
+public class DebugController {
 
 	@Autowired
 	private ClientService client;
@@ -27,7 +27,7 @@ public class Debug {
 	@Autowired
 	private ApplicationContext appContext;
 	
-	private static final Logger logger = LoggerFactory.getLogger(Debug.class);
+	private static final Logger logger = LoggerFactory.getLogger(DebugController.class);
 
 	@PostMapping("/client")
 	@ApiOperation(value = "Shutdown the Client Application", notes = "Sends a Shutdown Request to the Client. Requires Admin Permissions.")

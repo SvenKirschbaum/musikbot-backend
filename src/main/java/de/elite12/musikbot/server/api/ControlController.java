@@ -29,7 +29,7 @@ import java.util.Map;
 @RequestMapping("/control")
 @PreAuthorize("hasRole('admin')")
 @RestController
-public class Control {
+public class ControlController {
 
 	@Autowired
 	private ClientService client;
@@ -40,7 +40,7 @@ public class Control {
 	@Autowired
 	private SongRepository songrepository;
 	
-	private static final Logger logger = LoggerFactory.getLogger(Control.class);
+	private static final Logger logger = LoggerFactory.getLogger(ControlController.class);
 
 	@Autowired
 	private PushService pushService;

@@ -17,7 +17,7 @@ import javax.validation.constraints.Min;
 
 @RestController
 @RequestMapping(path = "/v2/archiv")
-public class Archiv {
+public class ArchivController {
     @Autowired
     private SongRepository songs;
 

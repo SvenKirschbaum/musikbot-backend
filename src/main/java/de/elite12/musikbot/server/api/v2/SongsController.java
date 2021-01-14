@@ -28,7 +28,7 @@ import java.util.*;
 
 @RequestMapping("/v2/songs")
 @RestController
-public class Songs {
+public class SongsController {
 
     @Autowired
 	private SongService songservice;
@@ -48,7 +48,7 @@ public class Songs {
     @Autowired
     private JWTUserService jwtUserService;
 
-    private static final Logger logger = LoggerFactory.getLogger(Songs.class);
+    private static final Logger logger = LoggerFactory.getLogger(SongsController.class);
 
 
     @GetMapping(path = "{ids}", produces = {"application/json"})

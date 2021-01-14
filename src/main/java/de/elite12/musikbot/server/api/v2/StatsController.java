@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(path = "/v2/stats")
-public class Stats {
+public class StatsController {
 
     @Autowired
     private EntityManager em;

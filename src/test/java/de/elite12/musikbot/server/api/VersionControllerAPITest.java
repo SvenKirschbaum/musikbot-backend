@@ -11,8 +11,8 @@ import org.springframework.http.MediaType;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(Version.class)
-public class VersionAPITest extends AbstractAPITest {
+@WebMvcTest(VersionController.class)
+public class VersionControllerAPITest extends AbstractAPITest {
 
     private static String mockVersion = "CURRENT-VERSION";
 

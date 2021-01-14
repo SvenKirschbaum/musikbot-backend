@@ -20,7 +20,7 @@ import java.util.List;
 
 @RequestMapping("/v2/search")
 @RestController
-public class Search {
+public class SearchController {
 
     @Autowired
     private SongRepository songrepository;

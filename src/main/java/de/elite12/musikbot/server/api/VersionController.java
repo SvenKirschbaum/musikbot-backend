@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(path = "/version")
-public class Version {
+public class VersionController {
     @Autowired
     private ServiceProperties properties;
 

@@ -24,7 +24,7 @@ import java.util.stream.StreamSupport;
 
 @RequestMapping("/v2/user/{username}")
 @RestController
-public class User {
+public class UserController {
 
     @Autowired
     private UserRepository userRepository;
@@ -38,7 +38,7 @@ public class User {
     @Autowired
     private Validator validator;
 
-    private static final Logger logger = LoggerFactory.getLogger(User.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @GetMapping
     @ApiOperation(value = "Get a User Profile")

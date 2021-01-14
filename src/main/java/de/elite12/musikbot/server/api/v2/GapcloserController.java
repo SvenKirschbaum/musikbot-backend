@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @PreAuthorize("hasRole('admin')")
 @RequestMapping(path = "/v2/gapcloser")
-public class Gapcloser {
+public class GapcloserController {
 
-    private static final Logger logger = LoggerFactory.getLogger(Gapcloser.class);
+    private static final Logger logger = LoggerFactory.getLogger(GapcloserController.class);
 
     @Autowired
     private GapcloserService gapcloserService;
