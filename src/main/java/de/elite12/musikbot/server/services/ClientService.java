@@ -1,6 +1,6 @@
 package de.elite12.musikbot.server.services;
 
-import de.elite12.musikbot.server.config.MusikbotServiceProperties;
+import de.elite12.musikbot.server.config.ServiceProperties;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.shared.clientDTO.*;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class ClientService {
 	private SongService songservice;
 
 	@Autowired
-	private MusikbotServiceProperties config;
+	private ServiceProperties config;
 
 	@Autowired
 	private PushService pushService;

@@ -1,6 +1,6 @@
 package de.elite12.musikbot.server.services;
 
-import de.elite12.musikbot.server.config.MusikbotServiceProperties;
+import de.elite12.musikbot.server.config.ServiceProperties;
 import de.elite12.musikbot.server.data.GuestSession;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.entity.User;
@@ -30,7 +30,7 @@ public class JWTUserService {
     @Autowired
     private GuestSession guestSession;
 
-    public JWTUserService(MusikbotServiceProperties properties, UserRepository userRepository, SongRepository songRepository, PushService pushService) {
+    public JWTUserService(ServiceProperties properties, UserRepository userRepository, SongRepository songRepository, PushService pushService) {
         this.resourceId = properties.getOauthResourceName();
         this.userRepository = userRepository;
         this.pushService = pushService;

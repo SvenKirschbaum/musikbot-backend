@@ -1,6 +1,6 @@
 package de.elite12.musikbot.server.api;
 
-import de.elite12.musikbot.server.config.MusikbotServiceProperties;
+import de.elite12.musikbot.server.config.ServiceProperties;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -17,7 +17,7 @@ public class VersionAPITest extends AbstractAPITest {
     private static String mockVersion = "CURRENT-VERSION";
 
     @MockBean
-    protected MusikbotServiceProperties properties = null;
+    protected ServiceProperties properties = null;
 
     @Before
     public void setUp() {

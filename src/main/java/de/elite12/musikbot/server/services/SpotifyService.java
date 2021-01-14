@@ -13,7 +13,7 @@ import com.wrapper.spotify.requests.data.artists.GetArtistsTopTracksRequest;
 import com.wrapper.spotify.requests.data.playlists.GetPlaylistRequest;
 import com.wrapper.spotify.requests.data.playlists.GetPlaylistsItemsRequest;
 import com.wrapper.spotify.requests.data.tracks.GetTrackRequest;
-import de.elite12.musikbot.server.config.MusikbotServiceProperties;
+import de.elite12.musikbot.server.config.ServiceProperties;
 import org.apache.hc.core5.http.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +29,7 @@ import java.util.TimerTask;
 public class SpotifyService {
 
     @Autowired
-    private MusikbotServiceProperties config;
+    private ServiceProperties config;
 
     private SpotifyApi api;
 

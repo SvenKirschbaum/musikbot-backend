@@ -16,7 +16,7 @@ import java.util.Set;
 @ConfigurationProperties(prefix="musikbot")
 @Getter
 @Setter
-public class MusikbotServiceProperties {
+public class ServiceProperties {
 	
 	
 	/**
