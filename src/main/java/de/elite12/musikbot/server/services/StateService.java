@@ -45,7 +45,7 @@ public class StateService {
         return this.stateData;
     }
 
-    public void updateState(StateData newState) {
+    public synchronized void updateState(StateData newState) {
         if(newState.getVolume() != this.stateData.getVolume()) {
             Setting volumesetting = new Setting("volume", Short.toString(newState.getVolume()));
             settings.save(volumesetting);
@@ -150,7 +150,7 @@ public class StateService {
         public static class ProgressInfo {
             private Instant start = Instant.now();
             private final Duration duration;
-            private Duration prepausedDuration;
+            private Duration prepausedDuration = Duration.ZERO;
             boolean paused = false;
 
             public void pause() {
