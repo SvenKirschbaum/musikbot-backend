@@ -5,7 +5,6 @@ import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.services.ClientService;
 import de.elite12.musikbot.server.services.PushService;
-import de.elite12.musikbot.server.services.SongService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
@@ -35,9 +34,6 @@ public class ControlController {
 	private ClientService client;
 
 	@Autowired
-	private SongService songservice;
-
-	@Autowired
 	private SongRepository songrepository;
 	
 	private static final Logger logger = LoggerFactory.getLogger(ControlController.class);
@@ -55,9 +51,6 @@ public class ControlController {
 	@RequestMapping(path="/stop", method = RequestMethod.POST)
 	@ApiOperation(value = "Start Playback", notes = "Instructs the connected Client to start Playback. Requires Admin Permissions.")
 	public void stop() {
-        if (songservice.getState() != SongService.State.NOT_CONNECTED && songservice.getState() != SongService.State.WAITING_FOR_SONGS) {
-            songservice.markskipped();
-        }
         client.stop();
         logger.info(String.format("Botstop by %s", SecurityContextHolder.getContext().getAuthentication().getName()));
     }
@@ -72,13 +65,10 @@ public class ControlController {
 	@RequestMapping(path="/skip", method = RequestMethod.POST)
 	@ApiOperation(value = "Skip Song", notes = "Instructs the connected Client to stop the current Song and continue with the next Song in queue. Requires Admin Permissions.")
 	public void skip() {
-        if (songservice.getState() != SongService.State.NOT_CONNECTED && songservice.getState() != SongService.State.WAITING_FOR_SONGS) {
-            songservice.markskipped();
-        }
-        client.stop();
-        client.start();
-        logger.info(String.format("Song skipped by %s: [%s, %s]", SecurityContextHolder.getContext().getAuthentication().getName(), songservice.getSongtitle(), songservice.getSonglink()));
-    }
+		client.stop();
+		client.start();
+		logger.info(String.format("Song skipped by %s", SecurityContextHolder.getContext().getAuthentication().getName()));
+	}
 
 	@RequestMapping(path="/volume", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Set Volume", notes = "Sets the playback volume. Requires Admin Permissions.")

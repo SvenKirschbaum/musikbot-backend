@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -26,74 +25,67 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class ClientService {
 
 	@Autowired
-	private SongService songservice;
+	private SongService songService;
 
 	@Autowired
-	private PushService pushService;
+	private StateService stateService;
 
 	@Autowired
 	private SimpMessagingTemplate template;
 
 	private final Set<String> clients = new CopyOnWriteArraySet<>();
-
-    private boolean waitforsong = false;
-    private boolean ispaused = false;
-    private State state = State.STARTED;
 	
 	private static final Logger logger = LoggerFactory.getLogger(ClientService.class);
 
 	public void notifynewSong() {
         logger.debug("Notify Song");
         if(isNotConnected()) return;
-        if (this.waitforsong) {
-            this.sendSong(songservice.getnextSong());
-            this.waitforsong = false;
+        if (this.stateService.getState().getState() == StateService.StateData.State.WAITING_FOR_SONGS) {
+            this.sendSong(songService.getnextSong());
         }
     }
 	
 	public void pause() {
         logger.debug("Pausing");
         if(isNotConnected()) return;
-        if (this.state == State.STARTED) {
-            this.ispaused = !this.ispaused;
 
-			if (this.ispaused) {
-				songservice.setState(SongService.State.PAUSED);
-				songservice.getProgressInfo().pause();
-			} else {
-				songservice.setState(SongService.State.PLAYING);
-				songservice.getProgressInfo().unpause();
-			}
-
-			this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.PAUSE));
-
-			this.pushService.sendState();
+        if (this.stateService.getState().getState() == StateService.StateData.State.PLAYING) {
+        	this.stateService.updateState(
+				this.stateService.getState()
+					.withState(StateService.StateData.State.PAUSED)
+			);
         }
-    }
+        else if (this.stateService.getState().getState() == StateService.StateData.State.PAUSED) {
+			this.stateService.updateState(
+					this.stateService.getState()
+							.withState(StateService.StateData.State.PLAYING)
+			);
+		}
+
+		this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.PAUSE));
+	}
 
     public void stop() {
         logger.debug("Stopping");
         if(isNotConnected()) return;
-        if (this.state == State.STARTED) {
-            this.state = State.STOPPED;
-            this.ispaused = false;
 
-			songservice.setState(SongService.State.STOPPED);
-			songservice.setSongtitle(null);
-			songservice.setSonglink(null);
-			songservice.setProgressInfo(null);
+		StateService.StateData.State currentState = stateService.getState().getState();
+        if (currentState == StateService.StateData.State.PLAYING || currentState == StateService.StateData.State.PAUSED) {
+
+        	stateService.updateState(
+				stateService.getState()
+					.withState(StateService.StateData.State.STOPPED)
+			);
 
 			this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.STOP));
-
-			this.pushService.sendState();
         }
     }
 
     public void start() {
         logger.debug("Starting...");
         if(isNotConnected()) return;
-        if (this.state == State.STOPPED) {
-            this.state = State.STARTED;
+
+        if (this.stateService.getState().getState() == StateService.StateData.State.STOPPED) {
 			sendSong();
         }
     }
@@ -101,25 +93,29 @@ public class ClientService {
     public void sendVolume(short volume) {
 		logger.debug("Sending Volume...");
 		if(!isNotConnected()) {
+
+			stateService.updateState(
+				stateService.getState()
+					.withVolume(volume)
+			);
+
 			this.sendCommand(new VolumeCommand(volume));
-			this.songservice.setVolume(volume);
 		}
-		this.pushService.sendState();
 	}
     
     private void sendSong(Song song) {
         logger.debug("Sending Song...");
         if(isNotConnected()) return;
 
-		this.waitforsong = false;
-		songservice.setState(SongService.State.PLAYING);
-		songservice.setSongtitle(song.getTitle());
-		songservice.setSonglink(song.getLink());
-		songservice.setProgressInfo(new SongService.ProgressInfo(Instant.now(), Duration.ofSeconds(song.getDuration()),Duration.ZERO, false));
+		stateService.updateState(
+			stateService.getState()
+				.withState(StateService.StateData.State.PLAYING)
+				.withSongTitle(song.getTitle())
+				.withSongLink(song.getLink())
+				.withProgressInfo(new StateService.StateData.ProgressInfo(Duration.ofSeconds(song.getDuration())))
+		);
 
 		this.sendCommand(new de.elite12.musikbot.shared.clientDTO.Song(song.getLink(),song.getTitle(), song.getLink().contains("spotify") ? "spotify" : "youtube"));
-
-		this.pushService.sendState();
     }
 
     public void sendShutdown() {
@@ -131,7 +127,7 @@ public class ClientService {
 	@MessageMapping("/client")
 	private void onRequestSong(@Payload SimpleCommand command, @Header("simpSessionId") String sessionId) {
 		if(!this.clients.contains(sessionId)) {
-			this.sendCommand(new VolumeCommand(songservice.getVolume()));
+			this.sendCommand(new VolumeCommand(this.stateService.getState().getVolume()));
 			this.clients.add(sessionId);
 		}
 
@@ -141,16 +137,14 @@ public class ClientService {
 	}
 
 	private void sendSong() {
-		Song song = songservice.getnextSong();
+		Song song = songService.getnextSong();
 		if (song != null) {
 			this.sendSong(song);
 		} else {
-			songservice.setState(SongService.State.WAITING_FOR_SONGS);
-			songservice.setSongtitle(null);
-			songservice.setSonglink(null);
-			songservice.setProgressInfo(null);
-			this.waitforsong = true;
-			this.pushService.sendState();
+			stateService.updateState(
+				stateService.getState()
+					.withState(StateService.StateData.State.WAITING_FOR_SONGS)
+			);
 		}
 	}
 
@@ -159,11 +153,10 @@ public class ClientService {
 		this.clients.remove(event.getSessionId());
 
 		if(this.isNotConnected()) {
-			songservice.setState(SongService.State.NOT_CONNECTED);
-			songservice.setSonglink(null);
-			songservice.setSongtitle(null);
-			songservice.setProgressInfo(null);
-			this.pushService.sendState();
+			stateService.updateState(
+				stateService.getState()
+					.withState(StateService.StateData.State.NOT_CONNECTED)
+			);
 		}
 	}
     
@@ -173,10 +166,5 @@ public class ClientService {
 
     private void sendCommand(ClientDTO clientDTO) {
 		this.template.convertAndSend("/topic/client", clientDTO, Map.of("type", clientDTO.getClass().getSimpleName()));
-	}
-	
-	public enum State {
-		STARTED,
-		STOPPED
 	}
 }

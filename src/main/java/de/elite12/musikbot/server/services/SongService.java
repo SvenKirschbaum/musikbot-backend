@@ -6,47 +6,21 @@ import de.elite12.musikbot.server.data.GuestSession;
 import de.elite12.musikbot.server.data.UnifiedTrack;
 import de.elite12.musikbot.server.data.UnifiedTrack.InvalidURLException;
 import de.elite12.musikbot.server.data.UnifiedTrack.TrackNotAvailableException;
-import de.elite12.musikbot.server.data.entity.Setting;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
-import de.elite12.musikbot.server.data.repository.SettingRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.services.GapcloserService.Mode;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Date;
-import java.util.Optional;
 
 @Service
 public class SongService {
-	
-	@Getter
-	@Setter
-    private String songtitle = null;
-	@Getter
-	@Setter
-    private State state = State.NOT_CONNECTED;
-	@Getter
-	@Setter
-    private String songlink;
-    @Getter
-    private short volume = 38;
-
-    @Getter
-    @Setter
-    private ProgressInfo progressInfo = null;
     
     private static final Logger logger = LoggerFactory.getLogger(SongService.class);
 
@@ -54,7 +28,7 @@ public class SongService {
     private SongRepository songrepository;
 
     @Autowired
-    private LockedSongRepository lockedrepository;
+    private LockedSongRepository lockedSongRepository;
 
     @Autowired
     private ServiceProperties config;
@@ -73,21 +47,6 @@ public class SongService {
 
     @Autowired
     private PushService pushService;
-
-    @Autowired
-    private SettingRepository settings;
-
-    @PostConstruct
-    public void postConstruct() {
-        Optional<Setting> volume = settings.findById("volume");
-
-        if(volume.isPresent()) {
-            this.volume = Short.parseShort(volume.get().getValue());
-        }
-        else {
-            this.setVolume((short) 38);
-        }
-    }
 
     public Song getnextSong() {
     	Song next = songrepository.getNextSong();
@@ -122,19 +81,6 @@ public class SongService {
 		}
         
         return next;
-    }    
-
-    public void markskipped() {
-        logger.debug("Marking last Song as skipped");
-
-        Song last = songrepository.getLastSong();
-        
-        if(last == null) {
-        	return;
-        }
-        
-        last.setSkipped(true);
-        songrepository.save(last);
     }
 
     public createSongResponse addSong(String url, User user, GuestSession gi) {
@@ -143,7 +89,7 @@ public class SongService {
             UnifiedTrack ut = UnifiedTrack.fromURL(url, youtube, spotifyService);
             String notice = null;
 
-            if (lockedrepository.countByUrl(ut.getLink()) > 0) {
+            if (lockedSongRepository.countByUrl(ut.getLink()) > 0) {
                 if (user != null && user.isAdmin()) {
                     logger.debug("Song is locked, but User is Admin, creating Notice");
                     notice = "Hinweis: Dieser Song wurde gesperrt!";
@@ -221,65 +167,6 @@ public class SongService {
         } catch (InvalidURLException e) {
             logger.debug("Invalid URL",e);
             return new createSongResponse(false,false, "URL ungültig");
-        }
-    }
-
-    public void setVolume(short volume) {
-        this.volume = volume;
-
-        Setting volumesetting = new Setting("volume", Short.toString(volume));
-
-        settings.save(volumesetting);
-    }
-
-    public enum State {
-        NOT_CONNECTED,
-        CONNECTED,
-        PAUSED,
-        STOPPED,
-        PLAYING,
-        WAITING_FOR_SONGS;
-
-
-        @Override
-        public String toString() {
-            switch (this) {
-                case NOT_CONNECTED:
-                    return "Keine Verbindung zum BOT";
-                case CONNECTED:
-                    return "Verbunden";
-                case PAUSED:
-                    return "Pausiert";
-                case STOPPED:
-                    return "Gestoppt";
-                case PLAYING:
-                    return "Playing";
-                case WAITING_FOR_SONGS:
-                    return "Warte auf neue Lieder";
-                default:
-                    return "";
-            }
-        }
-    }
-
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Getter
-    @Setter
-    public static class ProgressInfo {
-        Instant start;
-        Duration duration;
-        Duration prepausedDuration;
-        boolean paused;
-
-        public void pause() {
-            prepausedDuration = prepausedDuration.plus(Duration.between(start, Instant.now()));
-            this.paused = true;
-        }
-
-        public void unpause() {
-            this.start = Instant.now();
-            this.paused = false;
         }
     }
 }
