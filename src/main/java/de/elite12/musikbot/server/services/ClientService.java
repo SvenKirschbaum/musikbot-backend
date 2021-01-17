@@ -89,14 +89,12 @@ public class ClientService {
 
     public void sendVolume(short volume) {
 		logger.debug("Sending Volume...");
-		if(!isNotConnected()) {
 
-			stateService.updateState(
-					stateData -> stateData.withVolume(volume)
-			);
+		stateService.updateState(
+				stateData -> stateData.withVolume(volume)
+		);
 
-			this.sendCommand(new VolumeCommand(volume));
-		}
+		if (!isNotConnected()) this.sendCommand(new VolumeCommand(volume));
 	}
     
     private void sendSong(Song song) {
