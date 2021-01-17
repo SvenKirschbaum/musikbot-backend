@@ -7,8 +7,8 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,15 +27,11 @@ public class SearchController {
 
     @GetMapping
     @ApiOperation(value = "Search the Song Database")
-    public List<SearchResult> autocomplete(@ApiParam(name = "term", value = "The Searchterm") @RequestParam(required = false) String term) {
-        if (term == null) return Collections.emptyList();
-        Page<SearchResult> res = songrepository.findSearchResult(term, PageRequest.of(0,10));
-        return res.getContent();
-    }
-
     @MessageMapping("/search")
     @SendToUser("/queue/search")
-    public List<SearchResult> autocomplete(Message<String> message) {
-        return this.autocomplete(message.getPayload());
+    public List<SearchResult> autocomplete(@Payload @ApiParam(name = "term", value = "The Searchterm") @RequestParam(required = false) String term) {
+        if (term == null) return Collections.emptyList();
+        Page<SearchResult> res = songrepository.findSearchResult(term, PageRequest.of(0, 10));
+        return res.getContent();
     }
 }
