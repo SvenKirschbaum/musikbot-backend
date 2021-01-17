@@ -51,23 +51,26 @@ public class StateService {
             settings.save(volumesetting);
         }
 
-        if(newState.getState() == StateData.State.PAUSED && this.stateData.getState() == StateData.State.PLAYING) {
+        if (newState.getState() == StateData.State.PAUSED && this.stateData.getState() == StateData.State.PLAYING) {
             this.getState().getProgressInfo().pause();
         }
 
-        if(newState.getState() == StateData.State.PLAYING && this.stateData.getState() == StateData.State.PAUSED) {
+        if (newState.getState() == StateData.State.PLAYING && this.stateData.getState() == StateData.State.PAUSED) {
             this.getState().getProgressInfo().unpause();
         }
 
-        if(newState.getState() == StateData.State.STOPPED || newState.getState() == StateData.State.NOT_CONNECTED) {
-            Song last = songRepository.getLastSong();
-
-            if(last == null) return;
-
-            last.setSkipped(true);
-            songRepository.save(last);
-
-            newState = newState.withSongTitle(null).withSongLink(null).withProgressInfo(null);
+        if (this.getState().getState() == StateData.State.PLAYING) {
+            if (newState.getState() == StateData.State.STOPPED || newState.getState() == StateData.State.NOT_CONNECTED) {
+                Song last = songRepository.getLastSong();
+                if (last != null) {
+                    last.setSkipped(true);
+                    songRepository.save(last);
+                }
+                newState = newState.withSongTitle(null).withSongLink(null).withProgressInfo(null);
+            }
+            if (newState.getState() == StateData.State.WAITING_FOR_SONGS) {
+                newState = newState.withSongTitle(null).withSongLink(null).withProgressInfo(null);
+            }
         }
 
         this.stateData = newState;
