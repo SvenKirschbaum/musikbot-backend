@@ -25,15 +25,13 @@ public class JWTUserService {
     private final String resourceId;
     private final UserRepository userRepository;
     private final SongRepository songRepository;
-    private final PushService pushService;
 
     @Autowired
     private GuestSession guestSession;
 
-    public JWTUserService(ServiceProperties properties, UserRepository userRepository, SongRepository songRepository, PushService pushService) {
+    public JWTUserService(ServiceProperties properties, UserRepository userRepository, SongRepository songRepository) {
         this.resourceId = properties.getOauthResourceName();
         this.userRepository = userRepository;
-        this.pushService = pushService;
         this.songRepository = songRepository;
     }
 
@@ -87,7 +85,6 @@ public class JWTUserService {
         });
         songRepository.saveAll(songs);
         if (songs.size() > 0) {
-            pushService.sendState();
             logger.info(String.format("Rewrote Songs from Guest-Session %s to %s", guestSession.getId(), user.getName()));
         }
     }

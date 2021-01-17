@@ -4,7 +4,6 @@ import de.elite12.musikbot.server.api.dto.VolumeDTO;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.services.ClientService;
-import de.elite12.musikbot.server.services.PushService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
@@ -37,9 +36,6 @@ public class ControlController {
 	private SongRepository songrepository;
 	
 	private static final Logger logger = LoggerFactory.getLogger(ControlController.class);
-
-	@Autowired
-	private PushService pushService;
 
 	@RequestMapping(path="/start", method = RequestMethod.POST)
 	@ApiOperation(value = "Start Playback", notes = "Instructs the connected Client to start Playback. Requires Admin Permissions.")
@@ -107,8 +103,6 @@ public class ControlController {
 			t.setSort(b.getSecond());
 			songrepository.save(t);
 		}
-
-        this.pushService.sendState();
         logger.info(String.format("Playlist shuffled by %s", SecurityContextHolder.getContext().getAuthentication().getName()));
 	}
 }

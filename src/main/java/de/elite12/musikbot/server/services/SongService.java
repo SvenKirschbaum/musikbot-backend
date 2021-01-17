@@ -45,9 +45,6 @@ public class SongService {
     @Autowired
     private ClientService client;
 
-    @Autowired
-    private PushService pushService;
-
     public Song getnextSong() {
     	Song next = songrepository.getNextSong();
     	if(next == null) {
@@ -150,7 +147,6 @@ public class SongService {
 
 
             client.notifynewSong();
-            pushService.sendState();
 
             if(notice != null) {
                 return new createSongResponse(true,true,notice);

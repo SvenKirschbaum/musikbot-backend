@@ -8,7 +8,6 @@ import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.services.JWTUserService;
-import de.elite12.musikbot.server.services.PushService;
 import de.elite12.musikbot.server.services.SongService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -41,9 +40,6 @@ public class SongsController {
 
     @Autowired
     private GuestSession guestinfo;
-
-    @Autowired
-    private PushService pushService;
 
     @Autowired
     private JWTUserService jwtUserService;
@@ -100,7 +96,6 @@ public class SongsController {
                 songrepository.delete(song);
             }
 
-            this.pushService.sendState();
             logger.info(String.format("Songs %s by %s: %s", lock ? "deleted and locked" : "deleted", SecurityContextHolder.getContext().getAuthentication().getName(), Arrays.toString(a)));
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (NumberFormatException e) {
@@ -171,7 +166,6 @@ public class SongsController {
                 }
             } while (iterator.hasNext());
 
-            this.pushService.sendState();
             logger.info(String.format("Playlist sorted by %s", SecurityContextHolder.getContext().getAuthentication().getName()));
         } catch (NumberFormatException | NoSuchElementException e) {
         	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

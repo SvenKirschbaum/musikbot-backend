@@ -1,20 +1,20 @@
 package de.elite12.musikbot.server.services;
 
-import de.elite12.musikbot.server.api.dto.StatusUpdate;
 import de.elite12.musikbot.server.data.entity.Setting;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.repository.SettingRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
+import de.elite12.musikbot.server.events.StateUpdateEvent;
 import lombok.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Service
 public class StateService {
@@ -23,10 +23,10 @@ public class StateService {
     private SettingRepository settings;
 
     @Autowired
-    private PushService pushService;
+    private SongRepository songRepository;
 
     @Autowired
-    private SongRepository songRepository;
+    private ApplicationEventPublisher applicationEventPublisher;
 
     private StateData stateData;
 
@@ -45,8 +45,17 @@ public class StateService {
         return this.stateData;
     }
 
-    public synchronized void updateState(StateData newState) {
-        if(newState.getVolume() != this.stateData.getVolume()) {
+    /**
+     * This method is used to modify the global Application State.
+     * The update occurs synchronized, so two concurrent updates are processed in order.
+     * You should use the current state provided to the update Function as base of the modification to prevent race conditions.
+     *
+     * @param stateUpdateFunction Function which gets the current State as parameter and returns the new modified state
+     */
+    public synchronized void updateState(Function<StateData, StateData> stateUpdateFunction) {
+        StateData newState = stateUpdateFunction.apply(this.getState());
+
+        if (newState.getVolume() != this.stateData.getVolume()) {
             Setting volumesetting = new Setting("volume", Short.toString(newState.getVolume()));
             settings.save(volumesetting);
         }
@@ -59,6 +68,10 @@ public class StateService {
             this.getState().getProgressInfo().unpause();
         }
 
+        if (newState.getState() != StateData.State.PLAYING && newState.getState() != StateData.State.PAUSED) {
+            newState = newState.withSongTitle(null).withSongLink(null).withProgressInfo(null);
+        }
+
         if (this.getState().getState() == StateData.State.PLAYING) {
             if (newState.getState() == StateData.State.STOPPED || newState.getState() == StateData.State.NOT_CONNECTED) {
                 Song last = songRepository.getLastSong();
@@ -66,59 +79,19 @@ public class StateService {
                     last.setSkipped(true);
                     songRepository.save(last);
                 }
-                newState = newState.withSongTitle(null).withSongLink(null).withProgressInfo(null);
-            }
-            if (newState.getState() == StateData.State.WAITING_FOR_SONGS) {
-                newState = newState.withSongTitle(null).withSongLink(null).withProgressInfo(null);
             }
         }
 
+        StateData oldState = this.stateData;
         this.stateData = newState;
-        this.pushService.sendState();
-    }
-
-    public StatusUpdate getStateUpdate() {
-        StatusUpdate st = new StatusUpdate();
-
-        st.setStatus(this.getState().getState().toString());
-        st.setSongtitle(this.getState().getSongTitle());
-        st.setSonglink(this.getState().getSongLink());
-        st.setVolume(this.getState().getVolume());
-
-        int duration = 0;
-        ArrayList<Song> list = new ArrayList<>(30);
-
-        Iterable<Song> songs = this.songRepository.findByPlayedOrderBySort(false);
-
-        for(Song s: songs) {
-            duration += s.getDuration();
-            list.add(s);
-        }
-
-        //Resort songs because if a song has been added just now the sort field hasnt been persisted to the database yet, and is therefore not respected by the repository query
-        list.sort(Comparator.comparingLong(Song::getSort));
-
-        st.setPlaylist(list);
-        st.setPlaylistdauer(duration / 60);
-
-        StateData.ProgressInfo progressInfo = this.getState().getProgressInfo();
-
-        if(progressInfo != null) {
-            StatusUpdate.SongProgress sp = new StatusUpdate.SongProgress();
-            sp.setStart(progressInfo.getStart());
-            sp.setCurrent(Instant.now());
-            sp.setDuration(progressInfo.getDuration());
-            sp.setPaused(progressInfo.isPaused());
-            sp.setPrepausedDuration(progressInfo.getPrepausedDuration());
-            st.setProgress(sp);
-        }
-
-        return st;
+        if (!oldState.equals(newState))
+            this.applicationEventPublisher.publishEvent(new StateUpdateEvent(this, oldState, newState));
     }
 
     @Getter
     @With
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @EqualsAndHashCode
     public static class StateData {
         private final String songTitle;
         private final State state;
@@ -150,6 +123,7 @@ public class StateService {
 
         @RequiredArgsConstructor
         @Getter
+        @EqualsAndHashCode
         public static class ProgressInfo {
             private Instant start = Instant.now();
             private final Duration duration;

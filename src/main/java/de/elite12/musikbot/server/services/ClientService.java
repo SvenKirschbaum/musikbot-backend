@@ -51,14 +51,12 @@ public class ClientService {
 
         if (this.stateService.getState().getState() == StateService.StateData.State.PLAYING) {
         	this.stateService.updateState(
-				this.stateService.getState()
-					.withState(StateService.StateData.State.PAUSED)
+					stateData -> stateData.withState(StateService.StateData.State.PAUSED)
 			);
         }
         else if (this.stateService.getState().getState() == StateService.StateData.State.PAUSED) {
 			this.stateService.updateState(
-					this.stateService.getState()
-							.withState(StateService.StateData.State.PLAYING)
+					stateData -> stateData.withState(StateService.StateData.State.PLAYING)
 			);
 		}
 
@@ -73,8 +71,7 @@ public class ClientService {
         if (currentState == StateService.StateData.State.PLAYING || currentState == StateService.StateData.State.PAUSED) {
 
         	stateService.updateState(
-				stateService.getState()
-					.withState(StateService.StateData.State.STOPPED)
+					stateData -> stateData.withState(StateService.StateData.State.STOPPED)
 			);
 
 			this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.STOP));
@@ -95,8 +92,7 @@ public class ClientService {
 		if(!isNotConnected()) {
 
 			stateService.updateState(
-				stateService.getState()
-					.withVolume(volume)
+					stateData -> stateData.withVolume(volume)
 			);
 
 			this.sendCommand(new VolumeCommand(volume));
@@ -108,11 +104,11 @@ public class ClientService {
         if(isNotConnected()) return;
 
 		stateService.updateState(
-			stateService.getState()
-				.withState(StateService.StateData.State.PLAYING)
-				.withSongTitle(song.getTitle())
-				.withSongLink(song.getLink())
-				.withProgressInfo(new StateService.StateData.ProgressInfo(Duration.ofSeconds(song.getDuration())))
+				stateData -> stateData
+						.withState(StateService.StateData.State.PLAYING)
+						.withSongTitle(song.getTitle())
+						.withSongLink(song.getLink())
+						.withProgressInfo(new StateService.StateData.ProgressInfo(Duration.ofSeconds(song.getDuration())))
 		);
 
 		this.sendCommand(new de.elite12.musikbot.shared.clientDTO.Song(song.getLink(),song.getTitle(), song.getLink().contains("spotify") ? "spotify" : "youtube"));
@@ -142,21 +138,21 @@ public class ClientService {
 			this.sendSong(song);
 		} else {
 			stateService.updateState(
-				stateService.getState()
-					.withState(StateService.StateData.State.WAITING_FOR_SONGS)
+					stateData -> stateData.withState(StateService.StateData.State.WAITING_FOR_SONGS)
 			);
 		}
 	}
 
 	@EventListener
 	public void onDisconnectEvent(SessionDisconnectEvent event) {
-		this.clients.remove(event.getSessionId());
+		if (this.clients.contains(event.getSessionId())) {
+			this.clients.remove(event.getSessionId());
 
-		if(this.isNotConnected()) {
-			stateService.updateState(
-				stateService.getState()
-					.withState(StateService.StateData.State.NOT_CONNECTED)
-			);
+			if (this.isNotConnected()) {
+				stateService.updateState(
+						stateData -> stateData.withState(StateService.StateData.State.NOT_CONNECTED)
+				);
+			}
 		}
 	}
     
