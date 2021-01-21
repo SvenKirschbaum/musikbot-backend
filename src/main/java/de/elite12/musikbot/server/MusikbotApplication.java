@@ -10,7 +10,11 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 public class MusikbotApplication extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MusikbotApplication.class, args);
+		try {
+			SpringApplication.run(MusikbotApplication.class, args);
+		} catch (Exception e) {
+			System.exit(-1);
+		}
 	}
 	
 	@Override
