@@ -1,20 +1,20 @@
 package de.elite12.musikbot.server.services;
 
 import de.elite12.musikbot.server.config.ServiceProperties;
-import de.elite12.musikbot.server.data.GuestSession;
-import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.data.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,9 +25,6 @@ public class JWTUserService {
     private final String resourceId;
     private final UserRepository userRepository;
     private final SongRepository songRepository;
-
-    @Autowired
-    private GuestSession guestSession;
 
     public JWTUserService(ServiceProperties properties, UserRepository userRepository, SongRepository songRepository) {
         this.resourceId = properties.getOauthResourceName();
@@ -55,10 +52,6 @@ public class JWTUserService {
     }
 
     public User loadUserFromJWT(Jwt jwt) {
-        return this.loadUserFromJWT(jwt, false);
-    }
-
-    public User loadUserFromJWT(Jwt jwt, boolean firstTime) {
         Optional<User> optionalUser = userRepository.findBySubject(jwt.getSubject());
         User user = optionalUser.orElseGet(User::new);
 
@@ -72,20 +65,6 @@ public class JWTUserService {
 
         userRepository.save(user);
 
-        if (firstTime) this.registerGuestSongs(user);
-
         return user;
-    }
-
-    private void registerGuestSongs(User user) {
-        List<Song> songs = songRepository.findByGuestAuthor(guestSession.getId());
-        songs.forEach(song -> {
-            song.setUserAuthor(user);
-            song.setGuestAuthor(null);
-        });
-        songRepository.saveAll(songs);
-        if (songs.size() > 0) {
-            logger.info(String.format("Rewrote Songs from Guest-Session %s to %s", guestSession.getId(), user.getName()));
-        }
     }
 }

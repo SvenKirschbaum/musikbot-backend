@@ -1,12 +1,14 @@
 package de.elite12.musikbot.server.api.v2;
 
 import de.elite12.musikbot.server.api.dto.createSongResponse;
-import de.elite12.musikbot.server.data.GuestSession;
+import de.elite12.musikbot.server.data.entity.Guest;
 import de.elite12.musikbot.server.data.entity.LockedSong;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.entity.User;
+import de.elite12.musikbot.server.data.repository.GuestRepository;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
+import de.elite12.musikbot.server.exception.UnauthorizedException;
 import de.elite12.musikbot.server.services.JWTUserService;
 import de.elite12.musikbot.server.services.SongService;
 import io.swagger.annotations.ApiOperation;
@@ -16,6 +18,7 @@ import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,10 +42,10 @@ public class SongsController {
     private LockedSongRepository lockedsongrepository;
 
     @Autowired
-    private GuestSession guestinfo;
+    private JWTUserService jwtUserService;
 
     @Autowired
-    private JWTUserService jwtUserService;
+    private GuestRepository guestRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(SongsController.class);
 
@@ -99,13 +102,13 @@ public class SongsController {
             logger.info(String.format("Songs %s by %s: %s", lock ? "deleted and locked" : "deleted", SecurityContextHolder.getContext().getAuthentication().getName(), Arrays.toString(a)));
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (NumberFormatException e) {
-        	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
-    
-    @PostMapping(path="", consumes = {"text/plain"}, produces = {"application/json"})
+
+    @PostMapping(path = "", consumes = {"text/plain"}, produces = {"application/json"})
     @ApiOperation(value = "Add a Song")
-    public createSongResponse createSong(@ApiParam(value = "The URL of the Song to add") @RequestBody(required = false) String url) {
+    public ResponseEntity<createSongResponse> createSong(@ApiParam(value = "The URL of the Song to add") @RequestBody(required = false) String url, @RequestHeader(name = "X-Guest-Token", required = false) String guestHeader) {
         User u = null;
         Object credentials = SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
@@ -114,10 +117,28 @@ public class SongsController {
         }
 
         if (url == null) {
-            return new createSongResponse(false, false, "Songlink kann nicht leer sein");
+            return new ResponseEntity<>(new createSongResponse(false, false, "Songlink kann nicht leer sein"), HttpStatus.OK);
         }
 
-        return songservice.addSong(url, u, guestinfo);
+        Guest guest;
+        if (guestHeader != null && !guestHeader.isEmpty()) {
+            Optional<Guest> optionalGuest = this.guestRepository.findByToken(guestHeader);
+            if (optionalGuest.isEmpty()) {
+                throw new UnauthorizedException("Guest Token invalid");
+            }
+            guest = optionalGuest.get();
+        } else {
+            guest = new Guest();
+            guest.setIdentifier(UUID.randomUUID().toString());
+            guest.setToken(UUID.randomUUID().toString());
+            this.guestRepository.save(guest);
+        }
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("X-GUEST-TOKEN", guest.getToken());
+
+        createSongResponse createSongResponse = songservice.addSong(url, u, guest);
+        return new ResponseEntity<>(createSongResponse, responseHeaders, HttpStatus.OK);
     }
 
 

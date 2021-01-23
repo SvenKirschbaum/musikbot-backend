@@ -2,7 +2,6 @@ package de.elite12.musikbot.server.api.v2;
 
 import de.elite12.musikbot.server.api.dto.PlaylistDTO;
 import de.elite12.musikbot.server.api.dto.createSongResponse;
-import de.elite12.musikbot.server.data.GuestSession;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.exception.NotFoundException;
 import de.elite12.musikbot.server.services.JWTUserService;
@@ -31,9 +30,6 @@ public class PlaylistController {
 
     @Autowired
     private SongService songservice;
-
-    @Autowired
-    private GuestSession guestinfo;
 
     @Autowired
     private JWTUserService jwtUserService;
@@ -78,6 +74,6 @@ public class PlaylistController {
 
         logger.info(String.format("Playlist imported by %s", u.toString()));
 
-        return Arrays.stream(entries).map(entry -> songservice.addSong(entry.link,u,guestinfo)).toArray(createSongResponse[]::new);
+        return Arrays.stream(entries).map(entry -> songservice.addSong(entry.link, u, null)).toArray(createSongResponse[]::new);
     }
 }

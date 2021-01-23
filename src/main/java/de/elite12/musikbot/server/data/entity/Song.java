@@ -13,6 +13,7 @@ import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Locale;
@@ -22,13 +23,14 @@ import java.util.Locale;
 @Setter
 @ToString
 @NoArgsConstructor
-public class Song implements Serializable {    
+public class Song implements Serializable {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = -8316963238408846120L;
-	
-	@Id
+     *
+     */
+    @Serial
+    private static final long serialVersionUID = -8316963238408846120L;
+
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @ApiModelProperty(notes = "The ID of the Song")
     private Long id;
@@ -38,13 +40,15 @@ public class Song implements Serializable {
     @ApiModelProperty(notes = "The Link of the Song")
     private String link;
     @ManyToOne
-	@JoinColumn(name="USER_AUTHOR")
+    @JoinColumn(name = "USER_AUTHOR")
     @JsonIgnore
     @Nullable
     private User userAuthor;
     @Nullable
     @JsonIgnore
-    private String guestAuthor;
+    @ManyToOne
+    @JoinColumn(name = "GUEST_AUTHOR")
+    private Guest guestAuthor;
     @Temporal(TemporalType.TIMESTAMP)
     @NotNull
     @ApiModelProperty(notes = "The Time the Song has been added")
@@ -71,7 +75,7 @@ public class Song implements Serializable {
     
     @Transient
     public String getAuthorLink() {
-        return this.getUserAuthor() == null ? (this.getGuestAuthor() == null ? null : this.getGuestAuthor()) : this.getUserAuthor().getName();
+        return this.getUserAuthor() == null ? (this.getGuestAuthor() == null ? null : this.getGuestAuthor().getIdentifier()) : this.getUserAuthor().getName();
     }
     
     @Transient

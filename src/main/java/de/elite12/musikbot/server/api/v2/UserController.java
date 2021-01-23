@@ -1,6 +1,8 @@
 package de.elite12.musikbot.server.api.v2;
 
 import de.elite12.musikbot.server.api.dto.UserDTO;
+import de.elite12.musikbot.server.data.entity.Guest;
+import de.elite12.musikbot.server.data.repository.GuestRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.data.repository.UserRepository;
 import de.elite12.musikbot.server.exception.NotFoundException;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Validator;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 
@@ -28,6 +31,9 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private GuestRepository guestRepository;
 
     @Autowired
     private SongRepository songRepository;
@@ -44,6 +50,7 @@ public class UserController {
     @ApiOperation(value = "Get a User Profile")
     public UserDTO getUserByName(@ApiParam(value = "The Username of the User to get") @PathVariable("username") String username) {
         de.elite12.musikbot.server.data.entity.User target = userRepository.findByName(username);
+        Optional<Guest> guestTarget = guestRepository.findByIdentifier(username);
 
         de.elite12.musikbot.server.data.entity.User user = null;
         boolean self = false;
@@ -62,6 +69,7 @@ public class UserController {
                 target.setName(name);
                 target.setEmail("gast@elite12.de");
                 guest = true;
+                if (guestTarget.isEmpty()) throw new IllegalArgumentException();
             } catch (IllegalArgumentException e) {
                 throw new NotFoundException();
             }
@@ -83,14 +91,14 @@ public class UserController {
 
         r.setWuensche(
             (guest ?
-                songRepository.countByGuestAuthor(username) :
-                songRepository.countByUserAuthor(target)
+                    songRepository.countByGuestAuthor(guestTarget.get()) :
+                    songRepository.countByUserAuthor(target)
             )
         );
         r.setSkipped(
             (guest ?
-                songRepository.countByGuestAuthorAndSkipped(username, true) :
-                songRepository.countByUserAuthorAndSkipped(target, true)
+                    songRepository.countByGuestAuthorAndSkipped(guestTarget.get(), true) :
+                    songRepository.countByUserAuthorAndSkipped(target, true)
             )
         );
 
@@ -99,8 +107,8 @@ public class UserController {
                 StreamSupport
                         .stream(
                                 (guest ?
-                                        songRepository.findRecentByGuest(username, PageRequest.of(0,10)) :
-                                        songRepository.findRecentByUser(target, PageRequest.of(0,10))
+                                        songRepository.findRecentByGuest(guestTarget.get(), PageRequest.of(0, 10)) :
+                                        songRepository.findRecentByUser(target, PageRequest.of(0, 10))
                                 )
                                         .spliterator(),
                                 false
@@ -120,8 +128,8 @@ public class UserController {
                 StreamSupport
                         .stream(
                                 (guest ?
-                                        songRepository.findTopForGuest(username, PageRequest.of(0,10)) :
-                                        songRepository.findTopForUser(target, PageRequest.of(0,10))
+                                        songRepository.findTopForGuest(guestTarget.get(), PageRequest.of(0, 10)) :
+                                        songRepository.findTopForUser(target, PageRequest.of(0, 10))
                                 )
                                         .spliterator(),
                                 false
@@ -141,8 +149,8 @@ public class UserController {
                 StreamSupport
                         .stream(
                                 (guest ?
-                                        songRepository.findTopSkippedForGuest(username, PageRequest.of(0,10)) :
-                                        songRepository.findTopSkippedForUser(target, PageRequest.of(0,10))
+                                        songRepository.findTopSkippedForGuest(guestTarget.get(), PageRequest.of(0, 10)) :
+                                        songRepository.findTopSkippedForUser(target, PageRequest.of(0, 10))
                                 )
                                         .spliterator(),
                                 false
@@ -165,6 +173,7 @@ public class UserController {
     @ApiOperation(value = "Get a Users most wished songs")
     public UserDTO.TopEntry[] getMostPlayedAction(@ApiParam(value = "The Username of the User to get") @PathVariable("username") String username) {
         de.elite12.musikbot.server.data.entity.User target = userRepository.findByName(username);
+        Optional<Guest> guestTarget = guestRepository.findByIdentifier(username);
         boolean guest = false;
 
         if (target == null) {
@@ -172,6 +181,7 @@ public class UserController {
                 //noinspection ResultOfMethodCallIgnored
                 UUID.fromString(username);
                 guest = true;
+                if (guestTarget.isEmpty()) throw new IllegalArgumentException();
             } catch (IllegalArgumentException e) {
                 throw new NotFoundException();
             }
@@ -180,7 +190,7 @@ public class UserController {
         return StreamSupport
                 .stream(
                         (guest ?
-                                songRepository.findTopForGuest(username, PageRequest.of(0, 100)) :
+                                songRepository.findTopForGuest(guestTarget.get(), PageRequest.of(0, 100)) :
                                 songRepository.findTopForUser(target, PageRequest.of(0, 100))
                         )
                                 .spliterator(),
@@ -201,6 +211,7 @@ public class UserController {
     @ApiOperation(value = "Get a Users most skipped songs")
     public UserDTO.TopEntry[] getMostSkippedAction(@ApiParam(value = "The Username of the User to get") @PathVariable("username") String username) {
         de.elite12.musikbot.server.data.entity.User target = userRepository.findByName(username);
+        Optional<Guest> guestTarget = guestRepository.findByIdentifier(username);
         boolean guest = false;
 
         if (target == null) {
@@ -208,6 +219,7 @@ public class UserController {
                 //noinspection ResultOfMethodCallIgnored
                 UUID.fromString(username);
                 guest = true;
+                if (guestTarget.isEmpty()) throw new IllegalArgumentException();
             } catch (IllegalArgumentException e) {
                 throw new NotFoundException();
             }
@@ -216,7 +228,7 @@ public class UserController {
         return StreamSupport
                 .stream(
                         (guest ?
-                                songRepository.findTopSkippedForGuest(username, PageRequest.of(0, 100)) :
+                                songRepository.findTopSkippedForGuest(guestTarget.get(), PageRequest.of(0, 100)) :
                                 songRepository.findTopSkippedForUser(target, PageRequest.of(0, 100))
                         )
                                 .spliterator(),

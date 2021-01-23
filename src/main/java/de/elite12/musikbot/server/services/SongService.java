@@ -2,10 +2,10 @@ package de.elite12.musikbot.server.services;
 
 import de.elite12.musikbot.server.api.dto.createSongResponse;
 import de.elite12.musikbot.server.config.ServiceProperties;
-import de.elite12.musikbot.server.data.GuestSession;
 import de.elite12.musikbot.server.data.UnifiedTrack;
 import de.elite12.musikbot.server.data.UnifiedTrack.InvalidURLException;
 import de.elite12.musikbot.server.data.UnifiedTrack.TrackNotAvailableException;
+import de.elite12.musikbot.server.data.entity.Guest;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
@@ -80,9 +80,9 @@ public class SongService {
         return next;
     }
 
-    public createSongResponse addSong(String url, User user, GuestSession gi) {
+    public createSongResponse addSong(String url, User user, Guest guest) {
         try {
-            logger.debug("Trying to Add Song "+url);
+            logger.debug("Trying to Add Song " + url);
             UnifiedTrack ut = UnifiedTrack.fromURL(url, youtube, spotifyService);
             String notice = null;
 
@@ -106,7 +106,7 @@ public class SongService {
                 return new createSongResponse(false,false,"Dieser Song befindet sich bereits in der Playlist!");
             }
 
-            Long count = user != null ? songrepository.countByUserAuthorAndPlayed(user,false) : songrepository.countByGuestAuthorAndPlayed(gi.getId(),false);
+            Long count = user != null ? songrepository.countByUserAuthorAndPlayed(user, false) : songrepository.countByGuestAuthorAndPlayed(guest, false);
             if(count > 2 && (user == null || !user.isAdmin())) {
                 logger.debug("Adding Song aborted, User reached maximum");
                 return new createSongResponse(false,false,"Du hast bereits die maximale Anzahl an Songs eingestellt!");
@@ -137,13 +137,13 @@ public class SongService {
                 s.setUserAuthor(user);
             }
             else {
-                s.setGuestAuthor(gi.getId());
+                s.setGuestAuthor(guest);
             }
 
 
             s = songrepository.save(s);
 
-            logger.info(String.format("Song added by %s: %s", user != null ? ("User " + user.getName()) : ("Guest " + gi.getId()), s.toString()));
+            logger.info(String.format("Song added by %s: %s", user != null ? ("User " + user.getName()) : ("Guest " + guest.getIdentifier()), s.toString()));
 
 
             client.notifynewSong();

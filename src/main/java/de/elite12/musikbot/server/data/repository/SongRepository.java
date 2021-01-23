@@ -1,5 +1,6 @@
 package de.elite12.musikbot.server.data.repository;
 
+import de.elite12.musikbot.server.data.entity.Guest;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.projection.SearchResult;
@@ -8,7 +9,6 @@ import de.elite12.musikbot.server.data.projection.TopUser;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.lang.Nullable;
@@ -19,10 +19,6 @@ import java.util.Optional;
 
 @Repository
 public interface SongRepository extends PagingAndSortingRepository<Song, Long>{
-
-	@Modifying
-	@Query(value = "UPDATE Song s SET s.userAuthor = NULL, s.guestAuthor = ?2 WHERE s.userAuthor = ?1")
-	Integer replaceUserAuthor(User author, String guest);
 
 	@Nullable
 	@Query(value = "select * from song s where s.played = false order by s.sort limit 1", nativeQuery = true)
@@ -53,15 +49,15 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>{
 
 	Long countByUserAuthor(User author);
 
-	Long countByGuestAuthor(String guest);
+	Long countByGuestAuthor(Guest guest);
 
 	Long countByUserAuthorAndPlayed(User author, boolean played);
 
-	Long countByGuestAuthorAndPlayed(String guest, boolean played);
+	Long countByGuestAuthorAndPlayed(Guest guest, boolean played);
 
 	Long countByUserAuthorAndSkipped(User author, boolean skipped);
 
-	Long countByGuestAuthorAndSkipped(String guest, boolean skipped);
+	Long countByGuestAuthorAndSkipped(Guest guest, boolean skipped);
 
 	Long countBySkipped(boolean skipped);
 
@@ -81,12 +77,9 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>{
 	@Query(value = "SELECT COUNT(s.id) FROM Song s WHERE s.guestAuthor IS NULL AND s.userAuthor IS NULL AND s.skipped = true")
 	Long countSystemSkipped();
 
-	@Query(value = "SELECT COUNT(DISTINCT s.guestAuthor) FROM Song s")
-	Long countGuests();
-
 	Iterable<Song> findByPlayedOrderBySort(boolean played);
 
-	List<Song> findByGuestAuthor(String guest);
+	List<Song> findByGuestAuthor(Guest guest);
 
 	@Cacheable(cacheNames = "search", sync = true)
 	@Query(value = "SELECT new de.elite12.musikbot.server.data.projection.SearchResult(s.link, s.title) FROM Song s WHERE s.title LIKE concat('%', replace(replace(?1, '%', '\\\\%'), '_', '\\_'), '%') AND (s.userAuthor IS NOT NULL OR s.guestAuthor IS NOT NULL) GROUP BY s.link ORDER BY count(s) DESC")
@@ -103,25 +96,25 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>{
 	@Query(value = "SELECT new de.elite12.musikbot.server.data.projection.TopUser(u.name, COUNT(s)) FROM Song s INNER JOIN User u ON s.userAuthor = u GROUP BY s.userAuthor ORDER BY COUNT(s) DESC")
 	Page<TopUser> findTopUser(Pageable pageable);
 
-	//@Cacheable(cacheNames = "stats", key = "'u-t-'.concat(#u.id).concat(#pageable.pageSize)",sync = true)
+	@Cacheable(cacheNames = "stats", key = "'u-t-'.concat(#u.id).concat(#pageable.pageSize)", sync = true)
 	@Query(value = "SELECT new de.elite12.musikbot.server.data.projection.TopSong(s.title, s.link, COUNT(s)) FROM Song s WHERE s.userAuthor = ?1 GROUP BY s.link ORDER BY COUNT(s) DESC")
 	Page<TopSong> findTopForUser(User u, Pageable pageable);
 
-	@Cacheable(cacheNames = "stats", key = "'g-t-'.concat(#u).concat(#pageable.pageSize)", sync = true)
+	@Cacheable(cacheNames = "stats", key = "'g-t-'.concat(#u.id).concat(#pageable.pageSize)", sync = true)
 	@Query(value = "SELECT new de.elite12.musikbot.server.data.projection.TopSong(s.title, s.link, COUNT(s)) FROM Song s WHERE s.guestAuthor = ?1 GROUP BY s.link ORDER BY COUNT(s) DESC")
-	Page<TopSong> findTopForGuest(String u, Pageable pageable);
+	Page<TopSong> findTopForGuest(Guest u, Pageable pageable);
 
 	@Cacheable(cacheNames = "stats", key = "'u-ts-'.concat(#u.id).concat(#pageable.pageSize)", sync = true)
 	@Query(value = "SELECT new de.elite12.musikbot.server.data.projection.TopSong(s.title, s.link, COUNT(s)) FROM Song s WHERE s.userAuthor = ?1 AND s.skipped = true GROUP BY s.link ORDER BY COUNT(s) DESC")
 	Page<TopSong> findTopSkippedForUser(User u, Pageable pageable);
 
-	@Cacheable(cacheNames = "stats", key = "'g-ts-'.concat(#u).concat(#pageable.pageSize)", sync = true)
+	@Cacheable(cacheNames = "stats", key = "'g-ts-'.concat(#u.id).concat(#pageable.pageSize)", sync = true)
 	@Query(value = "SELECT new de.elite12.musikbot.server.data.projection.TopSong(s.title, s.link, COUNT(s)) FROM Song s WHERE s.guestAuthor = ?1 AND s.skipped = true GROUP BY s.link ORDER BY COUNT(s) DESC")
-	Page<TopSong> findTopSkippedForGuest(String u, Pageable pageable);
+	Page<TopSong> findTopSkippedForGuest(Guest u, Pageable pageable);
 
 	@Query(value = "SELECT s FROM Song s WHERE s.userAuthor = ?1 ORDER BY s.sort DESC")
 	Page<Song> findRecentByUser(User u, Pageable pageable);
 
 	@Query(value = "SELECT s FROM Song s WHERE s.guestAuthor = ?1 ORDER BY s.sort DESC")
-	Page<Song> findRecentByGuest(String u, Pageable pageable);
+	Page<Song> findRecentByGuest(Guest u, Pageable pageable);
 }

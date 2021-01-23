@@ -42,7 +42,7 @@ public class WebSocketConfig {
 
         @Override
         public void registerStompEndpoints(StompEndpointRegistry registry) {
-            registry.addEndpoint("/sock").setAllowedOriginPatterns("*").withSockJS().setSessionCookieNeeded(false).setClientLibraryUrl("https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.min.js");
+            registry.addEndpoint("/sock").setAllowedOriginPatterns("*").withSockJS().setSessionCookieNeeded(false).setClientLibraryUrl("https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js");
             registry.addEndpoint("/client").setAllowedOriginPatterns("*");
         }
 

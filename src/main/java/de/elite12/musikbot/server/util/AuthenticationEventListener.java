@@ -36,7 +36,7 @@ public class AuthenticationEventListener {
             Jwt jwt = (Jwt) credentials;
             if (authenticationCache.get(jwt.getClaim("jti")) == null) {
                 if(Arrays.asList(jwt.getClaimAsString("scope").split(" ")).contains("profile")) {
-                    jwtUserService.loadUserFromJWT(jwt, true);
+                    jwtUserService.loadUserFromJWT(jwt);
                 }
                 authenticationCache.put(jwt.getClaim("jti"), true);
             }
