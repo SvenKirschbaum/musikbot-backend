@@ -12,7 +12,6 @@ import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.data.repository.SettingRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
-import de.elite12.musikbot.server.data.repository.UserRepository;
 import de.elite12.musikbot.shared.util.SongIDParser;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -56,10 +55,13 @@ public class GapcloserService {
     private SpotifyService spotifyService;
 
     @Autowired
-    private UserRepository userRepository;
+    private LockedSongRepository lockedSongRepository;
 
     @Autowired
-    private LockedSongRepository lockedSongRepository;
+    private StateService stateService;
+
+    @Autowired
+    private ClientService clientService;
 
 
     private static final Logger logger = LoggerFactory.getLogger(GapcloserService.class);
@@ -192,6 +194,10 @@ public class GapcloserService {
     public void setMode(Mode mode) {
         this.mode = mode;
         this.save();
+
+        if (this.stateService.getState().getState() == StateService.StateData.State.WAITING_FOR_SONGS && mode != Mode.OFF) {
+            this.clientService.notifynewSong();
+        }
     }
 
     public String getPlaylist() {
