@@ -39,12 +39,16 @@ public class UnifiedTrack {
 			List<Video> list = youTubeService.api().videos().list(List.of("status", "snippet", "contentDetails"))
 					.setId(Collections.singletonList(SongIDParser.getVID(s.getLink())))
 					.setFields(
-							"items/status/uploadStatus,items/status/privacyStatus,items/contentDetails/duration,items/snippet/categoryId,items/snippet/title,items/contentDetails/regionRestriction")
+							"items/status/uploadStatus,items/status/privacyStatus,items/contentDetails/duration,items/snippet/categoryId,items/snippet/title,items/contentDetails/regionRestriction,items/snippet/liveBroadcastContent")
 					.execute().getItems();
 			if (list != null && !list.isEmpty()) {
 				if (!list.get(0).getStatus().getUploadStatus().equals("processed")
 						|| list.get(0).getStatus().getUploadStatus().equals("private")) {
 					throw new TrackNotAvailableException("private/processing");
+				}
+				if (list.get(0).getSnippet().getLiveBroadcastContent() != null) {
+					if (!list.get(0).getSnippet().getLiveBroadcastContent().equals("none"))
+						throw new TrackNotAvailableException("Livebroadcast");
 				}
 				if (list.get(0).getContentDetails() != null) {
 					if (list.get(0).getContentDetails().getRegionRestriction() != null) {
