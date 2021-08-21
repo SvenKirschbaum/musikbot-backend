@@ -1,8 +1,5 @@
 package de.elite12.musikbot.server.controller;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,15 +7,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 @Controller
 public class ErrorController implements org.springframework.boot.web.servlet.error.ErrorController {
 
 	private final Logger logger = LoggerFactory.getLogger(ErrorController.class);
-	
-	@Override
-	public String getErrorPath() {
-		return "/error";
-	}
 	
 	@RequestMapping("/error")
     public void handleError(HttpServletRequest request, HttpServletResponse response, Model model) throws Exception {
