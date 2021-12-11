@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>de.mkammerer</groupId>
 			<artifactId>argon2-jvm</artifactId>
-			<version>2.10.1</version>
+            <version>2.10.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -118,7 +118,7 @@
 		<dependency>
 			<groupId>com.google.http-client</groupId>
 			<artifactId>google-http-client-gson</artifactId>
-			<version>1.39.2</version>
+            <version>1.39.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mariadb.jdbc</groupId>
@@ -152,7 +152,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-xml</artifactId>
-			<version>2.12.4</version>
+            <version>2.12.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.flywaydb</groupId>
@@ -174,9 +174,11 @@
     </organization>
     <url>https://musikbot.elite12.de</url>
     <description>Musikbot</description>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.target>15</maven.compiler.target>
-		<maven.compiler.source>15</maven.compiler.source>
-	</properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.target>15</maven.compiler.target>
+        <maven.compiler.source>15</maven.compiler.source>
+        <!-- Overwrite log4j version to mitigate zeroday -->
+        <log4j2.version>2.15.0</log4j2.version>
+    </properties>
 </project>

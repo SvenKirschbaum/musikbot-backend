@@ -1,4 +1,4 @@
-<entity-mappings>
+<entity-mappings version="2.1">
     <persistence-unit-metadata>
         <persistence-unit-defaults>
             <entity-listeners>
