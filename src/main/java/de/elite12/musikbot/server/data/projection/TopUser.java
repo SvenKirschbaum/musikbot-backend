@@ -1,6 +1,6 @@
 package de.elite12.musikbot.server.data.projection;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,8 +11,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TopUser {
-    @ApiModelProperty(notes = "Name of the User")
+    @Schema(description = "Name of the User")
     private String name;
-    @ApiModelProperty(notes = "How many Songs the User requested")
+    @Schema(description = "How many Songs the User requested")
     private Long count;
 }

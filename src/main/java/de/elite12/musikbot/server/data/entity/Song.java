@@ -2,7 +2,7 @@ package de.elite12.musikbot.server.data.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.elite12.musikbot.server.util.Util;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,12 +32,12 @@ public class Song implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @ApiModelProperty(notes = "The ID of the Song")
+    @Schema(description = "The ID of the Song")
     private Long id;
-    @ApiModelProperty(notes = "If the Song has already been played")
+    @Schema(description = "If the Song has already been played")
     private boolean played;
     @NotNull
-    @ApiModelProperty(notes = "The Link of the Song")
+    @Schema(description = "The Link of the Song")
     private String link;
     @ManyToOne
     @JoinColumn(name = "USER_AUTHOR")
@@ -51,21 +51,21 @@ public class Song implements Serializable {
     private Guest guestAuthor;
     @Temporal(TemporalType.TIMESTAMP)
     @NotNull
-    @ApiModelProperty(notes = "The Time the Song has been added")
+    @Schema(description = "The Time the Song has been added")
     private Date insertedAt;
     @NotNull
-    @ApiModelProperty(notes = "The title of the Song")
+    @Schema(description = "The title of the Song")
     private String title;
-    @ApiModelProperty(notes = "If the Song has been skipped")
+    @Schema(description = "If the Song has been skipped")
     private boolean skipped = false;
     @Temporal(TemporalType.TIMESTAMP)
     @Nullable
-    @ApiModelProperty(notes = "The Time the Song has been played")
+    @Schema(description = "The Time the Song has been played")
     private Date playedAt;
     @Generated(GenerationTime.INSERT)
-    @ApiModelProperty(notes = "The sort order of the song")
+    @Schema(description = "The sort order of the song")
     private Long sort;
-    @ApiModelProperty(notes = "The duration of the Song")
+    @Schema(description = "The duration of the Song")
     private int duration;
     
     @Transient

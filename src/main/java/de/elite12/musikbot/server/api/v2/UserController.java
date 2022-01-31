@@ -7,8 +7,8 @@ import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.data.repository.UserRepository;
 import de.elite12.musikbot.server.exception.NotFoundException;
 import de.elite12.musikbot.server.services.JWTUserService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +47,8 @@ public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @GetMapping
-    @ApiOperation(value = "Get a User Profile")
-    public UserDTO getUserByName(@ApiParam(value = "The Username of the User to get") @PathVariable("username") String username) {
+    @Operation(description = "Get a User Profile")
+    public UserDTO getUserByName(@Parameter(description = "The Username of the User to get") @PathVariable("username") String username) {
         de.elite12.musikbot.server.data.entity.User target = userRepository.findByName(username);
         Optional<Guest> guestTarget = guestRepository.findByIdentifier(username);
 
@@ -170,8 +170,8 @@ public class UserController {
     }
 
     @GetMapping(path = "/played")
-    @ApiOperation(value = "Get a Users most wished songs")
-    public UserDTO.TopEntry[] getMostPlayedAction(@ApiParam(value = "The Username of the User to get") @PathVariable("username") String username) {
+    @Operation(description = "Get a Users most wished songs")
+    public UserDTO.TopEntry[] getMostPlayedAction(@Parameter(description = "The Username of the User to get") @PathVariable("username") String username) {
         de.elite12.musikbot.server.data.entity.User target = userRepository.findByName(username);
         Optional<Guest> guestTarget = guestRepository.findByIdentifier(username);
         boolean guest = false;
@@ -208,8 +208,8 @@ public class UserController {
     }
 
     @GetMapping(path = "/skipped")
-    @ApiOperation(value = "Get a Users most skipped songs")
-    public UserDTO.TopEntry[] getMostSkippedAction(@ApiParam(value = "The Username of the User to get") @PathVariable("username") String username) {
+    @Operation(description = "Get a Users most skipped songs")
+    public UserDTO.TopEntry[] getMostSkippedAction(@Parameter(description = "The Username of the User to get") @PathVariable("username") String username) {
         de.elite12.musikbot.server.data.entity.User target = userRepository.findByName(username);
         Optional<Guest> guestTarget = guestRepository.findByIdentifier(username);
         boolean guest = false;

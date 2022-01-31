@@ -7,7 +7,7 @@ import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.exception.NotFoundException;
 import de.elite12.musikbot.server.services.SpotifyService;
 import de.elite12.musikbot.server.services.YouTubeService;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,13 +36,13 @@ public class LockedSongsController {
     private SpotifyService spotifyService;
 
     @GetMapping
-    @ApiOperation(value = "Gets the LockList", notes = "Requires Admin Permissions.")
+    @Operation(summary = "Gets the LockList", description = "Requires Admin Permissions.")
     public LockedSong[] getAction() {
         return StreamSupport.stream(songs.findAll().spliterator(), false).toArray(LockedSong[]::new);
     }
 
     @DeleteMapping(path = "{id}")
-    @ApiOperation(value = "Deletes a Song from the Locklist", notes = "Requires Admin Permissions.")
+    @Operation(summary = "Deletes a Song from the Locklist", description = "Requires Admin Permissions.")
     public void deleteAction(@PathVariable Long id) {
         Optional<LockedSong> s = songs.findById(id);
 
@@ -50,11 +50,11 @@ public class LockedSongsController {
 
         songs.deleteById(id);
 
-        logger.info(String.format("Locked Song removed by %s: %s", SecurityContextHolder.getContext().getAuthentication().getName(), s.toString()));
+        logger.info(String.format("Locked Song removed by %s: %s", SecurityContextHolder.getContext().getAuthentication().getName(), s));
     }
 
     @PostMapping
-    @ApiOperation(value = "Adds a Song to the Locklist", notes = "Requires Admin Permissions.")
+    @Operation(summary = "Adds a Song to the Locklist", description = "Requires Admin Permissions.")
     public createSongResponse postAction(@RequestBody String url) {
         try {
             UnifiedTrack ut = UnifiedTrack.fromURL(url, youtube, spotifyService);
@@ -64,7 +64,7 @@ public class LockedSongsController {
             songs.save(ls);
 
 
-            logger.info(String.format("Song locked by %s: %s", SecurityContextHolder.getContext().getAuthentication().getName(), ls.toString()));
+            logger.info(String.format("Song locked by %s: %s", SecurityContextHolder.getContext().getAuthentication().getName(), ls));
             return new createSongResponse(true,false,"Song hinzugefügt");
         } catch (UnifiedTrack.TrackNotAvailableException e) {
             return new createSongResponse(false,false,"Der eingegebene Song existiert nicht");

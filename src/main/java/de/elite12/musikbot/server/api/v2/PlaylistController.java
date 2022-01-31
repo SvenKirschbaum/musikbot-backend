@@ -8,8 +8,8 @@ import de.elite12.musikbot.server.services.JWTUserService;
 import de.elite12.musikbot.server.services.PlaylistImporterService;
 import de.elite12.musikbot.server.services.SongService;
 import de.elite12.musikbot.shared.util.SongIDParser;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +37,8 @@ public class PlaylistController {
     private static final Logger logger = LoggerFactory.getLogger(PlaylistController.class);
 
     @GetMapping
-    @ApiOperation(value = "Load playlist", notes = "Gets the Song of a Youtube Playlist, a Spotify Playlist, a Spotify Artist or a Spotify Album. Requires Admin Permissions.")
-    public PlaylistDTO getAction(@ApiParam(name = "url", value = "The URL of the Playlist to be loaded") @RequestParam String url) {
+    @Operation(summary = "Load playlist", description = "Gets the Song of a Youtube Playlist, a Spotify Playlist, a Spotify Artist or a Spotify Album. Requires Admin Permissions.")
+    public PlaylistDTO getAction(@Parameter(name = "url", description = "The URL of the Playlist to be loaded") @RequestParam String url) {
         String pid = SongIDParser.getPID(url);
         String spid = SongIDParser.getSPID(url);
         String said = SongIDParser.getSAID(url);
@@ -68,7 +68,7 @@ public class PlaylistController {
     }
 
     @PostMapping
-    @ApiOperation(value = "Import Songs from a Playlist", notes = "Adds multiple Songs to the Playlist. Requires Admin Permissions.")
+    @Operation(summary = "Import Songs from a Playlist", description = "Adds multiple Songs to the Playlist. Requires Admin Permissions.")
     public createSongResponse[] postAction(@RequestBody PlaylistDTO.Entry[] entries) {
         User u = jwtUserService.loadUserFromJWT((Jwt) SecurityContextHolder.getContext().getAuthentication().getCredentials());
 

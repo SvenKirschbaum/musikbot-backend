@@ -5,7 +5,7 @@ import de.elite12.musikbot.server.data.projection.TopSong;
 import de.elite12.musikbot.server.data.repository.GuestRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.data.repository.UserRepository;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
@@ -35,7 +35,7 @@ public class StatsController {
 
     @GetMapping
     @Cacheable(cacheNames = "stats", key = "'global'", sync = true)
-    @ApiOperation(value = "Get Stats", notes = "Retrieve various Statistics")
+    @Operation(summary = "Get Stats", description = "Retrieve various Statistics")
     public StatsDTO getAction() {
         StatsDTO dto = new StatsDTO();
 

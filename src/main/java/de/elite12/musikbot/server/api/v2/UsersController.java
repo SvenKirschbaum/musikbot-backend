@@ -4,8 +4,8 @@ import de.elite12.musikbot.server.api.dto.UsersDTO;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.UserRepository;
 import de.elite12.musikbot.server.exception.BadRequestException;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +28,15 @@ public class UsersController {
     private static final Logger logger = LoggerFactory.getLogger(UsersController.class);
 
     @GetMapping(value = {"", "{page}"})
-    @ApiOperation(value = "Get the list of Users", notes = "Retrieves up to 25 Users. Use the page parameter to get more. Requires Admin Permissions.")
-    public UsersDTO getUsers(@ApiParam(value = "The page to get") @PathVariable(name = "page", required = false) Integer opage) {
+    @Operation(summary = "Get the list of Users", description = "Retrieves up to 25 Users. Use the page parameter to get more. Requires Admin Permissions.")
+    public UsersDTO getUsers(@Parameter(description = "The page to get") @PathVariable(name = "page", required = false) Integer opage) {
         int page = opage == null ? 1 : opage;
 
-        if (page < 1 || page >= 85899347) throw new BadRequestException("The page parameter is not in the required range");
+        if (page < 1 || page >= 85899347)
+            throw new BadRequestException("The page parameter is not in the required range");
 
-        Page<User> users = userRepository.findAll(PageRequest.of(page-1, 25));
+        Page<User> users = userRepository.findAll(PageRequest.of(page - 1, 25));
 
-        return new UsersDTO(users.getNumber()+1,users.getTotalPages(),users.get().toArray(User[]::new));
+        return new UsersDTO(users.getNumber() + 1, users.getTotalPages(), users.get().toArray(User[]::new));
     }
 }

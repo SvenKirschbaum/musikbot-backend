@@ -1,7 +1,6 @@
 package de.elite12.musikbot.server.data.projection;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,10 +10,10 @@ import lombok.ToString;
 @Setter
 @AllArgsConstructor
 @ToString
-@ApiModel(description = "The SeachResult ordered by the likeliness of the Entries")
+@Schema(description = "The SeachResult ordered by the likeliness of the Entries")
 public class SearchResult {
-    @ApiModelProperty(notes = "The link to the Result")
+    @Schema(description = "The link to the Result")
     private String value;
-    @ApiModelProperty(notes = "The name of the Result")
+    @Schema(description = "The name of the Result")
     private String label;
 }

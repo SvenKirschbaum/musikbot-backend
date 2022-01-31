@@ -3,7 +3,7 @@ package de.elite12.musikbot.server.api.v2;
 import de.elite12.musikbot.server.api.dto.GapcloserDTO;
 import de.elite12.musikbot.server.services.GapcloserService;
 import de.elite12.musikbot.shared.util.SongIDParser;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +22,13 @@ public class GapcloserController {
     private GapcloserService gapcloserService;
 
     @GetMapping
-    @ApiOperation(value = "Get Gapcloser Settings", notes = "Requires Admin Permissions.")
+    @Operation(summary = "Get Gapcloser Settings", description = "Requires Admin Permissions.")
     public GapcloserDTO getAction() {
         return new GapcloserDTO(gapcloserService.getPlaylist(), gapcloserService.getMode());
     }
 
     @PutMapping
-    @ApiOperation(value = "Updates Gapcloser Settings", notes = "Requires Admin Permissions.")
+    @Operation(summary = "Updates Gapcloser Settings", description = "Requires Admin Permissions.")
     public GapcloserDTO postAction(@RequestBody GapcloserDTO req) {
         String pid = SongIDParser.getPID(req.getPlaylist());
         String said = SongIDParser.getSAID(req.getPlaylist());

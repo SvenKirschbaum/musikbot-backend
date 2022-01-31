@@ -4,7 +4,7 @@ import de.elite12.musikbot.server.api.dto.ArchivDTO;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.exception.BadRequestException;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +22,7 @@ public class ArchivController {
     private SongRepository songs;
 
     @GetMapping(value = {"", "{page}"})
-    @ApiOperation(value = "Get already played Songs", notes = "Retrieves 25 Songs which have already been played. Use the page parameter to get older Songs.")
+    @Operation(summary = "Get already played Songs", description = "Retrieves 25 Songs which have already been played. Use the page parameter to get older Songs.")
     public ArchivDTO getPage(@Min(1) @PathVariable(name = "page", required = false) Integer opage) {
             int page = opage == null ? 1 : opage;
 

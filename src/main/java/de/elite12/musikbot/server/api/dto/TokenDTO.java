@@ -1,6 +1,6 @@
 package de.elite12.musikbot.server.api.dto;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class TokenDTO {
-    @ApiModelProperty(notes = "The Bearer Token")
+    @Schema(description = "The Bearer Token")
     private String token;
 }

@@ -1,7 +1,7 @@
 package de.elite12.musikbot.server.api;
 
 import de.elite12.musikbot.server.services.ClientService;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,15 +29,15 @@ public class DebugController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(DebugController.class);
 
-	@PostMapping("/client")
-	@ApiOperation(value = "Shutdown the Client Application", notes = "Sends a Shutdown Request to the Client. Requires Admin Permissions.")
+    @PostMapping("/client")
+    @Operation(summary = "Shutdown the Client Application", description = "Sends a Shutdown Request to the Client. Requires Admin Permissions.")
 	public void doClient() {
 		logger.warn(String.format("Shutting down Client by %s", SecurityContextHolder.getContext().getAuthentication().getName()));
 		client.sendShutdown();
 	}
 
-	@PostMapping("/server")
-	@ApiOperation(value = "Shutdown the Server Application", notes = "Shutdown the Server. Requires Admin Permissions.")
+    @PostMapping("/server")
+    @Operation(summary = "Shutdown the Server Application", description = "Shutdown the Server. Requires Admin Permissions.")
 	public void doServer() {
 		logger.warn(String.format("Shutting down Server by %s", SecurityContextHolder.getContext().getAuthentication().getName()));
 		new Timer().schedule(new TimerTask() {

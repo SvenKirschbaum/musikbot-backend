@@ -11,10 +11,10 @@ import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.exception.UnauthorizedException;
 import de.elite12.musikbot.server.services.JWTUserService;
 import de.elite12.musikbot.server.services.SongService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,9 +51,9 @@ public class SongsController {
 
 
     @GetMapping(path = "{ids}", produces = {"application/json"})
-    @ApiOperation(value = "Get Songs")
-    @ApiResponses({@ApiResponse(code = 404, message = "One of the requested Songs could not been found")})
-    public ResponseEntity<de.elite12.musikbot.server.data.entity.Song[]> getSong(@ApiParam(value = "Comma-seperated List of Song Ids to get") @PathVariable String ids) {
+    @Operation(summary = "Get Songs")
+    @ApiResponses({@ApiResponse(responseCode = "404", description = "One of the requested Songs could not been found")})
+    public ResponseEntity<de.elite12.musikbot.server.data.entity.Song[]> getSong(@Parameter(description = "Comma-seperated List of Song Ids to get") @PathVariable String ids) {
         String[] a = ids.split(",");
         de.elite12.musikbot.server.data.entity.Song[] r = new de.elite12.musikbot.server.data.entity.Song[a.length];
         try {
@@ -62,18 +62,18 @@ public class SongsController {
                 r[i] = songrepository.findById(id).orElseThrow();
             }
         } catch (NumberFormatException e) {
-        	return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch(NoSuchElementException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (NoSuchElementException e) {
         	return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(r, HttpStatus.OK);
     }
-    
+
     @PreAuthorize("hasRole('admin')")
-    @DeleteMapping(path="{ids}", produces = {"application/json"})
-    @ApiOperation(value = "Delete Songs", notes = "Requires Admin permissions.")
-    @ApiResponses({@ApiResponse(code = 404, message = "One of the requested Songs could not been found")})
-    public ResponseEntity<Object> deleteSong(@ApiParam(value = "Comma-seperated List of Song Ids to get") @PathVariable String ids, @ApiParam(value = "If the Songs should be locked in addition to being deleted") @RequestParam(value = "lock",required = false) Boolean lock) {
+    @DeleteMapping(path = "{ids}", produces = {"application/json"})
+    @Operation(summary = "Delete Songs", description = "Requires Admin permissions.")
+    @ApiResponses({@ApiResponse(responseCode = "404", description = "One of the requested Songs could not been found")})
+    public ResponseEntity<Object> deleteSong(@Parameter(description = "Comma-seperated List of Song Ids to get") @PathVariable String ids, @Parameter(description = "If the Songs should be locked in addition to being deleted") @RequestParam(value = "lock", required = false) Boolean lock) {
         String[] a = ids.split("/");
         lock = lock != null && lock;
         try {
@@ -81,8 +81,8 @@ public class SongsController {
             for (String b : a) {
                 long id = Long.parseLong(b);
                 Optional<Song> song = songrepository.findById(id);
-                if(song.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                if(song.get().isPlayed()) return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+                if (song.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                if (song.get().isPlayed()) return new ResponseEntity<>(HttpStatus.FORBIDDEN);
                 
                 songs.add(song.get());
             }
@@ -107,8 +107,8 @@ public class SongsController {
     }
 
     @PostMapping(path = "", consumes = {"text/plain"}, produces = {"application/json"})
-    @ApiOperation(value = "Add a Song")
-    public ResponseEntity<createSongResponse> createSong(@ApiParam(value = "The URL of the Song to add") @RequestBody(required = false) String url, @RequestHeader(name = "X-Guest-Token", required = false) String guestHeader) {
+    @Operation(summary = "Add a Song")
+    public ResponseEntity<createSongResponse> createSong(@Parameter(description = "The URL of the Song to add") @RequestBody(required = false) String url, @RequestHeader(name = "X-Guest-Token", required = false) String guestHeader) {
         User u = null;
         Object credentials = SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
@@ -143,12 +143,12 @@ public class SongsController {
 
 
     @PreAuthorize("hasRole('admin')")
-    @PutMapping(path="{ids}")
-    @ApiOperation(value = "Sort Songs", notes = "Requires Admin permissions.")
-    public ResponseEntity<Object> sortsong(@ApiParam(value = "The ID of the Song to resort") @PathVariable("ids") String sid, @ApiParam(value = "The ID of the Song after which the Song should be sorted") @RequestBody(required=false) String prev) {
+    @PutMapping(path = "{ids}")
+    @Operation(summary = "Sort Songs", description = "Requires Admin permissions.")
+    public ResponseEntity<Object> sortsong(@Parameter(description = "The ID of the Song to resort") @PathVariable("ids") String sid, @Parameter(description = "The ID of the Song after which the Song should be sorted") @RequestBody(required = false) String prev) {
         try {
-        	long id = Long.parseLong(sid);
-        	long pr;
+            long id = Long.parseLong(sid);
+            long pr;
             try {
                 pr = Long.parseLong(prev);
             } catch (NumberFormatException e) {
