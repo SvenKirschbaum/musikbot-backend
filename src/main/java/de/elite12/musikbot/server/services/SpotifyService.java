@@ -1,24 +1,24 @@
 package de.elite12.musikbot.server.services;
 
 import com.neovisionaries.i18n.CountryCode;
-import com.wrapper.spotify.SpotifyApi;
-import com.wrapper.spotify.exceptions.SpotifyWebApiException;
-import com.wrapper.spotify.model_objects.credentials.ClientCredentials;
-import com.wrapper.spotify.model_objects.specification.*;
-import com.wrapper.spotify.requests.authorization.client_credentials.ClientCredentialsRequest;
-import com.wrapper.spotify.requests.data.albums.GetAlbumRequest;
-import com.wrapper.spotify.requests.data.albums.GetAlbumsTracksRequest;
-import com.wrapper.spotify.requests.data.artists.GetArtistRequest;
-import com.wrapper.spotify.requests.data.artists.GetArtistsTopTracksRequest;
-import com.wrapper.spotify.requests.data.playlists.GetPlaylistRequest;
-import com.wrapper.spotify.requests.data.playlists.GetPlaylistsItemsRequest;
-import com.wrapper.spotify.requests.data.tracks.GetTrackRequest;
 import de.elite12.musikbot.server.config.ServiceProperties;
 import org.apache.hc.core5.http.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import se.michaelthelin.spotify.SpotifyApi;
+import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+import se.michaelthelin.spotify.model_objects.credentials.ClientCredentials;
+import se.michaelthelin.spotify.model_objects.specification.*;
+import se.michaelthelin.spotify.requests.authorization.client_credentials.ClientCredentialsRequest;
+import se.michaelthelin.spotify.requests.data.albums.GetAlbumRequest;
+import se.michaelthelin.spotify.requests.data.albums.GetAlbumsTracksRequest;
+import se.michaelthelin.spotify.requests.data.artists.GetArtistRequest;
+import se.michaelthelin.spotify.requests.data.artists.GetArtistsTopTracksRequest;
+import se.michaelthelin.spotify.requests.data.playlists.GetPlaylistRequest;
+import se.michaelthelin.spotify.requests.data.playlists.GetPlaylistsItemsRequest;
+import se.michaelthelin.spotify.requests.data.tracks.GetTrackRequest;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;

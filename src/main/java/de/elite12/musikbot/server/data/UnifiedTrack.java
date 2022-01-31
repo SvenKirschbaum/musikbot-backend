@@ -1,8 +1,6 @@
 package de.elite12.musikbot.server.data;
 
 import com.google.api.services.youtube.model.Video;
-import com.wrapper.spotify.exceptions.SpotifyWebApiException;
-import com.wrapper.spotify.model_objects.specification.Track;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.services.SpotifyService;
 import de.elite12.musikbot.server.services.YouTubeService;
@@ -10,6 +8,8 @@ import de.elite12.musikbot.shared.util.SongIDParser;
 import org.apache.hc.core5.http.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+import se.michaelthelin.spotify.model_objects.specification.Track;
 
 import java.io.IOException;
 import java.time.Duration;

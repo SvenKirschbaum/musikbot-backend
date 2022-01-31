@@ -2,7 +2,6 @@ package de.elite12.musikbot.server.services;
 
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
-import com.wrapper.spotify.model_objects.specification.*;
 import de.elite12.musikbot.server.api.dto.PlaylistDTO;
 import de.elite12.musikbot.server.api.dto.PlaylistDTO.Entry;
 import org.slf4j.Logger;
@@ -10,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import se.michaelthelin.spotify.model_objects.specification.*;
 
 import java.io.IOException;
 import java.util.ArrayList;

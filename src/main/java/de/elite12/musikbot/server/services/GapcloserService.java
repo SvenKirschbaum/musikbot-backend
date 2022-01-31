@@ -2,8 +2,6 @@ package de.elite12.musikbot.server.services;
 
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
-import com.wrapper.spotify.model_objects.specification.Track;
-import com.wrapper.spotify.model_objects.specification.TrackSimplified;
 import de.elite12.musikbot.server.data.UnifiedTrack;
 import de.elite12.musikbot.server.data.UnifiedTrack.InvalidURLException;
 import de.elite12.musikbot.server.data.UnifiedTrack.TrackNotAvailableException;
@@ -20,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import se.michaelthelin.spotify.model_objects.specification.Track;
+import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -127,8 +127,7 @@ public class GapcloserService {
         		s = songs.save(s);
 
 
-
-                logger.info(String.format("Gapcloser generated Song %s", s.toString()));
+                logger.info(String.format("Gapcloser generated Song %s", s));
 
                 return s;
         	}
