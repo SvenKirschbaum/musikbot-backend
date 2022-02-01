@@ -36,7 +36,7 @@ public class WebSocketConfig {
 
         @Override
         public void configureMessageBroker(MessageBrokerRegistry config) {
-            config.enableSimpleBroker("/topic", "/queue").setHeartbeatValue(new long[]{30000, 30000}).setTaskScheduler(this.messageBrokerTaskScheduler);
+            config.enableSimpleBroker("/topic", "/queue").setHeartbeatValue(new long[]{25000, 25000}).setTaskScheduler(this.messageBrokerTaskScheduler);
             config.setApplicationDestinationPrefixes("/musikbot");
         }
 

@@ -8,16 +8,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpAttributesContextHolder;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 @Service
@@ -118,39 +121,58 @@ public class ClientService {
         this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.SHUTDOWN));
     }
 
-	@MessageMapping("/client")
-	private void onRequestSong(@Payload SimpleCommand command, @Header("simpSessionId") String sessionId) {
-		if(!this.clients.contains(sessionId)) {
-			this.sendCommand(new VolumeCommand(this.stateService.getState().getVolume()));
-			this.clients.add(sessionId);
-		}
-
-		if(command.getCommand() == SimpleCommand.CommandType.REQUEST_SONG) {
-			sendSong();
-		}
-	}
+    @MessageMapping("/client")
+    private void onRequestSong(@Payload SimpleCommand command) {
+        if (command.getCommand() == SimpleCommand.CommandType.REQUEST_SONG) {
+            sendSong();
+        }
+    }
 
 	private void sendSong() {
-		Song song = songService.getnextSong();
-		if (song != null) {
-			this.sendSong(song);
-		} else {
-			stateService.updateState(
-					stateData -> stateData.withState(StateService.StateData.State.WAITING_FOR_SONGS)
-			);
-		}
-	}
+        Song song = songService.getnextSong();
+        if (song != null) {
+            this.sendSong(song);
+        } else {
+            stateService.updateState(
+                    stateData -> stateData.withState(StateService.StateData.State.WAITING_FOR_SONGS)
+            );
+        }
+    }
 
-	@EventListener
-	public void onDisconnectEvent(SessionDisconnectEvent event) {
-		if (this.clients.contains(event.getSessionId())) {
-			this.clients.remove(event.getSessionId());
+    @EventListener
+    public void onSubscribeEvent(SessionSubscribeEvent event) {
+        String sessionId = SimpAttributesContextHolder.currentAttributes().getSessionId();
 
-			if (this.isNotConnected()) {
-				stateService.updateState(
-						stateData -> stateData.withState(StateService.StateData.State.NOT_CONNECTED)
-				);
+        if (Objects.equals(event.getMessage().getHeaders().get("simpDestination"), "/topic/client")) {
+            if (event.getUser() instanceof JwtAuthenticationToken) {
+                JwtAuthenticationToken token = (JwtAuthenticationToken) event.getUser();
+                if (token.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_client"))) {
+                    if (!this.clients.contains(sessionId)) {
+                        if (this.isNotConnected()) {
+                            stateService.updateState(
+                                    stateData -> stateData.withState(StateService.StateData.State.CONNECTED)
+                            );
+                        }
+                        this.sendCommand(new VolumeCommand(this.stateService.getState().getVolume()));
+                        this.clients.add(sessionId);
+                        logger.info("Client connected");
+                    }
+                }
+            }
+        }
+    }
+
+    @EventListener
+    public void onDisconnectEvent(SessionDisconnectEvent event) {
+        if (this.clients.contains(event.getSessionId())) {
+            this.clients.remove(event.getSessionId());
+
+            if (this.isNotConnected()) {
+                stateService.updateState(
+                        stateData -> stateData.withState(StateService.StateData.State.NOT_CONNECTED)
+                );
 			}
+            logger.info("Client disconnected: " + event.getCloseStatus());
 		}
 	}
     
