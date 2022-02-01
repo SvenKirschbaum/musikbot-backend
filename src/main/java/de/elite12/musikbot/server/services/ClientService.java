@@ -71,13 +71,13 @@ public class ClientService {
         if(isNotConnected()) return;
 
 		StateService.StateData.State currentState = stateService.getState().getState();
-        if (currentState == StateService.StateData.State.PLAYING || currentState == StateService.StateData.State.PAUSED) {
+        if (currentState == StateService.StateData.State.PLAYING || currentState == StateService.StateData.State.PAUSED || currentState == StateService.StateData.State.CONNECTED) {
 
-        	stateService.updateState(
-					stateData -> stateData.withState(StateService.StateData.State.STOPPED)
-			);
+            stateService.updateState(
+                    stateData -> stateData.withState(StateService.StateData.State.STOPPED)
+            );
 
-			this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.STOP));
+            this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.STOP));
         }
     }
 
