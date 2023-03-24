@@ -1,6 +1,7 @@
 package de.elite12.musikbot.server.util;
 
 import de.elite12.musikbot.server.services.JWTUserService;
+import jakarta.annotation.Nonnull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,7 +10,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
