@@ -31,7 +31,7 @@ public class CustomJwtAuthenticationConverter implements Converter<Jwt, Abstract
                 defaultGrantedAuthoritiesConverter.convert(source).stream(),
                 jwtUserService.extractResourceRoles(source).stream()
         ).collect(Collectors.toSet());
-        return new JwtAuthenticationToken(source, authorities, source.containsClaim("preferred_username") ? source.getClaimAsString("preferred_username") : source.getSubject());
+        return new JwtAuthenticationToken(source, authorities, source.hasClaim("preferred_username") ? source.getClaimAsString("preferred_username") : source.getSubject());
     }
 
 }
