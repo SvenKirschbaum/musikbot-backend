@@ -7,8 +7,8 @@ import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointR
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -17,27 +17,25 @@ import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
-public class ApiSecurityConfig extends WebSecurityConfigurerAdapter {
+public class ApiSecurityConfig {
 
     @Autowired
     CustomJwtAuthenticationConverter jwtAuthenticationConverter;
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-                .csrf().disable()
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf().disable()
                 .cors().and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .oauth2ResourceServer().jwt().jwtAuthenticationConverter(jwtAuthenticationConverter).and().and()
                 .headers()
-                .xssProtection()
-                .disable()
-                .contentTypeOptions()
-                .disable()
-                .frameOptions()
-                .disable()
+                .xssProtection().disable()
+                .contentTypeOptions().disable()
+                .frameOptions().disable()
                 .and()
-                .authorizeRequests().requestMatchers(EndpointRequest.toAnyEndpoint()).hasRole("actuator");
+                .authorizeHttpRequests().requestMatchers(EndpointRequest.toAnyEndpoint()).hasRole("actuator")
+                .anyRequest().permitAll();
+        return http.build();
     }
 
     @Bean
