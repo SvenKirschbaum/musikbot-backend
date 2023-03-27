@@ -2,7 +2,6 @@ package de.elite12.musikbot.server.services;
 
 import com.neovisionaries.i18n.CountryCode;
 import de.elite12.musikbot.server.config.ServiceProperties;
-import jakarta.annotation.PostConstruct;
 import org.apache.hc.core5.http.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +20,7 @@ import se.michaelthelin.spotify.requests.data.playlists.GetPlaylistRequest;
 import se.michaelthelin.spotify.requests.data.playlists.GetPlaylistsItemsRequest;
 import se.michaelthelin.spotify.requests.data.tracks.GetTrackRequest;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -46,7 +46,7 @@ public class SpotifyService {
         if (authorized) {
             return;
         }
-
+        
         ClientCredentialsRequest request = api.clientCredentials().build();
         try {
             ClientCredentials c = request.execute();
@@ -62,7 +62,7 @@ public class SpotifyService {
             logger.error("Error refreshing Token", e);
         }
     }
-
+    
     public Track getTrack(String sid) {
         if (sid == null || sid.isEmpty()) {
             return null;
@@ -76,7 +76,7 @@ public class SpotifyService {
             return null;
         }
     }
-
+    
     public Track getTrackRaw(String sid) throws SpotifyWebApiException, IOException, ParseException {
         if (sid == null || sid.isEmpty()) {
             return null;
@@ -146,7 +146,7 @@ public class SpotifyService {
             return null;
         }
     }
-
+    
     public Paging<PlaylistTrack> getPlaylistTracks(Playlist p, int page) {
     	check();
     	try {
@@ -156,7 +156,7 @@ public class SpotifyService {
             return null;
         }
     }
-
+    
     public Paging<TrackSimplified> getAlbumTracks(Album p, int page) {
     	check();
     	try {
@@ -188,7 +188,7 @@ public class SpotifyService {
             return null;
         }
         check();
-
+        
         return this.getPlaylist(spid).getTracks().getTotal();
     }
 
@@ -197,8 +197,8 @@ public class SpotifyService {
 			return null;
 		}
 		check();
-
-        return this.getAlbum(said).getTracks().getTotal();
+		
+		return this.getAlbum(said).getTracks().getTotal();
 	}
 
 	public TrackSimplified getTrackfromAlbum(String said, int id) {
@@ -206,8 +206,8 @@ public class SpotifyService {
 			return null;
 		}
 		check();
-
-        GetAlbumsTracksRequest r = api.getAlbumsTracks(said).market(CountryCode.DE).limit(1).offset(id).build();
+		
+		GetAlbumsTracksRequest r = api.getAlbumsTracks(said).market(CountryCode.DE).limit(1).offset(id).build();
 		try {
         	Paging<TrackSimplified> t = r.execute();
             return t.getItems()[0];

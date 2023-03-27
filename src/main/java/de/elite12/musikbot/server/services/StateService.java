@@ -5,12 +5,12 @@ import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.repository.SettingRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.events.StateUpdateEvent;
-import jakarta.annotation.PostConstruct;
 import lombok.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
