@@ -1,10 +1,11 @@
 package de.elite12.musikbot.server.events;
 
-import jakarta.persistence.Entity;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.ResolvableTypeProvider;
+
+import javax.persistence.Entity;
 
 @Getter
 public abstract class EntityEvent<T> extends ApplicationEvent implements ResolvableTypeProvider {

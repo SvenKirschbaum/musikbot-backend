@@ -3,8 +3,6 @@ package de.elite12.musikbot.server.data.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.elite12.musikbot.server.util.Util;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +11,8 @@ import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 import org.springframework.lang.Nullable;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
@@ -67,17 +67,17 @@ public class Song implements Serializable {
     private Long sort;
     @Schema(description = "The duration of the Song")
     private int duration;
-
+    
     @Transient
     public String getGravatarId() {
     	return this.getUserAuthor()==null ? Util.md5Hex("null") : Util.md5Hex(this.getUserAuthor().getEmail().toLowerCase(Locale.GERMAN));
     }
-
+    
     @Transient
     public String getAuthorLink() {
         return this.getUserAuthor() == null ? (this.getGuestAuthor() == null ? null : this.getGuestAuthor().getIdentifier()) : this.getUserAuthor().getName();
     }
-
+    
     @Transient
     public String getAuthor() {
         return this.getUserAuthor() == null ? (this.getGuestAuthor() == null ? "System" : "Gast") : this.getUserAuthor().getName();

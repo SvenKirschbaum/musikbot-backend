@@ -10,7 +10,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
@@ -19,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface SongRepository extends PagingAndSortingRepository<Song, Long>, CrudRepository<Song, Long> {
+public interface SongRepository extends PagingAndSortingRepository<Song, Long>{
 
 	@Nullable
 	@Query(value = "select * from song s where s.played = false order by s.sort limit 1", nativeQuery = true)

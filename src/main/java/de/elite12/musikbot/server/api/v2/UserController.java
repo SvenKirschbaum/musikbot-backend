@@ -9,7 +9,6 @@ import de.elite12.musikbot.server.exception.NotFoundException;
 import de.elite12.musikbot.server.services.JWTUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import jakarta.validation.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Validator;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.StreamSupport;

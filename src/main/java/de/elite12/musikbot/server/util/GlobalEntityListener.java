@@ -1,10 +1,11 @@
 package de.elite12.musikbot.server.util;
 
 import de.elite12.musikbot.server.events.entityevent.*;
-import jakarta.persistence.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+
+import javax.persistence.*;
 
 @Component
 public class GlobalEntityListener {
