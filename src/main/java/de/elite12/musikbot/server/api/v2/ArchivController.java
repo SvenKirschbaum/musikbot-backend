@@ -27,7 +27,7 @@ public class ArchivController {
 
             if (page < 1 || page >= 85899347) throw new BadRequestException("The page parameter is not in the required range");
 
-            Page<Song> archiv = songs.findByPlayedOrderBySortDesc(true, PageRequest.of(page - 1, 25));
+            Page<Song> archiv = songs.findByPlayedOrderByPlayedAtDesc(true, PageRequest.of(page - 1, 25));
 
             return new ArchivDTO(archiv.getNumber() + 1, archiv.getTotalPages(), archiv.get().toArray(Song[]::new));
     }

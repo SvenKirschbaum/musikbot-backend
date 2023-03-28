@@ -89,7 +89,7 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>, 
 	@Query(value = "SELECT new de.elite12.musikbot.server.data.projection.SearchResult(s.link, s.title) FROM Song s WHERE s.title LIKE concat('%', replace(replace(?1, '%', '\\\\%'), '_', '\\_'), '%') AND (s.userAuthor IS NOT NULL OR s.guestAuthor IS NOT NULL) GROUP BY s.link ORDER BY count(s) DESC")
 	Page<SearchResult> findSearchResult(String search, Pageable pageable);
 
-	Page<Song> findByPlayedOrderBySortDesc(boolean played, Pageable pageable);
+	Page<Song> findByPlayedOrderByPlayedAtDesc(boolean played, Pageable pageable);
 
 	@Query(value = "SELECT new de.elite12.musikbot.server.data.projection.TopSong(s.title, s.link, COUNT(s)) FROM Song s WHERE (s.userAuthor IS NOT NULL OR s.guestAuthor IS NOT NULL) GROUP BY s.title,s.link ORDER BY COUNT(s) DESC")
 	Page<TopSong> findTopMostPlayed(Pageable pageable);
