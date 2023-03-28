@@ -26,8 +26,11 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>, 
 	Song getNextSong();
 
 	@Nullable
-	@Query(value = "select * from song s where s.played = true order by s.sort desc limit 1", nativeQuery = true)
+	@Query(value = "select * from song s where s.played = true order by s.played_at desc limit 1", nativeQuery = true)
 	Song getLastSong();
+
+	@Query("SELECT MAX(s.sort) FROM Song s WHERE s.played = false")
+	Long findMaxSort();
 
 	@Query(value = "select * from song s WHERE (s.user_author IS NOT NULL OR s.guest_author IS NOT NULL) order by RAND() limit 1", nativeQuery = true)
 	Optional<Song> getRandomSong();
@@ -78,7 +81,7 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>, 
 	@Query(value = "SELECT COUNT(s.id) FROM Song s WHERE s.guestAuthor IS NULL AND s.userAuthor IS NULL AND s.skipped = true")
 	Long countSystemSkipped();
 
-	Iterable<Song> findByPlayedOrderBySort(boolean played);
+	List<Song> findByPlayedOrderBySort(boolean played);
 
 	List<Song> findByGuestAuthor(Guest guest);
 
@@ -113,9 +116,9 @@ public interface SongRepository extends PagingAndSortingRepository<Song, Long>, 
 	@Query(value = "SELECT new de.elite12.musikbot.server.data.projection.TopSong(s.title, s.link, COUNT(s)) FROM Song s WHERE s.guestAuthor = ?1 AND s.skipped = true GROUP BY s.link ORDER BY COUNT(s) DESC")
 	Page<TopSong> findTopSkippedForGuest(Guest u, Pageable pageable);
 
-	@Query(value = "SELECT s FROM Song s WHERE s.userAuthor = ?1 ORDER BY s.sort DESC")
+	@Query(value = "SELECT s FROM Song s WHERE s.userAuthor = ?1 ORDER BY s.playedAt DESC")
 	Page<Song> findRecentByUser(User u, Pageable pageable);
 
-	@Query(value = "SELECT s FROM Song s WHERE s.guestAuthor = ?1 ORDER BY s.sort DESC")
+	@Query(value = "SELECT s FROM Song s WHERE s.guestAuthor = ?1 ORDER BY s.playedAt DESC")
 	Page<Song> findRecentByGuest(Guest u, Pageable pageable);
 }

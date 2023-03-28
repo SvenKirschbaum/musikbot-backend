@@ -9,19 +9,17 @@ import io.swagger.v3.oas.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.util.Pair;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 
 @RequestMapping("/control")
@@ -34,7 +32,7 @@ public class ControlController {
 
 	@Autowired
 	private SongRepository songrepository;
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ControlController.class);
 
     @RequestMapping(path = "/start", method = RequestMethod.POST)
@@ -76,33 +74,22 @@ public class ControlController {
         logger.info(String.format("Volume set to %d%% by User %s", volume.getVolume(), SecurityContextHolder.getContext().getAuthentication().getName()));
     }
 
-    @RequestMapping(path = "/shuffle", method = RequestMethod.POST)
-    @Operation(summary = "Shuffle Playlist", description = "Shuffles the Playlist. Requires Admin Permissions.")
+	@RequestMapping(path = "/shuffle", method = RequestMethod.POST)
+	@Operation(summary = "Shuffle Playlist", description = "Shuffles the Playlist. Requires Admin Permissions.")
+	@Transactional
 	public void shuffle() {
-		ArrayList<Pair<Long, Long>> ids = new ArrayList<>(30);
-		Map<Long, Song> list = new HashMap<>(30);
-		Iterable<Song> tmp = songrepository.findByPlayedOrderBySort(false);
-		
-		for(Song s:tmp) {
-			ids.add(Pair.of(s.getId(), s.getSort()));
-			list.put(s.getId(), s);
+		List<Song> songs = songrepository.findByPlayedOrderBySort(false);
+
+		Collections.shuffle(songs);
+
+		for (int i = 0; i < songs.size(); i++) {
+			Song s = songs.get(i);
+
+			s.setSort(i + 1.0);
+
+			songrepository.save(s);
 		}
-		Collections.shuffle(ids);
-		
-		if(ids.size() == 0) return;
-		
-		for(int i = 0; i<(ids.size()-1); i +=2 ) {
-			Pair<Long, Long> a = ids.get(i);
-			Pair<Long, Long> b = ids.get(i+1);
-			
-			Song t = list.get(b.getFirst());
-			t.setSort(a.getSecond());
-			songrepository.save(t);
-			
-			t = list.get(a.getFirst());
-			t.setSort(b.getSecond());
-			songrepository.save(t);
-		}
-        logger.info(String.format("Playlist shuffled by %s", SecurityContextHolder.getContext().getAuthentication().getName()));
+
+		logger.info(String.format("Playlist shuffled by %s", SecurityContextHolder.getContext().getAuthentication().getName()));
 	}
 }

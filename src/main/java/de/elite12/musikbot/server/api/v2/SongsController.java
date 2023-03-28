@@ -53,9 +53,9 @@ public class SongsController {
     @GetMapping(path = "{ids}", produces = {"application/json"})
     @Operation(summary = "Get Songs")
     @ApiResponses({@ApiResponse(responseCode = "404", description = "One of the requested Songs could not been found")})
-    public ResponseEntity<de.elite12.musikbot.server.data.entity.Song[]> getSong(@Parameter(description = "Comma-seperated List of Song Ids to get") @PathVariable String ids) {
+    public ResponseEntity<Song[]> getSong(@Parameter(description = "Comma-seperated List of Song Ids to get") @PathVariable String ids) {
         String[] a = ids.split(",");
-        de.elite12.musikbot.server.data.entity.Song[] r = new de.elite12.musikbot.server.data.entity.Song[a.length];
+        Song[] r = new Song[a.length];
         try {
             for (int i = 0; i < a.length; i++) {
                 long id = Long.parseLong(a[i]);
@@ -83,7 +83,7 @@ public class SongsController {
                 Optional<Song> song = songrepository.findById(id);
                 if (song.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
                 if (song.get().isPlayed()) return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-                
+
                 songs.add(song.get());
             }
 
@@ -143,49 +143,21 @@ public class SongsController {
 
 
     @PreAuthorize("hasRole('admin')")
-    @PutMapping(path = "{ids}")
+    @PutMapping(path = "{id}")
     @Operation(summary = "Sort Songs", description = "Requires Admin permissions.")
-    public ResponseEntity<Object> sortsong(@Parameter(description = "The ID of the Song to resort") @PathVariable("ids") String sid, @Parameter(description = "The ID of the Song after which the Song should be sorted") @RequestBody(required = false) String prev) {
+    public ResponseEntity<Object> sortsong(@Parameter(description = "The ID of the Song to resort") @PathVariable("id") String sid, @Parameter(description = "The desired sort value of the Song") @RequestBody(required = true) Double sort) {
         try {
+            if (sort.isNaN() || sort.isInfinite()) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
             long id = Long.parseLong(sid);
-            long pr;
-            try {
-                pr = Long.parseLong(prev);
-            } catch (NumberFormatException e) {
-                pr = -1;
-            }
-            long low = Long.MAX_VALUE;
-            
-            Iterable<de.elite12.musikbot.server.data.entity.Song> songs = songrepository.findByPlayedOrderBySort(false);
-            Iterator<de.elite12.musikbot.server.data.entity.Song> iterator = songs.iterator();
-            de.elite12.musikbot.server.data.entity.Song cs;
-            if (songs.iterator().hasNext()) {
-            	cs = songs.iterator().next();
-                low = cs.getSort();
-            }
-            if (pr == -1) {
-                pr = low - 1;
-            } else {
-                pr = songrepository.findById(pr).orElseThrow().getSort();
-            }
-            
-            de.elite12.musikbot.server.data.entity.Song s = songrepository.findById(id).orElseThrow();
-            if(s.isPlayed()) return  new ResponseEntity<>(HttpStatus.FORBIDDEN);
-            s.setSort(pr +1);
+
+            Song s = songrepository.findById(id).orElseThrow();
+
+            if (s.isPlayed()) return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+            s.setSort(sort);
+
             songrepository.save(s);
-            do {
-            	cs = iterator.next();
-                if (cs.getId() != id) {
-                    if (cs.getSort() == pr + 1) {
-                        low++;
-                    }
-                    if (cs.getSort() != low) {
-                        cs.setSort(low);
-                        songrepository.save(cs);
-                    }
-                    low++;
-                }
-            } while (iterator.hasNext());
 
             logger.info(String.format("Playlist sorted by %s", SecurityContextHolder.getContext().getAuthentication().getName()));
         } catch (NumberFormatException | NoSuchElementException e) {

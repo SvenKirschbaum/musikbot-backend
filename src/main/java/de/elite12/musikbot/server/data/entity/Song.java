@@ -1,6 +1,7 @@
 package de.elite12.musikbot.server.data.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.elite12.musikbot.server.util.SongEntityListener;
 import de.elite12.musikbot.server.util.Util;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -9,8 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.Generated;
-import org.hibernate.annotations.GenerationTime;
 import org.springframework.lang.Nullable;
 
 import java.io.Serial;
@@ -23,6 +22,7 @@ import java.util.Locale;
 @Setter
 @ToString
 @NoArgsConstructor
+@EntityListeners(SongEntityListener.class)
 public class Song implements Serializable {
     /**
      *
@@ -62,9 +62,8 @@ public class Song implements Serializable {
     @Nullable
     @Schema(description = "The Time the Song has been played")
     private Date playedAt;
-    @Generated(GenerationTime.INSERT)
     @Schema(description = "The sort order of the song")
-    private Long sort;
+    private Double sort;
     @Schema(description = "The duration of the Song")
     private int duration;
 
@@ -81,10 +80,5 @@ public class Song implements Serializable {
     @Transient
     public String getAuthor() {
         return this.getUserAuthor() == null ? (this.getGuestAuthor() == null ? "System" : "Gast") : this.getUserAuthor().getName();
-    }
-
-    @PostPersist
-    private void postPersist() {
-        this.sort = this.id;
     }
 }
