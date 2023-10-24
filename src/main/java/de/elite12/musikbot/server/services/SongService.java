@@ -21,7 +21,7 @@ import java.util.Date;
 
 @Service
 public class SongService {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(SongService.class);
 
     @Autowired
@@ -59,7 +59,7 @@ public class SongService {
         next.setPlayed(true);
         next.setPlayedAt(new Date());
         next = songrepository.save(next);
-        
+
         try {
             UnifiedTrack.fromSong(next, youtube, spotifyService);
         }
@@ -76,7 +76,7 @@ public class SongService {
         	logger.error("Impossible Error",e);
         	return this.getnextSong();
 		}
-        
+
         return next;
     }
 
@@ -97,8 +97,13 @@ public class SongService {
             }
 
             if(songrepository.countByPlayed(false) >= 24) {
-                logger.debug("Adding Song aborted, Playlist is full");
-                return new createSongResponse(false,false,"Die Playlist ist leider voll!");
+                if (user != null && user.isAdmin()) {
+                    logger.debug("Playlist is full, but User is Admin, creating Notice");
+                    notice = "Hinweis: Die Playlist ist voll";
+                } else {
+                    logger.debug("Adding Song aborted, Playlist is full");
+                    return new createSongResponse(false, false, "Die Playlist ist leider voll!");
+                }
             }
 
             if(songrepository.countByLinkAndPlayed(ut.getLink(),false) > 0) {
@@ -143,7 +148,7 @@ public class SongService {
 
             s = songrepository.save(s);
 
-            logger.info(String.format("Song added by %s: %s", user != null ? ("User " + user.getName()) : ("Guest " + guest.getIdentifier()), s.toString()));
+            logger.info(String.format("Song added by %s: %s", user != null ? ("User " + user.getName()) : ("Guest " + guest.getIdentifier()), s));
 
 
             client.notifynewSong();
