@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/v2/playlist")
@@ -48,7 +49,7 @@ public class PlaylistController {
             throw new NotFoundException();
         }
 
-        PlaylistDTO p = null;
+        Optional<PlaylistDTO> p = Optional.empty();
         if (pid != null) {
             p = playlistImporterService.getYoutubePlaylist(pid);
         }
@@ -64,7 +65,11 @@ public class PlaylistController {
 
         logger.info(String.format("Playlist loaded by %s: %s", SecurityContextHolder.getContext().getAuthentication().getName(), p.toString()));
 
-        return p;
+        if (p.isEmpty()) {
+            throw new NotFoundException();
+        }
+
+        return p.get();
     }
 
     @PostMapping
