@@ -1,8 +1,9 @@
 package de.elite12.musikbot.server.api.v2;
 
 import de.elite12.musikbot.server.api.dto.GapcloserDTO;
+import de.elite12.musikbot.server.data.UnifiedTrack;
+import de.elite12.musikbot.server.exception.BadRequestException;
 import de.elite12.musikbot.server.services.GapcloserService;
-import de.elite12.musikbot.shared.util.SongIDParser;
 import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,33 +25,24 @@ public class GapcloserController {
     @GetMapping
     @Operation(summary = "Get Gapcloser Settings", description = "Requires Admin Permissions.")
     public GapcloserDTO getAction() {
-        return new GapcloserDTO(gapcloserService.getPlaylist(), gapcloserService.getMode());
+        return new GapcloserDTO(gapcloserService.getPlaylistURL(), gapcloserService.getPlaylistName(), gapcloserService.getMode());
     }
 
     @PutMapping
     @Operation(summary = "Updates Gapcloser Settings", description = "Requires Admin Permissions.")
     public GapcloserDTO postAction(@RequestBody GapcloserDTO req) {
-        String pid = SongIDParser.getPID(req.getPlaylist());
-        String said = SongIDParser.getSAID(req.getPlaylist());
-        String spid = SongIDParser.getSPID(req.getPlaylist());
+        try {
+            gapcloserService.setPlaylistFromUrl(req.getPlaylist());
+            gapcloserService.setMode(req.getMode());
 
-        if (pid != null) {
-            gapcloserService.setPlaylist("https://www.youtube.com/playlist?list=" + pid);
+            GapcloserDTO newstate = getAction();
+
+            logger.info(String.format("Gapcloser changed by %s: %s", SecurityContextHolder.getContext().getAuthentication().getName(), newstate.toString()));
+
+            return newstate;
+        } catch (UnifiedTrack.InvalidURLException e) {
+            throw new BadRequestException(e.getMessage());
         }
-        if (said != null) {
-            gapcloserService.setPlaylist("https://open.spotify.com/album/" + said);
-        }
-        if (spid != null) {
-            gapcloserService.setPlaylist("https://open.spotify.com/playlist/" + spid);
-        }
-
-        gapcloserService.setMode(req.getMode());
-
-        GapcloserDTO newstate = getAction();
-
-        logger.info(String.format("Gapcloser changed by %s: %s", SecurityContextHolder.getContext().getAuthentication().getName(), newstate.toString()));
-
-        return newstate;
     }
 
 }

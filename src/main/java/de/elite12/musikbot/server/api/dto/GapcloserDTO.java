@@ -10,5 +10,6 @@ import lombok.*;
 @ToString
 public class GapcloserDTO {
     private String playlist;
+    private String playlistName;
     private GapcloserService.Mode mode;
 }

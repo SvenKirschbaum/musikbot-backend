@@ -2,6 +2,7 @@ package de.elite12.musikbot.server.services;
 
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
+import com.google.api.services.youtube.model.PlaylistListResponse;
 import de.elite12.musikbot.server.data.UnifiedTrack;
 import de.elite12.musikbot.server.data.UnifiedTrack.InvalidURLException;
 import de.elite12.musikbot.server.data.UnifiedTrack.TrackNotAvailableException;
@@ -19,6 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import se.michaelthelin.spotify.model_objects.specification.Album;
+import se.michaelthelin.spotify.model_objects.specification.Playlist;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
 
@@ -38,7 +41,9 @@ public class GapcloserService {
     @Getter
     private Mode mode = Mode.OFF;
     @Getter
-    private String playlist = "";
+    private String playlistURL = "";
+    @Getter
+    private String playlistName = "";
 
     @Getter(AccessLevel.PRIVATE)
     @Setter(AccessLevel.PRIVATE)
@@ -72,14 +77,15 @@ public class GapcloserService {
     public void postConstruct() {
         Optional<Setting> mode = settings.findById("gapcloser");
         Optional<Setting> playlist = settings.findById("playlist");
+        Optional<Setting> playlistName = settings.findById("playlistName");
         boolean found = mode.isPresent() && playlist.isPresent();
 
-        if(found) {
-            this.mode = Mode.valueOf(mode.get().getValue());
-            this.playlist = playlist.get().getValue();
-        }
-    	else {
-    	    save();
+        mode.ifPresent(setting -> this.mode = Mode.valueOf(setting.getValue()));
+        playlist.ifPresent(setting -> this.playlistURL = setting.getValue());
+        playlistName.ifPresent(setting -> this.playlistName = setting.getValue());
+
+        if (mode.isEmpty() || playlist.isEmpty() || playlistName.isEmpty()) {
+            this.save();
         }
 
         createPermutation();
@@ -87,12 +93,16 @@ public class GapcloserService {
 
     private void save() {
     	Setting modesetting = new Setting("gapcloser", this.mode.toString());
-    	Setting playlistsetting = new Setting("playlist", this.playlist);
+        Setting playlistsetting = new Setting("playlist", this.playlistURL);
+        Setting playlistNameSetting = new Setting("playlistName", this.playlistName);
+        Setting historySetting = new Setting("playlistHistory", this.objectMapper.writeValueAsString(this.playlistHistory));
 
-    	settings.saveAll(Arrays.asList(modesetting, playlistsetting));
+        settings.saveAll(Arrays.asList(modesetting, playlistsetting, playlistNameSetting, historySetting));
 
     	logger.debug("Einstellung " + modesetting + " wurde gespeichert");
     	logger.debug("Einstellung " + playlistsetting + " wurde gespeichert");
+        logger.debug("Einstellung " + playlistNameSetting + " wurde gespeichert");
+        logger.debug("Einstellung " + historySetting + " wurde gespeichert");
     }
 
     public Song getnextSong() {
@@ -156,9 +166,9 @@ public class GapcloserService {
 				return s.map(Song::getLink).orElse(null);
 			}
 			case PLAYLIST: {
-				String pid = SongIDParser.getPID(this.getPlaylist());
-				String said = SongIDParser.getSAID(this.getPlaylist());
-                String spid = SongIDParser.getSPID(this.getPlaylist());
+                String pid = SongIDParser.getPID(this.getPlaylistURL());
+                String said = SongIDParser.getSAID(this.getPlaylistURL());
+                String spid = SongIDParser.getSPID(this.getPlaylistURL());
                 int id = this.permutation.getNext();
 
                 if (pid != null) {
@@ -197,16 +207,66 @@ public class GapcloserService {
         }
     }
 
-    public void setPlaylist(String playlist) {
-        this.playlist = playlist;
+    public void setPlaylistURL(String playlistURL) {
+        this.playlistURL = playlistURL;
         this.createPermutation();
         this.save();
     }
 
+    public void setPlaylistFromUrl(String playlistURL) throws InvalidURLException {
+        String pid = SongIDParser.getPID(playlistURL);
+        String said = SongIDParser.getSAID(playlistURL);
+        String spid = SongIDParser.getSPID(playlistURL);
+
+        if (pid != null) {
+            try {
+                PlaylistListResponse playlistListResponse = this.youtube.api().playlists()
+                        .list(List.of("contentDetails", "snippet"))
+                        .setId(Collections.singletonList(pid))
+                        .execute();
+
+                if (playlistListResponse.getItems().isEmpty()) {
+                    throw new InvalidURLException("Playlist not found");
+                }
+
+                com.google.api.services.youtube.model.Playlist playlist = playlistListResponse.getItems().getFirst();
+
+                if (playlist.getContentDetails().getItemCount() == 0) {
+                    throw new InvalidURLException("Playlist contains no Songs");
+                }
+
+                this.playlistName = playlist.getSnippet().getTitle();
+                this.setPlaylistURL("https://www.youtube.com/playlist?list=" + pid);
+            } catch (IOException e) {
+                throw new InvalidURLException("Error loading Playlist");
+            }
+        } else if (said != null) {
+            Album album = this.spotifyService.getAlbum(said);
+
+            if (album == null) {
+                throw new InvalidURLException("Unable to load Spotify Album");
+            }
+
+            this.playlistName = album.getName();
+            this.setPlaylistURL("https://open.spotify.com/album/" + said);
+        } else if (spid != null) {
+            Playlist playlist = this.spotifyService.getPlaylist(spid);
+
+            if (playlist == null) {
+                throw new InvalidURLException("Unable to load Spotify Playlist");
+            }
+
+            this.playlistName = playlist.getName();
+            this.setPlaylistURL("https://open.spotify.com/playlist/" + spid);
+        } else {
+            throw new InvalidURLException("Provided URL does not correspond to a known Playlist URL Format");
+        }
+    }
+
     private void createPermutation() {
-        String pid = SongIDParser.getPID(this.getPlaylist());
-        String spid = SongIDParser.getSPID(this.getPlaylist());
-        String said = SongIDParser.getSAID(this.getPlaylist());
+        String pid = SongIDParser.getPID(this.getPlaylistURL());
+        String spid = SongIDParser.getSPID(this.getPlaylistURL());
+        String said = SongIDParser.getSAID(this.getPlaylistURL());
         if (pid != null) {
             try {
             	PlaylistItemListResponse r = youtube.api().playlistItems().list(Collections.singletonList("snippet"))
