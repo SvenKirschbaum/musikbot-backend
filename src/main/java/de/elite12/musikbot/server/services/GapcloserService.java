@@ -35,7 +35,9 @@ public class GapcloserService {
         PLAYLIST
     }
 
+    @Getter
     private Mode mode = Mode.OFF;
+    @Getter
     private String playlist = "";
 
     @Getter(AccessLevel.PRIVATE)
@@ -186,10 +188,6 @@ public class GapcloserService {
     	return null;
     }
 
-    public Mode getMode() {
-        return mode;
-    }
-
     public void setMode(Mode mode) {
         this.mode = mode;
         this.save();
@@ -197,10 +195,6 @@ public class GapcloserService {
         if (this.stateService.getState().getState() == StateService.StateData.State.WAITING_FOR_SONGS && mode != Mode.OFF) {
             this.clientService.notifynewSong();
         }
-    }
-
-    public String getPlaylist() {
-        return playlist;
     }
 
     public void setPlaylist(String playlist) {
