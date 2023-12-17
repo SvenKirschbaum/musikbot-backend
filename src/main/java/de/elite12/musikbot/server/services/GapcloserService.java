@@ -25,13 +25,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import se.michaelthelin.spotify.model_objects.specification.Album;
-import se.michaelthelin.spotify.model_objects.specification.Playlist;
-import se.michaelthelin.spotify.model_objects.specification.Track;
-import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
+import se.michaelthelin.spotify.model_objects.specification.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class GapcloserService {
@@ -274,7 +272,8 @@ public class GapcloserService {
                     throw new InvalidURLException("Playlist contains no Songs");
                 }
 
-                this.setPlaylist(playlist.getSnippet().getTitle(), "https://www.youtube.com/playlist?list=" + pid);
+                String playlistName = String.format("[%s] %s", playlist.getSnippet().getChannelTitle(), playlist.getSnippet().getTitle());
+                this.setPlaylist(playlistName, "https://www.youtube.com/playlist?list=" + pid);
             } catch (IOException e) {
                 throw new InvalidURLException("Error loading Playlist");
             }
@@ -285,7 +284,12 @@ public class GapcloserService {
                 throw new InvalidURLException("Unable to load Spotify Album");
             }
 
-            this.setPlaylist(album.getName(), "https://open.spotify.com/album/" + said);
+            String playlistName = String.format(
+                    "[%s] %s",
+                    Arrays.stream(album.getArtists()).map(ArtistSimplified::getName).collect(Collectors.joining(",")),
+                    album.getName()
+            );
+            this.setPlaylist(playlistName, "https://open.spotify.com/album/" + said);
         } else if (spid != null) {
             Playlist playlist = this.spotifyService.getPlaylist(spid);
 
@@ -293,7 +297,8 @@ public class GapcloserService {
                 throw new InvalidURLException("Unable to load Spotify Playlist");
             }
 
-            this.setPlaylist(playlist.getName(), "https://open.spotify.com/playlist/" + spid);
+            String playlistName = String.format("[%s] %s", playlist.getOwner().getDisplayName(), playlist.getName());
+            this.setPlaylist(playlistName, "https://open.spotify.com/playlist/" + spid);
         } else {
             throw new InvalidURLException("Provided URL does not correspond to a known Playlist URL Format");
         }
