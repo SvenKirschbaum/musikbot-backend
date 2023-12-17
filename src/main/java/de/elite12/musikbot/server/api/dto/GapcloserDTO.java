@@ -9,7 +9,19 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 public class GapcloserDTO {
+
     private String playlist;
     private String playlistName;
     private GapcloserService.Mode mode;
+    private HistoryEntry[] history;
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @ToString
+    public static class HistoryEntry {
+        private String name;
+        private String url;
+    }
 }

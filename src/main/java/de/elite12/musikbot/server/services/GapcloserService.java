@@ -1,8 +1,12 @@
 package de.elite12.musikbot.server.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
 import com.google.api.services.youtube.model.PlaylistListResponse;
+import de.elite12.musikbot.server.api.dto.GapcloserDTO;
 import de.elite12.musikbot.server.data.UnifiedTrack;
 import de.elite12.musikbot.server.data.UnifiedTrack.InvalidURLException;
 import de.elite12.musikbot.server.data.UnifiedTrack.TrackNotAvailableException;
@@ -16,6 +20,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +49,8 @@ public class GapcloserService {
     private String playlistURL = "";
     @Getter
     private String playlistName = "";
+    @Getter
+    private List<GapcloserDTO.HistoryEntry> playlistHistory = new ArrayList<>();
 
     @Getter(AccessLevel.PRIVATE)
     @Setter(AccessLevel.PRIVATE)
@@ -70,6 +77,9 @@ public class GapcloserService {
     @Autowired
     private ClientService clientService;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
 
     private static final Logger logger = LoggerFactory.getLogger(GapcloserService.class);
 
@@ -78,19 +88,28 @@ public class GapcloserService {
         Optional<Setting> mode = settings.findById("gapcloser");
         Optional<Setting> playlist = settings.findById("playlist");
         Optional<Setting> playlistName = settings.findById("playlistName");
-        boolean found = mode.isPresent() && playlist.isPresent();
+        Optional<Setting> playlistHistory = settings.findById("playlistHistory");
 
         mode.ifPresent(setting -> this.mode = Mode.valueOf(setting.getValue()));
         playlist.ifPresent(setting -> this.playlistURL = setting.getValue());
         playlistName.ifPresent(setting -> this.playlistName = setting.getValue());
+        playlistHistory.ifPresent(setting -> {
+            try {
+                this.playlistHistory = objectMapper.readValue(setting.getValue(), new TypeReference<>() {
+                });
+            } catch (JsonProcessingException e) {
+                logger.error("Error reading Playlist History", e);
+            }
+        });
 
-        if (mode.isEmpty() || playlist.isEmpty() || playlistName.isEmpty()) {
+        if (mode.isEmpty() || playlist.isEmpty() || playlistName.isEmpty() || playlistHistory.isEmpty()) {
             this.save();
         }
 
         createPermutation();
     }
 
+    @SneakyThrows
     private void save() {
     	Setting modesetting = new Setting("gapcloser", this.mode.toString());
         Setting playlistsetting = new Setting("playlist", this.playlistURL);
@@ -207,10 +226,30 @@ public class GapcloserService {
         }
     }
 
-    public void setPlaylistURL(String playlistURL) {
+    public void setPlaylist(String playlistName, String playlistURL) {
+        this.updateHistory(playlistURL);
+
+        this.playlistName = playlistName;
         this.playlistURL = playlistURL;
         this.createPermutation();
+
         this.save();
+    }
+
+    private void updateHistory(String newPlaylistURL) {
+        this.playlistHistory.removeIf(historyEntry -> historyEntry.getUrl().equals(newPlaylistURL));
+        this.playlistHistory.removeIf(historyEntry -> historyEntry.getUrl().equals(this.playlistURL));
+
+        if (!newPlaylistURL.equals(this.playlistURL)) {
+            this.playlistHistory.addFirst(new GapcloserDTO.HistoryEntry(
+                    this.playlistName,
+                    this.playlistURL
+            ));
+        }
+
+        if (this.playlistHistory.size() > 10) {
+            this.playlistHistory.removeLast();
+        }
     }
 
     public void setPlaylistFromUrl(String playlistURL) throws InvalidURLException {
@@ -235,8 +274,7 @@ public class GapcloserService {
                     throw new InvalidURLException("Playlist contains no Songs");
                 }
 
-                this.playlistName = playlist.getSnippet().getTitle();
-                this.setPlaylistURL("https://www.youtube.com/playlist?list=" + pid);
+                this.setPlaylist(playlist.getSnippet().getTitle(), "https://www.youtube.com/playlist?list=" + pid);
             } catch (IOException e) {
                 throw new InvalidURLException("Error loading Playlist");
             }
@@ -247,8 +285,7 @@ public class GapcloserService {
                 throw new InvalidURLException("Unable to load Spotify Album");
             }
 
-            this.playlistName = album.getName();
-            this.setPlaylistURL("https://open.spotify.com/album/" + said);
+            this.setPlaylist(album.getName(), "https://open.spotify.com/album/" + said);
         } else if (spid != null) {
             Playlist playlist = this.spotifyService.getPlaylist(spid);
 
@@ -256,8 +293,7 @@ public class GapcloserService {
                 throw new InvalidURLException("Unable to load Spotify Playlist");
             }
 
-            this.playlistName = playlist.getName();
-            this.setPlaylistURL("https://open.spotify.com/playlist/" + spid);
+            this.setPlaylist(playlist.getName(), "https://open.spotify.com/playlist/" + spid);
         } else {
             throw new InvalidURLException("Provided URL does not correspond to a known Playlist URL Format");
         }

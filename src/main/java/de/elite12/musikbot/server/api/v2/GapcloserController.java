@@ -25,7 +25,7 @@ public class GapcloserController {
     @GetMapping
     @Operation(summary = "Get Gapcloser Settings", description = "Requires Admin Permissions.")
     public GapcloserDTO getAction() {
-        return new GapcloserDTO(gapcloserService.getPlaylistURL(), gapcloserService.getPlaylistName(), gapcloserService.getMode());
+        return new GapcloserDTO(gapcloserService.getPlaylistURL(), gapcloserService.getPlaylistName(), gapcloserService.getMode(), gapcloserService.getPlaylistHistory().toArray(new GapcloserDTO.HistoryEntry[0]));
     }
 
     @PutMapping
