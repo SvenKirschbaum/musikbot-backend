@@ -3,7 +3,6 @@ package de.elite12.musikbot.server.config;
 import de.elite12.musikbot.server.util.CustomJwtAuthenticationConverter;
 import org.apache.catalina.filters.RemoteIpFilter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -33,7 +32,7 @@ public class ApiSecurityConfig {
                 .contentTypeOptions().disable()
                 .frameOptions().disable()
                 .and()
-                .authorizeHttpRequests().requestMatchers(EndpointRequest.toAnyEndpoint()).hasRole("actuator")
+                .authorizeHttpRequests()
                 .anyRequest().permitAll();
         return http.build();
     }
