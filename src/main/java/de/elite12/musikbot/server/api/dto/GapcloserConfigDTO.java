@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class GapcloserDTO {
+public class GapcloserConfigDTO {
 
     private String playlist;
     private String playlistName;

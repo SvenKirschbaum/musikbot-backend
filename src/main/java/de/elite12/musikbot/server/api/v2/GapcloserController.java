@@ -1,6 +1,7 @@
 package de.elite12.musikbot.server.api.v2;
 
-import de.elite12.musikbot.server.api.dto.GapcloserDTO;
+import de.elite12.musikbot.server.api.dto.GapcloserConfigDTO;
+import de.elite12.musikbot.server.api.dto.GapcloserUpdateConfigDTO;
 import de.elite12.musikbot.server.data.UnifiedTrack;
 import de.elite12.musikbot.server.exception.BadRequestException;
 import de.elite12.musikbot.server.services.GapcloserService;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,18 +30,20 @@ public class GapcloserController {
     @GetMapping
     @SubscribeMapping
     @Operation(summary = "Get Gapcloser Settings", description = "Requires Admin Permissions.")
-    public GapcloserDTO getAction() {
+    public GapcloserConfigDTO getAction() {
         return gapcloserService.getState();
     }
 
     @PutMapping
+    @MessageMapping
+    @SendTo("")
     @Operation(summary = "Updates Gapcloser Settings", description = "Requires Admin Permissions.")
-    public GapcloserDTO postAction(@RequestBody GapcloserDTO req) {
+    public GapcloserConfigDTO postAction(@RequestBody GapcloserUpdateConfigDTO req) {
         try {
             gapcloserService.setPlaylistFromUrl(req.getPlaylist());
             gapcloserService.setMode(req.getMode());
 
-            GapcloserDTO newstate = gapcloserService.getState();
+            GapcloserConfigDTO newstate = gapcloserService.getState();
 
             logger.info(String.format("Gapcloser changed by %s: %s", SecurityContextHolder.getContext().getAuthentication().getName(), newstate.toString()));
 

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
 import com.google.api.services.youtube.model.PlaylistListResponse;
-import de.elite12.musikbot.server.api.dto.GapcloserDTO;
+import de.elite12.musikbot.server.api.dto.GapcloserConfigDTO;
 import de.elite12.musikbot.server.data.UnifiedTrack;
 import de.elite12.musikbot.server.data.UnifiedTrack.InvalidURLException;
 import de.elite12.musikbot.server.data.UnifiedTrack.TrackNotAvailableException;
@@ -49,7 +49,7 @@ public class GapcloserService {
     @Getter
     private String playlistName = "";
     @Getter
-    private List<GapcloserDTO.HistoryEntry> playlistHistory = new ArrayList<>();
+    private List<GapcloserConfigDTO.HistoryEntry> playlistHistory = new ArrayList<>();
 
     @Getter(AccessLevel.PRIVATE)
     @Setter(AccessLevel.PRIVATE)
@@ -81,7 +81,6 @@ public class GapcloserService {
 
     @Autowired
     private SimpMessagingTemplate template;
-
 
     private static final Logger logger = LoggerFactory.getLogger(GapcloserService.class);
 
@@ -245,7 +244,7 @@ public class GapcloserService {
         this.playlistHistory.removeIf(historyEntry -> historyEntry.getUrl().equals(this.playlistURL));
 
         if (!newPlaylistURL.equals(this.playlistURL)) {
-            this.playlistHistory.addFirst(new GapcloserDTO.HistoryEntry(
+            this.playlistHistory.addFirst(new GapcloserConfigDTO.HistoryEntry(
                     this.playlistName,
                     this.playlistURL
             ));
@@ -256,14 +255,19 @@ public class GapcloserService {
         }
     }
 
-    public GapcloserDTO getState() {
-        return new GapcloserDTO(this.getPlaylistURL(), this.getPlaylistName(), this.getMode(), this.getPlaylistHistory().toArray(new GapcloserDTO.HistoryEntry[0]));
+    public GapcloserConfigDTO getState() {
+        return new GapcloserConfigDTO(this.getPlaylistURL(), this.getPlaylistName(), this.getMode(), this.getPlaylistHistory().toArray(new GapcloserConfigDTO.HistoryEntry[0]));
     }
 
     public void setPlaylistFromUrl(String playlistURL) throws InvalidURLException {
         String pid = SongIDParser.getPID(playlistURL);
         String said = SongIDParser.getSAID(playlistURL);
         String spid = SongIDParser.getSPID(playlistURL);
+
+        // If the playlist is already set, we don't need to do anything
+        if (playlistURL.equals(this.playlistURL)) {
+            return;
+        }
 
         if (pid != null) {
             try {

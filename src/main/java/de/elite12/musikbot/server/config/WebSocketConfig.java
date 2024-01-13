@@ -56,6 +56,9 @@ public class WebSocketConfig {
                     .simpSubscribeDestMatchers("/topic/client").hasRole("client")
                     .simpMessageDestMatchers("/musikbot/client").hasRole("client")
 
+                    //Admin only topics
+                    .simpSubscribeDestMatchers("/topic/gapcloser").hasRole("admin")
+
                     //Allow everyone
                     .simpSubscribeDestMatchers("/topic/*").permitAll()
                     .simpSubscribeDestMatchers("/user/queue/*").permitAll()
