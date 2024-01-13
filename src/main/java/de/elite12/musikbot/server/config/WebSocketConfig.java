@@ -1,5 +1,6 @@
 package de.elite12.musikbot.server.config;
 
+import de.elite12.musikbot.server.util.CustomJwtAuthenticationConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +19,6 @@ import org.springframework.security.config.annotation.web.messaging.MessageSecur
 import org.springframework.security.config.annotation.web.socket.AbstractSecurityWebSocketMessageBrokerConfigurer;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -80,6 +80,9 @@ public class WebSocketConfig {
         @Autowired
         JwtDecoder jwtAuthenticationProvider;
 
+        @Autowired
+        CustomJwtAuthenticationConverter jwtAuthenticationConverter;
+
         @Override
         public void configureClientInboundChannel(ChannelRegistration registration) {
             registration.interceptors(new ChannelInterceptor() {
@@ -91,9 +94,7 @@ public class WebSocketConfig {
                         if (accessor.containsNativeHeader("Authorization")) {
                             String[] split = accessor.getFirstNativeHeader("Authorization").split(" ");
                             Jwt decode = jwtAuthenticationProvider.decode(split[split.length - 1]);
-                            JwtAuthenticationToken jwtAuthenticationToken = new JwtAuthenticationToken(decode);
-                            jwtAuthenticationToken.setAuthenticated(true);
-                            accessor.setUser(jwtAuthenticationToken);
+                            accessor.setUser(jwtAuthenticationConverter.convert(decode));
                         }
                     }
                     return message;
