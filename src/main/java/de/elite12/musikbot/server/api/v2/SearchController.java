@@ -18,17 +18,18 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Collections;
 import java.util.List;
 
-@RequestMapping("/v2/search")
 @RestController
+@RequestMapping("/v2/search")
+@MessageMapping("/search")
 public class SearchController {
 
     @Autowired
     private SongRepository songrepository;
 
     @GetMapping
+    @MessageMapping
+    @SendToUser(broadcast = false)
     @Operation(summary = "Search the Song Database")
-    @MessageMapping("/search")
-    @SendToUser("/queue/search")
     public List<SearchResult> autocomplete(@Payload @Parameter(name = "term", description = "The Searchterm") @RequestParam(required = false) String term) {
         if (term == null) return Collections.emptyList();
         Page<SearchResult> res = songrepository.findSearchResult(term, PageRequest.of(0, 10));
