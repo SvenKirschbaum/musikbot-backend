@@ -51,16 +51,16 @@ public class WebSocketConfig {
             messages
                     //Allow messages without destination
                     .nullDestMatcher().permitAll()
-                    //Allow everyone to subscribe to state topic
-                    .simpSubscribeDestMatchers("/topic/state").permitAll()
-                    .simpSubscribeDestMatchers("/musikbot/state").permitAll()
-                    //Allow everyone to use search autocomplete
-                    .simpSubscribeDestMatchers("/user/queue/search").permitAll()
-                    .simpMessageDestMatchers("/musikbot/search").permitAll()
 
                     //Require client role for client topic and client messages
                     .simpSubscribeDestMatchers("/topic/client").hasRole("client")
                     .simpMessageDestMatchers("/musikbot/client").hasRole("client")
+
+                    //Allow everyone
+                    .simpSubscribeDestMatchers("/topic/*").permitAll()
+                    .simpSubscribeDestMatchers("/user/queue/*").permitAll()
+                    .simpSubscribeDestMatchers("/musikbot/*").permitAll()
+                    .simpMessageDestMatchers("/musikbot/*").permitAll()
 
                     //Deny all other messages
                     .anyMessage().denyAll();

@@ -24,6 +24,7 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import se.michaelthelin.spotify.model_objects.specification.*;
 
@@ -78,6 +79,9 @@ public class GapcloserService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private SimpMessagingTemplate template;
+
 
     private static final Logger logger = LoggerFactory.getLogger(GapcloserService.class);
 
@@ -115,6 +119,8 @@ public class GapcloserService {
         Setting historySetting = new Setting("playlistHistory", this.objectMapper.writeValueAsString(this.playlistHistory));
 
         settings.saveAll(Arrays.asList(modesetting, playlistsetting, playlistNameSetting, historySetting));
+
+        template.convertAndSend("/topic/gapcloser", this.getState());
 
     	logger.debug("Einstellung " + modesetting + " wurde gespeichert");
     	logger.debug("Einstellung " + playlistsetting + " wurde gespeichert");
@@ -248,6 +254,10 @@ public class GapcloserService {
         if (this.playlistHistory.size() > 10) {
             this.playlistHistory.removeLast();
         }
+    }
+
+    public GapcloserDTO getState() {
+        return new GapcloserDTO(this.getPlaylistURL(), this.getPlaylistName(), this.getMode(), this.getPlaylistHistory().toArray(new GapcloserDTO.HistoryEntry[0]));
     }
 
     public void setPlaylistFromUrl(String playlistURL) throws InvalidURLException {

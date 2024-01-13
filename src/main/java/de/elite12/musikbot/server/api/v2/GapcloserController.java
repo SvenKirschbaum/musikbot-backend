@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @PreAuthorize("hasRole('admin')")
 @RequestMapping(path = "/v2/gapcloser")
+@MessageMapping("/gapcloser")
 public class GapcloserController {
 
     private static final Logger logger = LoggerFactory.getLogger(GapcloserController.class);
@@ -23,9 +26,10 @@ public class GapcloserController {
     private GapcloserService gapcloserService;
 
     @GetMapping
+    @SubscribeMapping
     @Operation(summary = "Get Gapcloser Settings", description = "Requires Admin Permissions.")
     public GapcloserDTO getAction() {
-        return new GapcloserDTO(gapcloserService.getPlaylistURL(), gapcloserService.getPlaylistName(), gapcloserService.getMode(), gapcloserService.getPlaylistHistory().toArray(new GapcloserDTO.HistoryEntry[0]));
+        return gapcloserService.getState();
     }
 
     @PutMapping
@@ -35,7 +39,7 @@ public class GapcloserController {
             gapcloserService.setPlaylistFromUrl(req.getPlaylist());
             gapcloserService.setMode(req.getMode());
 
-            GapcloserDTO newstate = getAction();
+            GapcloserDTO newstate = gapcloserService.getState();
 
             logger.info(String.format("Gapcloser changed by %s: %s", SecurityContextHolder.getContext().getAuthentication().getName(), newstate.toString()));
 
