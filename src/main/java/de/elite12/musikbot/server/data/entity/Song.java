@@ -16,7 +16,7 @@ import org.springframework.lang.Nullable;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
 import java.util.Locale;
 
 @Entity
@@ -64,7 +64,7 @@ public class Song implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @NotNull
     @Schema(description = "The Time the Song has been added")
-    private Date insertedAt;
+    private Instant insertedAt;
     @NotNull
     @Schema(description = "The title of the Song")
     private String title;
@@ -73,7 +73,7 @@ public class Song implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Nullable
     @Schema(description = "The Time the Song has been played")
-    private Date playedAt;
+    private Instant playedAt;
     @Schema(description = "The sort order of the song")
     private Double sort;
     @Schema(description = "The duration of the Song")

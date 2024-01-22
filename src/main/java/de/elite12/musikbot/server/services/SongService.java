@@ -17,7 +17,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.*;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SongService {
@@ -60,8 +64,8 @@ public class SongService {
 
                 Song filler = new Song();
                 filler.setPlayed(true);
-                filler.setInsertedAt(new Date());
-                filler.setPlayedAt(new Date());
+                filler.setInsertedAt(Instant.now());
+                filler.setPlayedAt(Instant.now());
                 filler.updateFromSongData(songData);
 
                 return songrepository.save(filler);
@@ -71,7 +75,7 @@ public class SongService {
     	}
 
         next.setPlayed(true);
-        next.setPlayedAt(new Date());
+        next.setPlayedAt(Instant.now());
 
         Optional<SongProvider> optionalSongProvider = Arrays.stream(this.provider).filter(p -> p.supportsSongUrl(next.getLink())).findFirst();
         if (optionalSongProvider.isEmpty()) {
@@ -175,7 +179,7 @@ public class SongService {
 
             Song entity = new Song();
             entity.updateFromSongData(song);
-            entity.setInsertedAt(new Date());
+            entity.setInsertedAt(Instant.now());
             entity.setPlayed(false);
 
             if(user != null) {
