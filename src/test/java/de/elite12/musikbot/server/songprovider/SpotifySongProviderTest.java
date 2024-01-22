@@ -41,7 +41,8 @@ public class SpotifySongProviderTest {
                 Arguments.of("http://play.spotify.com/track/5sNESr6pQfIhL3krM8CtZn", true, "5sNESr6pQfIhL3krM8CtZn"),
                 Arguments.of("spotify:track:5xioIP2HexKl3QsI8JDlG8", true, "5xioIP2HexKl3QsI8JDlG8"),
                 Arguments.of("http://open.spotify.com/track/5pqF0qKSQCEq5mt5CFEXoq", true, "5pqF0qKSQCEq5mt5CFEXoq"),
-                Arguments.of("https://open.spotify.com/track/6tBdTwcyyGq1HU3PXgZK82?si=rnSOfIimRraXvum_lzM3fw", true, "6tBdTwcyyGq1HU3PXgZK82")
+                Arguments.of("https://open.spotify.com/track/6tBdTwcyyGq1HU3PXgZK82?si=rnSOfIimRraXvum_lzM3fw", true, "6tBdTwcyyGq1HU3PXgZK82"),
+                Arguments.of("https://open.spotify.com/intl-de/track/7F3R31tU4vNWrdsjNrURQX?si=05e048f0fa7e4fe9", true, "7F3R31tU4vNWrdsjNrURQX")
         );
     }
 
