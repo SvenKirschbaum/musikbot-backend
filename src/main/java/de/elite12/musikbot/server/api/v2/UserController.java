@@ -5,7 +5,7 @@ import de.elite12.musikbot.server.data.entity.Guest;
 import de.elite12.musikbot.server.data.repository.GuestRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.data.repository.UserRepository;
-import de.elite12.musikbot.server.exception.NotFoundException;
+import de.elite12.musikbot.server.exceptions.api.NotFoundException;
 import de.elite12.musikbot.server.services.JWTUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

@@ -3,7 +3,7 @@ package de.elite12.musikbot.server.api.v2;
 import de.elite12.musikbot.server.api.dto.ArchivDTO;
 import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.repository.SongRepository;
-import de.elite12.musikbot.server.exception.BadRequestException;
+import de.elite12.musikbot.server.exceptions.api.BadRequestException;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;

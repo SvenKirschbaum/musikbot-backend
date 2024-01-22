@@ -1,8 +1,8 @@
 package de.elite12.musikbot.server.api;
 
 import de.elite12.musikbot.server.config.ServiceProperties;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -14,12 +14,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(VersionController.class)
 public class VersionControllerAPITest extends AbstractAPITest {
 
-    private static String mockVersion = "CURRENT-VERSION";
+    private static final String mockVersion = "CURRENT-VERSION";
 
     @MockBean
     protected ServiceProperties properties = null;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Mockito.when(properties.getVersion()).thenReturn(mockVersion);
     }

@@ -3,7 +3,7 @@ package de.elite12.musikbot.server.api.v2;
 import de.elite12.musikbot.server.api.dto.UsersDTO;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.UserRepository;
-import de.elite12.musikbot.server.exception.BadRequestException;
+import de.elite12.musikbot.server.exceptions.api.BadRequestException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.slf4j.Logger;

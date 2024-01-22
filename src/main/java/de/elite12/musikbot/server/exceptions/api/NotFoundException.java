@@ -1,4 +1,4 @@
-package de.elite12.musikbot.server.exception;
+package de.elite12.musikbot.server.exceptions.api;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class NotFoundException extends RuntimeException {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 8393205516274227560L;
 

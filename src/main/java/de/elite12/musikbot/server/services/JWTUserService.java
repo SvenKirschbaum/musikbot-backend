@@ -2,7 +2,6 @@ package de.elite12.musikbot.server.services;
 
 import de.elite12.musikbot.server.config.ServiceProperties;
 import de.elite12.musikbot.server.data.entity.User;
-import de.elite12.musikbot.server.data.repository.SongRepository;
 import de.elite12.musikbot.server.data.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,12 +23,10 @@ public class JWTUserService {
 
     private final String resourceId;
     private final UserRepository userRepository;
-    private final SongRepository songRepository;
 
-    public JWTUserService(ServiceProperties properties, UserRepository userRepository, SongRepository songRepository) {
+    public JWTUserService(ServiceProperties properties, UserRepository userRepository) {
         this.resourceId = properties.getOauthResourceName();
         this.userRepository = userRepository;
-        this.songRepository = songRepository;
     }
 
 

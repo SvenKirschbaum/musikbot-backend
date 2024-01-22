@@ -1,12 +1,12 @@
 package de.elite12.musikbot.server.api.v2;
 
-import de.elite12.musikbot.server.api.dto.createSongResponse;
-import de.elite12.musikbot.server.data.UnifiedTrack;
+import de.elite12.musikbot.server.api.dto.CreateSongResponseDTO;
 import de.elite12.musikbot.server.data.entity.LockedSong;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
-import de.elite12.musikbot.server.exception.NotFoundException;
-import de.elite12.musikbot.server.services.SpotifyService;
-import de.elite12.musikbot.server.services.YouTubeService;
+import de.elite12.musikbot.server.data.songprovider.SongData;
+import de.elite12.musikbot.server.exceptions.api.NotFoundException;
+import de.elite12.musikbot.server.exceptions.songprovider.SongNotFound;
+import de.elite12.musikbot.server.services.SongService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +30,7 @@ public class LockedSongsController {
     private LockedSongRepository songs;
 
     @Autowired
-    private YouTubeService youtube;
-
-    @Autowired
-    private SpotifyService spotifyService;
+    private SongService songService;
 
     @GetMapping
     @Operation(summary = "Gets the LockList", description = "Requires Admin Permissions.")
@@ -55,24 +52,21 @@ public class LockedSongsController {
 
     @PostMapping
     @Operation(summary = "Adds a Song to the Locklist", description = "Requires Admin Permissions.")
-    public createSongResponse postAction(@RequestBody String url) {
+    public CreateSongResponseDTO postAction(@RequestBody String url) {
         try {
-            UnifiedTrack ut = UnifiedTrack.fromURL(url, youtube, spotifyService);
+            SongData songData = this.songService.loadSong(url);
+
             LockedSong ls = new LockedSong();
-            ls.setTitle(ut.getTitle());
-            ls.setUrl(ut.getLink());
+            ls.updateFromSongData(songData);
             songs.save(ls);
 
-
             logger.info(String.format("Song locked by %s: %s", SecurityContextHolder.getContext().getAuthentication().getName(), ls));
-            return new createSongResponse(true,false,"Song hinzugefügt");
-        } catch (UnifiedTrack.TrackNotAvailableException e) {
-            return new createSongResponse(false,false,"Der eingegebene Song existiert nicht");
-        } catch (UnifiedTrack.InvalidURLException e) {
-            return new createSongResponse(false,false,"Die eingegebene URL ist ungültig");
+            return new CreateSongResponseDTO(true, false, "Song hinzugefügt");
         } catch (IOException e) {
             logger.error("Error locking song",e);
-            return new createSongResponse(false,false,"Error locking song");
+            return new CreateSongResponseDTO(false, false, "Error locking song");
+        } catch (SongNotFound e) {
+            return new CreateSongResponseDTO(false, false, "Der eingegebene Song existiert nicht");
         }
     }
 }

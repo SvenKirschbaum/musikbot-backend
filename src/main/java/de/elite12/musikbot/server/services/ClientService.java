@@ -1,9 +1,8 @@
 package de.elite12.musikbot.server.services;
 
 import de.elite12.musikbot.server.data.entity.Song;
-import de.elite12.musikbot.shared.clientDTO.ClientDTO;
-import de.elite12.musikbot.shared.clientDTO.SimpleCommand;
-import de.elite12.musikbot.shared.clientDTO.VolumeCommand;
+import de.elite12.musikbot.shared.ClientDTO;
+import de.elite12.musikbot.shared.dtos.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +36,7 @@ public class ClientService {
 	private SimpMessagingTemplate template;
 
 	private final Set<String> clients = new CopyOnWriteArraySet<>();
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ClientService.class);
 
 	public void notifynewSong() {
@@ -47,7 +46,7 @@ public class ClientService {
             this.sendSong(songService.getnextSong());
         }
     }
-	
+
 	public void pause() {
         logger.debug("Pausing");
         if(isNotConnected()) return;
@@ -63,7 +62,7 @@ public class ClientService {
 			);
 		}
 
-		this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.PAUSE));
+        this.sendCommand(new PauseCommand());
 	}
 
     public void stop() {
@@ -77,7 +76,7 @@ public class ClientService {
                     stateData -> stateData.withState(StateService.StateData.State.STOPPED)
             );
 
-            this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.STOP));
+            this.sendCommand(new StopCommand());
         }
     }
 
@@ -99,7 +98,7 @@ public class ClientService {
 
 		if (!isNotConnected()) this.sendCommand(new VolumeCommand(volume));
 	}
-    
+
     private void sendSong(Song song) {
         logger.debug("Sending Song...");
         if(isNotConnected()) return;
@@ -112,20 +111,18 @@ public class ClientService {
 						.withProgressInfo(new StateService.StateData.ProgressInfo(Duration.ofSeconds(song.getDuration())))
 		);
 
-		this.sendCommand(new de.elite12.musikbot.shared.clientDTO.Song(song.getLink(),song.getTitle(), song.getLink().contains("spotify") ? "spotify" : "youtube"));
+        this.sendCommand(new SongDTO(song.getProviderId(), song.getTitle(), song.getType()));
     }
 
     public void sendShutdown() {
         logger.debug("Sending Shutdown...");
         if(isNotConnected()) return;
-        this.sendCommand(new SimpleCommand(SimpleCommand.CommandType.SHUTDOWN));
+        this.sendCommand(new ShutdownCommand());
     }
 
     @MessageMapping("/client")
-    private void onRequestSong(@Payload SimpleCommand command) {
-        if (command.getCommand() == SimpleCommand.CommandType.REQUEST_SONG) {
-            sendSong();
-        }
+    private void onRequestSong(@Payload SongRequest request) {
+        sendSong();
     }
 
 	private void sendSong() {
@@ -144,8 +141,7 @@ public class ClientService {
         String sessionId = SimpAttributesContextHolder.currentAttributes().getSessionId();
 
         if (Objects.equals(event.getMessage().getHeaders().get("simpDestination"), "/topic/client")) {
-            if (event.getUser() instanceof JwtAuthenticationToken) {
-                JwtAuthenticationToken token = (JwtAuthenticationToken) event.getUser();
+            if (event.getUser() instanceof JwtAuthenticationToken token) {
                 if (token.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_client"))) {
                     if (!this.clients.contains(sessionId)) {
                         if (this.isNotConnected()) {
@@ -175,7 +171,7 @@ public class ClientService {
             logger.info("Client disconnected: " + event.getCloseStatus());
 		}
 	}
-    
+
     private boolean isNotConnected() {
     	return this.clients.isEmpty();
     }

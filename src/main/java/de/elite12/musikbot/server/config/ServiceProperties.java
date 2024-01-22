@@ -17,14 +17,14 @@ import java.util.Set;
 @Getter
 @Setter
 public class ServiceProperties {
-	
-	
+
+
 	/**
 	 * Version String displayed on the start page
 	 */
-	
+
 	private String version;
-	
+
 	/**
 	 * Key used to authenticate Client
 	 */
@@ -50,35 +50,39 @@ public class ServiceProperties {
     @Setter
     public static class Youtube {
 
+		private boolean enabled;
+
         /**
          * API-Key used to Access the Youtube-API
          */
 		@Getter
 		private String apikey;
-		
+
 		/**
 		 * Set of allowed Categories
 		 */
 		@Getter
 		private Set<Integer> categories;
-		
+
 	}
-	
+
 	@Getter
 	@Setter
 	public static class Spotify {
-		
+
+		private boolean enabled;
+
 		/**
 		 * Spotify API ID
 		 */
 		@Getter
 		private String id;
-		
+
 		/**
 		 * Spotify API Secret
 		 */
 		@Getter
 		private String secret;
-		
+
 	}
 }

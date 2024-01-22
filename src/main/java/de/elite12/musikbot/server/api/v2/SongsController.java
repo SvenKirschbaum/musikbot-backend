@@ -1,6 +1,6 @@
 package de.elite12.musikbot.server.api.v2;
 
-import de.elite12.musikbot.server.api.dto.createSongResponse;
+import de.elite12.musikbot.server.api.dto.CreateSongResponseDTO;
 import de.elite12.musikbot.server.data.entity.Guest;
 import de.elite12.musikbot.server.data.entity.LockedSong;
 import de.elite12.musikbot.server.data.entity.Song;
@@ -8,7 +8,7 @@ import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.GuestRepository;
 import de.elite12.musikbot.server.data.repository.LockedSongRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
-import de.elite12.musikbot.server.exception.UnauthorizedException;
+import de.elite12.musikbot.server.exceptions.api.UnauthorizedException;
 import de.elite12.musikbot.server.services.JWTUserService;
 import de.elite12.musikbot.server.services.SongService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -108,7 +108,7 @@ public class SongsController {
 
     @PostMapping(path = "", consumes = {"text/plain"}, produces = {"application/json"})
     @Operation(summary = "Add a Song")
-    public ResponseEntity<createSongResponse> createSong(@Parameter(description = "The URL of the Song to add") @RequestBody(required = false) String url, @RequestHeader(name = "X-Guest-Token", required = false) String guestHeader) {
+    public ResponseEntity<CreateSongResponseDTO> createSong(@Parameter(description = "The URL of the Song to add") @RequestBody(required = false) String url, @RequestHeader(name = "X-Guest-Token", required = false) String guestHeader) {
         User u = null;
         Object credentials = SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
@@ -117,7 +117,7 @@ public class SongsController {
         }
 
         if (url == null) {
-            return new ResponseEntity<>(new createSongResponse(false, false, "Songlink kann nicht leer sein"), HttpStatus.OK);
+            return new ResponseEntity<>(new CreateSongResponseDTO(false, false, "Songlink kann nicht leer sein"), HttpStatus.OK);
         }
 
         Guest guest;
@@ -137,8 +137,8 @@ public class SongsController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("X-GUEST-TOKEN", guest.getToken());
 
-        createSongResponse createSongResponse = songservice.addSong(url, u, guest);
-        return new ResponseEntity<>(createSongResponse, responseHeaders, HttpStatus.OK);
+        CreateSongResponseDTO createSongResponseDTO = songservice.addSong(url, u, guest);
+        return new ResponseEntity<>(createSongResponseDTO, responseHeaders, HttpStatus.OK);
     }
 
 

@@ -1,8 +1,10 @@
 package de.elite12.musikbot.server.data.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.elite12.musikbot.server.data.songprovider.SongData;
 import de.elite12.musikbot.server.util.SongEntityListener;
 import de.elite12.musikbot.server.util.Util;
+import de.elite12.musikbot.shared.SongTypes;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -34,6 +36,16 @@ public class Song implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "The ID of the Song")
     private Long id;
+
+    @JsonIgnore
+    @NotNull
+    private String providerId;
+
+    @JsonIgnore
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private SongTypes type;
+
     @Schema(description = "If the Song has already been played")
     private boolean played;
     @NotNull
@@ -80,5 +92,13 @@ public class Song implements Serializable {
     @Transient
     public String getAuthor() {
         return this.getUserAuthor() == null ? (this.getGuestAuthor() == null ? "System" : "Gast") : this.getUserAuthor().getName();
+    }
+
+    public void updateFromSongData(SongData songData) {
+        this.setProviderId(songData.getId());
+        this.setType(songData.getType());
+        this.setDuration((int) songData.getDuration().toSeconds());
+        this.setTitle(songData.getTitle());
+        this.setLink(songData.getCanonicalURL());
     }
 }

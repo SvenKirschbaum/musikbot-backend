@@ -1,4 +1,4 @@
-package de.elite12.musikbot.server.exception;
+package de.elite12.musikbot.server.exceptions.api;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

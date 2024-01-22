@@ -1,17 +1,16 @@
 package de.elite12.musikbot.server.api;
 
 import de.elite12.musikbot.server.services.JWTUserService;
-import org.junit.Before;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public abstract class AbstractAPITest {
 
     @Autowired
@@ -22,7 +21,7 @@ public abstract class AbstractAPITest {
     @MockBean
     protected JWTUserService jwtUserService = null;
 
-    @Before
+    @BeforeEach
     public void abstract_setup() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context).build();
     }

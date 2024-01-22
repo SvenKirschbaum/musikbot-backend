@@ -1,5 +1,6 @@
 package de.elite12.musikbot.server.data.entity;
 
+import de.elite12.musikbot.server.data.songprovider.SongData;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,4 +23,9 @@ public class LockedSong {
     private String url;
 
 	private String title;
+
+    public void updateFromSongData(SongData songData) {
+        this.url = songData.getCanonicalURL();
+        this.title = songData.getTitle();
+    }
 }

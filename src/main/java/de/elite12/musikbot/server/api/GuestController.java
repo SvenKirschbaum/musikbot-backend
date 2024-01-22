@@ -5,7 +5,7 @@ import de.elite12.musikbot.server.data.entity.Song;
 import de.elite12.musikbot.server.data.entity.User;
 import de.elite12.musikbot.server.data.repository.GuestRepository;
 import de.elite12.musikbot.server.data.repository.SongRepository;
-import de.elite12.musikbot.server.exception.UnauthorizedException;
+import de.elite12.musikbot.server.exceptions.api.UnauthorizedException;
 import de.elite12.musikbot.server.services.JWTUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

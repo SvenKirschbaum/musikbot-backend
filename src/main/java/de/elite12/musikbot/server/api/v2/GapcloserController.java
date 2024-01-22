@@ -2,8 +2,8 @@ package de.elite12.musikbot.server.api.v2;
 
 import de.elite12.musikbot.server.api.dto.GapcloserConfigDTO;
 import de.elite12.musikbot.server.api.dto.GapcloserUpdateConfigDTO;
-import de.elite12.musikbot.server.data.UnifiedTrack;
-import de.elite12.musikbot.server.exception.BadRequestException;
+import de.elite12.musikbot.server.exceptions.api.BadRequestException;
+import de.elite12.musikbot.server.exceptions.songprovider.PlaylistNotFound;
 import de.elite12.musikbot.server.services.GapcloserService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
@@ -15,6 +15,8 @@ import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @PreAuthorize("hasRole('admin')")
@@ -48,7 +50,7 @@ public class GapcloserController {
             logger.info(String.format("Gapcloser changed by %s: %s", SecurityContextHolder.getContext().getAuthentication().getName(), newstate.toString()));
 
             return newstate;
-        } catch (UnifiedTrack.InvalidURLException e) {
+        } catch (PlaylistNotFound | IOException e) {
             throw new BadRequestException(e.getMessage());
         }
     }

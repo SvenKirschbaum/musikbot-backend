@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class createSongResponse {
+public class CreateSongResponseDTO {
     @Schema(description = "If the Song has been added successfully")
     private boolean success;
     @Schema(description = "If adding the Song has triggered a warning")
