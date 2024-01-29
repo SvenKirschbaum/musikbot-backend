@@ -11,7 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @EnableWebSecurity
 @EnableMethodSecurity
 @EnableScheduling
-@EntityScan("de.elite12.musikbot.server.data.entity")
+@EntityScan("de.elite12.musikbot.backend.data.entity")
 @EnableJpaRepositories("de.elite12.musikbot.backend.data.repository")
 public class ServiceConfig {
 
