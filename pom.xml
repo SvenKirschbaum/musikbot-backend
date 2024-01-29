@@ -3,9 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.elite12.musikbot</groupId>
-	<version>0.0.1-SNAPSHOT</version>
-	<artifactId>MusikbotServer</artifactId>
-	<name>Musikbot Server</name>
+	<version>${revision}</version>
+	<artifactId>backend</artifactId>
+	<name>Musikbot Backend</name>
 	<packaging>war</packaging>
 	<build>
 		<plugins>
@@ -18,15 +18,15 @@
                             <goal>repackage</goal>
                         </goals>
                     </execution>
+					<execution>
+						<id>build-info</id>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+					</execution>
                 </executions>
             </plugin>
 		</plugins>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>true</filtering>
-			</resource>
-		</resources>
 	</build>
 	<parent>
         <groupId>org.springframework.boot</groupId>
@@ -43,7 +43,7 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>libmusikbot</artifactId>
-			<version>${project.version}</version>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>de.mkammerer</groupId>
