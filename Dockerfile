@@ -12,7 +12,7 @@ COPY src src
 
 RUN mvn package -Drevision=$VERSION
 
-FROM amazoncorretto:21.0.2-alpine@sha256:9d4583a31932f23f12b0a9955c6b0518439fbb7e35d2a333c2ea46a7e91024a2
+FROM amazoncorretto:21.0.2-alpine@sha256:ecdb53d62a45cb978b849e30ebcc16933ad5c2a7659b94f0c556b93fe575cda9
 
 WORKDIR /usr/locale/musikbot-backend
 
