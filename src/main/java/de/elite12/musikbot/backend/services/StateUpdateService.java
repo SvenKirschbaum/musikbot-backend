@@ -6,6 +6,8 @@ import de.elite12.musikbot.backend.data.repository.SongRepository;
 import de.elite12.musikbot.backend.events.GapcloserUpdateEvent;
 import de.elite12.musikbot.backend.events.PlaylistChangedEvent;
 import de.elite12.musikbot.backend.events.StateUpdateEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.EventListener;
@@ -20,6 +22,8 @@ import java.util.ArrayList;
 
 @Service
 public class StateUpdateService {
+
+    private final Logger logger = LoggerFactory.getLogger(StateUpdateService.class);
 
     @Autowired
     private SimpMessagingTemplate template;
@@ -39,11 +43,15 @@ public class StateUpdateService {
         Flux.<ApplicationEvent>create(fluxSink -> debounce = fluxSink)
                 .sample(Duration.ofMillis(20))
                 .subscribe(event -> {
-                    StateService.StateData newState;
-                    if (event instanceof StateUpdateEvent) newState = ((StateUpdateEvent) event).getNewState();
-                    else newState = this.stateService.getState();
+                    try {
+                        StateService.StateData newState;
+                        if (event instanceof StateUpdateEvent) newState = ((StateUpdateEvent) event).getNewState();
+                        else newState = this.stateService.getState();
 
-                    template.convertAndSend("/topic/state", this.getStateUpdate(newState));
+                        template.convertAndSend("/topic/state", this.getStateUpdate(newState));
+                    } catch (Exception e) {
+                        logger.error("Error sending state update", e);
+                    }
                 });
     }
 
