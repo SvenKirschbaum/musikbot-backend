@@ -36,7 +36,8 @@ public class GapcloserService {
         OFF,
         RANDOM100,
         RANDOM,
-        PLAYLIST
+        PLAYLIST,
+        PLAYLIST_STATIC
     }
 
     @Getter
@@ -94,7 +95,7 @@ public class GapcloserService {
             try {
                 this.loadPlaylistData(setting.getValue());
             } catch (IOException | PlaylistNotFound e) {
-                if (this.mode == Mode.PLAYLIST) {
+                if (this.mode == Mode.PLAYLIST || this.mode == Mode.PLAYLIST_STATIC) {
                     this.mode = Mode.OFF;
                 }
             }
@@ -131,7 +132,7 @@ public class GapcloserService {
     private void loadPlaylistData(String url) throws IOException, PlaylistNotFound {
         PlaylistData oldData = this.playlistData;
         this.playlistData = this.playlistService.loadPlaylist(url);
-        this.permutation = new Permutationhelper(this.playlistData.getLength());
+        this.permutation = new Permutationhelper(this.playlistData.getLength(), this.mode!=Mode.PLAYLIST_STATIC);
         this.updateHistory(oldData);
     }
 
@@ -156,7 +157,7 @@ public class GapcloserService {
                             yield null;
                         }
                     }
-                    case PLAYLIST -> {
+                    case PLAYLIST, PLAYLIST_STATIC -> {
                         int id = this.permutation.getNext();
                         assert this.playlistData != null;
                         yield this.playlistService.loadPlaylistEntry(this.playlistData.getCanonicalURL(), id);
@@ -189,6 +190,10 @@ public class GapcloserService {
     public void setMode(Mode mode) {
         this.mode = mode;
         this.save();
+
+        if (this.playlistData != null && (mode == Mode.PLAYLIST || mode == Mode.PLAYLIST_STATIC)) {
+            this.permutation = new Permutationhelper(this.playlistData.getLength(), this.mode!=Mode.PLAYLIST_STATIC);
+        }
 
         if (this.stateService.getState().getState() == StateService.StateData.State.WAITING_FOR_SONGS && mode != Mode.OFF) {
             this.clientService.notifynewSong();
@@ -232,21 +237,27 @@ public class GapcloserService {
 
     private static class Permutationhelper {
         private int p;
+        private final boolean random;
         private final List<Integer> list;
 
-        public Permutationhelper(int size) {
+        public Permutationhelper(int size, boolean random) {
             this.p = 0;
+            this.random = random;
             this.list = new ArrayList<>(size);
             for (int i = 0; i < size; i++) {
                 this.list.add(i);
             }
-            Collections.shuffle(this.list);
+            if (this.random) {
+                Collections.shuffle(this.list);
+            }
         }
 
         public int getNext() {
             if (p >= this.list.size()) {
                 p = 0;
-                Collections.shuffle(this.list);
+                if (this.random) {
+                    Collections.shuffle(this.list);
+                }
             }
             return this.list.get(this.p++);
         }
