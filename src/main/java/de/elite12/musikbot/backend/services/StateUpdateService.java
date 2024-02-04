@@ -3,6 +3,7 @@ package de.elite12.musikbot.backend.services;
 import de.elite12.musikbot.backend.api.dto.StatusUpdate;
 import de.elite12.musikbot.backend.data.entity.Song;
 import de.elite12.musikbot.backend.data.repository.SongRepository;
+import de.elite12.musikbot.backend.events.GapcloserUpdateEvent;
 import de.elite12.musikbot.backend.events.PlaylistChangedEvent;
 import de.elite12.musikbot.backend.events.StateUpdateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,9 @@ public class StateUpdateService {
     @Autowired
     private SongRepository songRepository;
 
+    @Autowired
+    private GapcloserService gapcloserService;
+
     private FluxSink<ApplicationEvent> debounce;
 
     public StateUpdateService() {
@@ -50,6 +54,11 @@ public class StateUpdateService {
 
     @EventListener
     public void onPlaylistChange(PlaylistChangedEvent event) {
+        debounce.next(event);
+    }
+
+    @EventListener
+    public void onGapcloserUpdate(GapcloserUpdateEvent event) {
         debounce.next(event);
     }
 
@@ -90,6 +99,8 @@ public class StateUpdateService {
             sp.setPrepausedDuration(progressInfo.getPrepausedDuration());
             st.setProgress(sp);
         }
+
+        st.setPreview(gapcloserService.getPreview());
 
         return st;
     }

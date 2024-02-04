@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.elite12.musikbot.backend.api.dto.GapcloserConfigDTO;
+import de.elite12.musikbot.backend.config.ServiceProperties;
 import de.elite12.musikbot.backend.data.entity.Setting;
 import de.elite12.musikbot.backend.data.entity.Song;
 import de.elite12.musikbot.backend.data.repository.LockedSongRepository;
@@ -11,6 +12,7 @@ import de.elite12.musikbot.backend.data.repository.SettingRepository;
 import de.elite12.musikbot.backend.data.repository.SongRepository;
 import de.elite12.musikbot.backend.data.songprovider.PlaylistData;
 import de.elite12.musikbot.backend.data.songprovider.SongData;
+import de.elite12.musikbot.backend.events.GapcloserUpdateEvent;
 import de.elite12.musikbot.backend.exceptions.songprovider.PlaylistNotFound;
 import de.elite12.musikbot.backend.exceptions.songprovider.SongNotFound;
 import jakarta.annotation.PostConstruct;
@@ -21,6 +23,7 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -82,6 +85,12 @@ public class GapcloserService {
     @Autowired
     private PlaylistService playlistService;
 
+    @Autowired
+    ApplicationEventPublisher applicationEventPublisher;
+
+    @Autowired
+    ServiceProperties serviceProperties;
+
     private static final Logger logger = LoggerFactory.getLogger(GapcloserService.class);
 
     @PostConstruct
@@ -123,6 +132,8 @@ public class GapcloserService {
         settings.saveAll(Arrays.asList(modesetting, playlistsetting, historySetting));
 
         template.convertAndSend("/topic/gapcloser", this.getState());
+        //Used to trigger preview update
+        this.applicationEventPublisher.publishEvent(new GapcloserUpdateEvent(this));
 
     	logger.debug("Einstellung " + modesetting + " wurde gespeichert");
     	logger.debug("Einstellung " + playlistsetting + " wurde gespeichert");
@@ -158,7 +169,7 @@ public class GapcloserService {
                         }
                     }
                     case PLAYLIST, PLAYLIST_STATIC -> {
-                        int id = this.permutation.getNext();
+                        int id = this.permutation.pop();
                         assert this.playlistData != null;
                         yield this.playlistService.loadPlaylistEntry(this.playlistData.getCanonicalURL(), id);
                     }
@@ -235,31 +246,68 @@ public class GapcloserService {
         this.loadPlaylistData(playlistURL);
     }
 
-    private static class Permutationhelper {
-        private int p;
+    /**
+     * Returns a preview of the next songs
+     * Currently only playlist modes are supported
+     */
+    public List<Song> getPreview() {
+        if ((this.mode != Mode.PLAYLIST && this.mode != Mode.PLAYLIST_STATIC) || this.permutation == null) {
+            return new ArrayList<>();
+        }
+
+        int maxPreview = serviceProperties.getMaxGapcloserPreview();
+        Permutationhelper permutation = this.getPermutation();
+        ArrayList<Song> preview = new ArrayList<>(maxPreview);
+
+        try {
+            for (int i = permutation.getPosition(); i < Math.min(permutation.size(), permutation.getPosition() + maxPreview); i++) {
+                int p = this.permutation.get(i);
+
+                assert this.playlistData != null;
+
+                SongData songData = this.playlistService.loadPlaylistEntry(this.playlistData.getCanonicalURL(), p);
+
+                Song filler = new Song();
+                filler.updateFromSongData(songData);
+
+                preview.add(filler);
+            }
+        } catch (IOException | SongNotFound | PlaylistNotFound e) {
+            logger.warn("Error loading preview song", e);
+            return new ArrayList<>();
+        }
+
+        return preview;
+    }
+
+    private static class Permutationhelper extends ArrayList<Integer> {
+        @Getter
+        private int position;
         private final boolean random;
-        private final List<Integer> list;
 
         public Permutationhelper(int size, boolean random) {
-            this.p = 0;
+            super(size);
+
+            this.position = 0;
             this.random = random;
-            this.list = new ArrayList<>(size);
+
             for (int i = 0; i < size; i++) {
-                this.list.add(i);
+                this.add(i);
             }
+
             if (this.random) {
-                Collections.shuffle(this.list);
+                Collections.shuffle(this);
             }
         }
 
-        public int getNext() {
-            if (p >= this.list.size()) {
-                p = 0;
+        public int pop() {
+            if (position >= this.size()) {
+                position = 0;
                 if (this.random) {
-                    Collections.shuffle(this.list);
+                    Collections.shuffle(this);
                 }
             }
-            return this.list.get(this.p++);
+            return this.get(this.position++);
         }
     }
 }

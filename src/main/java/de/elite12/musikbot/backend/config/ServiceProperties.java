@@ -38,6 +38,11 @@ public class ServiceProperties {
      */
     private String oauthResourceName;
 
+	/**
+	 * Maximum amount of songs included in gapcloser preview
+	 */
+	private Integer maxGapcloserPreview;
+
 
     @Getter
     @Setter
