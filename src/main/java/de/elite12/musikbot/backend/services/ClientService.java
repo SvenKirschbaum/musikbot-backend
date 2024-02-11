@@ -179,4 +179,8 @@ public class ClientService {
     private void sendCommand(ClientDTO clientDTO) {
 		this.template.convertAndSend("/topic/client", clientDTO, Map.of("type", clientDTO.getClass().getSimpleName()));
 	}
+
+    public int getConnectedClients() {
+        return this.clients.size();
+    }
 }

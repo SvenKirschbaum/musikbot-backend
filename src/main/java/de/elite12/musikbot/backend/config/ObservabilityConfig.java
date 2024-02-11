@@ -1,5 +1,6 @@
 package de.elite12.musikbot.backend.config;
 
+import de.elite12.musikbot.backend.services.ClientService;
 import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.binder.MeterBinder;
@@ -10,7 +11,7 @@ import org.springframework.web.socket.messaging.StompSubProtocolHandler;
 import org.springframework.web.socket.messaging.SubProtocolWebSocketHandler;
 
 @Configuration
-public class StompObservabilityConfig {
+public class ObservabilityConfig {
 
     @Bean
     public MeterBinder websocketMetrics(WebSocketHandler webSocketHandler) {
@@ -31,6 +32,13 @@ public class StompObservabilityConfig {
             FunctionCounter.builder("stomp.frames.processed", stompSubProtocolHandler, (ssph) -> ssph.getStats().getTotalConnect()).tag("type", "connect").register(registry);
             FunctionCounter.builder("stomp.frames.processed", stompSubProtocolHandler, (ssph) -> ssph.getStats().getTotalDisconnect()).tag("type", "disconnect").register(registry);
             FunctionCounter.builder("stomp.frames.processed", stompSubProtocolHandler, (ssph) -> ssph.getStats().getTotalConnected()).tag("type", "connected").register(registry);
+        };
+    }
+
+    @Bean
+    public MeterBinder clientMetrics(ClientService clientService) {
+        return (registry) -> {
+            Gauge.builder("clients.connected", clientService, ClientService::getConnectedClients).register(registry);
         };
     }
 }
