@@ -4,6 +4,7 @@ import de.elite12.musikbot.backend.services.ClientService;
 import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.binder.MeterBinder;
+import io.micrometer.observation.ObservationPredicate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.WebSocketHandler;
@@ -12,6 +13,12 @@ import org.springframework.web.socket.messaging.SubProtocolWebSocketHandler;
 
 @Configuration
 public class ObservabilityConfig {
+
+    //This is mainly used to not create traces for readiness and liveness probes
+    @Bean
+    ObservationPredicate ignoreSecuritySpansWithoutParent() {
+        return (name, context) -> !name.startsWith("spring.security.") || context.getParentObservation() != null;
+    }
 
     @Bean
     public MeterBinder websocketMetrics(WebSocketHandler webSocketHandler) {
