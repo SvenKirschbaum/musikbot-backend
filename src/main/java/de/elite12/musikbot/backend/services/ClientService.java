@@ -121,7 +121,7 @@ public class ClientService {
     }
 
     @MessageMapping("/client")
-    private void onRequestSong(@Payload SongRequest request) {
+    public void onRequestSong(@Payload SongRequest request) {
         sendSong();
     }
 
