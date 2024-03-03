@@ -1,4 +1,4 @@
-FROM maven:3.9.6-amazoncorretto-21@sha256:f004b534b13f0a785ad0a904ed012606b0939b40344939fe7e4cf1be9a3f92e5 as build
+FROM maven:3.9.6-amazoncorretto-21@sha256:163c98495b9d4406d956135cf6e8bb5fd018fa14717b412643820c7434811808 as build
 
 ARG VERSION=dev
 
@@ -12,7 +12,7 @@ COPY src src
 
 RUN mvn package -Drevision=$VERSION
 
-FROM amazoncorretto:21.0.2-alpine@sha256:ecdb53d62a45cb978b849e30ebcc16933ad5c2a7659b94f0c556b93fe575cda9
+FROM amazoncorretto:21.0.2-alpine@sha256:cc4c1d0cab18894f4470b3afda995fbda8b5166d9d646205a18357b2b20c4b2b
 
 WORKDIR /usr/locale/musikbot-backend
 
