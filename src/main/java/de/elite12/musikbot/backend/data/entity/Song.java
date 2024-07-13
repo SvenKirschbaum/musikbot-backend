@@ -81,7 +81,7 @@ public class Song implements Serializable {
 
     @Transient
     public String getGravatarId() {
-    	return this.getUserAuthor()==null ? Util.md5Hex("null") : Util.md5Hex(this.getUserAuthor().getEmail().toLowerCase(Locale.GERMAN));
+    	return this.getUserAuthor()==null ? Util.sha256Hex("null") : Util.sha256Hex(this.getUserAuthor().getEmail().toLowerCase(Locale.GERMAN));
     }
 
     @Transient

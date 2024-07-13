@@ -19,9 +19,9 @@ public class Util {
         return sb.toString();
     }
 
-    public static String md5Hex(String message) {
+    public static String sha256Hex(String message) {
         try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
+            MessageDigest md = MessageDigest.getInstance("SHA256");
             return hex(md.digest(message.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException e) {
             logger.error("MD5 not found", e);

@@ -32,6 +32,6 @@ public class User implements Serializable {
 
     @Transient
     public String getGravatarId() {
-        return Util.md5Hex(this.getEmail().toLowerCase(Locale.GERMAN));
+        return Util.sha256Hex(this.getEmail().toLowerCase(Locale.GERMAN));
     }
 }
