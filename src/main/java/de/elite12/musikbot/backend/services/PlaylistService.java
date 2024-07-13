@@ -32,28 +32,25 @@ public class PlaylistService {
     }
 
     public PlaylistData loadPlaylist(String url, boolean withSongs) throws PlaylistNotFound, IOException {
-        Optional<SongProvider> optionalSongProvider = Arrays.stream(this.provider).filter(p -> p.supportsPlaylistUrl(url)).findFirst();
-
-        if (optionalSongProvider.isEmpty()) {
-            logger.debug("No Provider found for URL {}", url);
-            throw new PlaylistNotFound();
-        }
-
-        SongProvider provider = optionalSongProvider.get();
+        SongProvider provider = getPlaylistProvider(url);
 
         return provider.getPlaylist(url, withSongs);
     }
 
     public SongData loadPlaylistEntry(String url, int index) throws IOException, PlaylistNotFound, SongNotFound {
+        SongProvider provider = getPlaylistProvider(url);
+
+        return provider.getPlaylistEntry(url, index);
+    }
+
+    private SongProvider getPlaylistProvider(String url) throws PlaylistNotFound {
         Optional<SongProvider> optionalSongProvider = Arrays.stream(this.provider).filter(p -> p.supportsPlaylistUrl(url)).findFirst();
 
         if (optionalSongProvider.isEmpty()) {
             logger.debug("No Provider found for URL {}", url);
-            throw new PlaylistNotFound();
+            throw new PlaylistNotFound("No Provider found for URL");
         }
 
-        SongProvider provider = optionalSongProvider.get();
-
-        return provider.getPlaylistEntry(url, index);
+        return optionalSongProvider.get();
     }
 }
