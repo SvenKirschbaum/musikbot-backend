@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 )
 public class YoutubeSongProvider implements SongProvider {
 
-    private static final Pattern YOUTUBE_SONG_URL_PATTERN = Pattern.compile("^(?:(?:https?:)?//)?(?:(?:www|m)\\.)?(?:youtube(?:-nocookie)?\\.com|youtu.be)/(?:[\\w\\-]*(?:\\?v=|\\?.*&v=)|embed/|e/|live/|v/)?([\\w\\-]+)(?:\\S+)?$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern YOUTUBE_SONG_URL_PATTERN = Pattern.compile("^(?:(?:https?:)?//)?(?:(?:www|m)\\.)?(?:youtube(?:-nocookie)?\\.com|youtu\\.be)/(?:(?:watch)?(?:\\?v=|\\?.*&v=)|embed/|e/|live/|v/)?([\\w\\-]{11})", Pattern.CASE_INSENSITIVE);
     private static final Pattern YOUTUBE_PLAYLIST_URL_PATTERN = Pattern.compile("^(?:http|https)://www\\.youtube\\.com/.*list=([a-zA-Z0-9_-]{10,}).*$", Pattern.CASE_INSENSITIVE);
     private final YouTube youtube;
     private final Set<Integer> categories;
@@ -61,12 +61,14 @@ public class YoutubeSongProvider implements SongProvider {
 
     @Override
     public boolean supportsSongUrl(String url) {
-        return YOUTUBE_SONG_URL_PATTERN.matcher(url.trim()).matches();
+        Matcher matcher = YOUTUBE_SONG_URL_PATTERN.matcher(url.trim());
+        matcher.find();
+        return matcher.hasMatch();
     }
 
     private String getSongId(String url) {
         Matcher matcher = YOUTUBE_SONG_URL_PATTERN.matcher(url.trim());
-        matcher.matches();
+        matcher.find();
         return matcher.group(1);
     }
 
