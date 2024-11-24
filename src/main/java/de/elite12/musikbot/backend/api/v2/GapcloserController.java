@@ -1,9 +1,12 @@
 package de.elite12.musikbot.backend.api.v2;
 
 import de.elite12.musikbot.backend.api.dto.GapcloserConfigDTO;
+import de.elite12.musikbot.backend.api.dto.GapcloserDeletePreviewDTO;
 import de.elite12.musikbot.backend.api.dto.GapcloserUpdateConfigDTO;
 import de.elite12.musikbot.backend.exceptions.api.BadRequestException;
+import de.elite12.musikbot.backend.exceptions.api.NotFoundException;
 import de.elite12.musikbot.backend.exceptions.songprovider.PlaylistNotFound;
+import de.elite12.musikbot.backend.exceptions.songprovider.SongNotFound;
 import de.elite12.musikbot.backend.services.GapcloserService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
@@ -51,6 +54,19 @@ public class GapcloserController {
 
             return newstate;
         } catch (PlaylistNotFound | IOException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+    }
+
+    @DeleteMapping()
+    @Operation(summary = "Delete Songs from Preview", description = "Requires Admin permissions.")
+    public void deleteAction(@RequestBody GapcloserDeletePreviewDTO req) {
+        try {
+            boolean deleted = gapcloserService.deletePreviewSong(req.getLink());
+            if (!deleted) {
+                throw new NotFoundException();
+            }
+        } catch (IOException | PlaylistNotFound | SongNotFound e) {
             throw new BadRequestException(e.getMessage());
         }
     }

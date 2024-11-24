@@ -280,6 +280,33 @@ public class GapcloserService {
         return preview;
     }
 
+    public boolean deletePreviewSong(String link) throws IOException, PlaylistNotFound, SongNotFound {
+        if ((this.mode == Mode.PLAYLIST || this.mode == Mode.PLAYLIST_STATIC) && this.permutation != null) {
+            int maxPreview = serviceProperties.getMaxGapcloserPreview();
+            Permutationhelper permutation = this.getPermutation();
+
+            for (int i = permutation.getPosition(); i < Math.min(permutation.size(), permutation.getPosition() + maxPreview); i++) {
+                int p = this.permutation.get(i);
+
+                assert this.playlistData != null;
+
+                SongData songData = this.playlistService.loadPlaylistEntry(this.playlistData.getCanonicalURL(), p);
+
+                if(songData.getCanonicalURL().equals(link)) {
+                    int end = permutation.position == 0 ? permutation.size()-1 : permutation.position-1;
+
+                    this.permutation.remove(i);
+                    this.permutation.add(end, p);
+                    this.applicationEventPublisher.publishEvent(new GapcloserUpdateEvent(this));
+                    return true;
+                }
+            }
+        }
+
+
+        return false;
+    }
+
     private static class Permutationhelper extends ArrayList<Integer> {
         @Getter
         private int position;
