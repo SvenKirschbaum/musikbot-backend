@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SwaggerConfig {
-    @Autowired
+    @Autowired(required = false)
     private BuildProperties build;
 
     @Bean
@@ -18,7 +18,7 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info().title("Musikbot REST API")
                         .description("REST API to interact with the Musikbot Service")
-                        .version(build.getVersion())
+                        .version(build == null ? "Development" : build.getVersion())
                         .contact(new Contact().name("Sven Kirschbaum").url("https://www.kirschbaum.me").email("sven@kirschbaum.me")))
                 ;
     }

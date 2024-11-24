@@ -10,11 +10,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/version")
 public class VersionController {
-    @Autowired
+    @Autowired(required = false)
     private BuildProperties build;
 
     @GetMapping
     public VersionDTO getVersion() {
+        if (build == null) {
+            return new VersionDTO("Development");
+        }
+
         return new VersionDTO(build.getVersion());
     }
 }
