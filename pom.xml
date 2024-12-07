@@ -38,7 +38,7 @@
 		<dependency>
 			<groupId>se.michaelthelin.spotify</groupId>
 			<artifactId>spotify-web-api-java</artifactId>
-			<version>9.0.0-RC1</version>
+			<version>9.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -107,12 +107,12 @@
 		<dependency>
 			<groupId>com.google.apis</groupId>
 			<artifactId>google-api-services-youtube</artifactId>
-            <version>v3-rev20241117-2.0.0</version>
+            <version>v3-rev20241203-2.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.http-client</groupId>
 			<artifactId>google-http-client-gson</artifactId>
-            <version>1.45.1</version>
+            <version>1.45.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mariadb.jdbc</groupId>
