@@ -31,14 +31,14 @@
 	<parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.3</version>
+        <version>3.5.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 	<dependencies>
 		<dependency>
 			<groupId>se.michaelthelin.spotify</groupId>
 			<artifactId>spotify-web-api-java</artifactId>
-			<version>9.2.0</version>
+			<version>9.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
