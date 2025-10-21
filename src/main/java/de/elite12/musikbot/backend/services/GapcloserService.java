@@ -13,6 +13,7 @@ import de.elite12.musikbot.backend.data.repository.SongRepository;
 import de.elite12.musikbot.backend.data.songprovider.PlaylistData;
 import de.elite12.musikbot.backend.data.songprovider.SongData;
 import de.elite12.musikbot.backend.events.GapcloserUpdateEvent;
+import de.elite12.musikbot.backend.events.NoListenerEvent;
 import de.elite12.musikbot.backend.exceptions.songprovider.PlaylistNotFound;
 import de.elite12.musikbot.backend.exceptions.songprovider.SongNotFound;
 import jakarta.annotation.PostConstruct;
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.event.EventListener;
 import org.springframework.lang.Nullable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -121,6 +123,12 @@ public class GapcloserService {
         if (mode.isEmpty() || playlist.isEmpty() || playlistHistory.isEmpty()) {
             this.save();
         }
+    }
+
+    @EventListener
+    public void onNoListeners(NoListenerEvent e) {
+        logger.info("Turning off Gapcloser due to no listeners");
+        this.setMode(Mode.OFF);
     }
 
     @SneakyThrows

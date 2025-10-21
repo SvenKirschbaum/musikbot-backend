@@ -1,11 +1,13 @@
 package de.elite12.musikbot.backend.services;
 
 import de.elite12.musikbot.backend.data.entity.Song;
+import de.elite12.musikbot.backend.events.NoListenerEvent;
 import de.elite12.musikbot.shared.ClientDTO;
 import de.elite12.musikbot.shared.dtos.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -25,6 +27,9 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @Service
 @Controller
 public class ClientService {
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
 	@Autowired
 	private SongService songService;
@@ -121,8 +126,22 @@ public class ClientService {
     }
 
     @MessageMapping("/client")
-    public void onRequestSong(@Payload SongRequest request) {
+    public void onClientDTO(@Payload ClientDTO message) {
+        switch (message) {
+            case SongRequest c -> onRequestSong(c);
+            case NoListenerCommand c -> onNoListener(c);
+            default -> {
+                logger.warn("Received unknown message type: {}", message.getClass().getName());
+            }
+        }
+    }
+
+    public void onRequestSong(SongRequest request) {
         sendSong();
+    }
+
+    public void onNoListener(NoListenerCommand dto) {
+        this.applicationEventPublisher.publishEvent(new NoListenerEvent(this));
     }
 
 	private void sendSong() {
