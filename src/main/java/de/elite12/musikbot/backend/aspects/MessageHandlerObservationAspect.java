@@ -28,7 +28,7 @@ public class MessageHandlerObservationAspect {
     }
 
     private Object observeHandler(String prefix, ProceedingJoinPoint joinPoint) throws Throwable {
-        Observation observation = Observation.createNotStarted("%s %s".formatted(prefix, joinPoint.getSignature().getName()), observationRegistry);
+        Observation observation = Observation.createNotStarted("%s/%s".formatted(prefix, joinPoint.getSignature().getName()), observationRegistry);
 
         observation.lowCardinalityKeyValue("class", joinPoint.getTarget().getClass().getSimpleName());
         observation.lowCardinalityKeyValue("method", joinPoint.getSignature().getName());
