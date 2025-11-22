@@ -1,4 +1,4 @@
-FROM maven:3.9.11-amazoncorretto-25@sha256:409134f35ba2bbf70b5f92f672ba2d994daf0d423184fac27853d20c7cdeef36 as build
+FROM maven:3.9.11-amazoncorretto-25@sha256:c80d6398506a1178fad0ca28ba0036cc66bdc802e613aaaf9569103fba19db26 as build
 
 ARG VERSION=dev
 
