@@ -3,6 +3,8 @@ package de.elite12.musikbot.backend.config;
 import de.elite12.musikbot.backend.util.CustomJwtAuthenticationConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -15,8 +17,12 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.security.config.annotation.web.messaging.MessageSecurityMetadataSourceRegistry;
-import org.springframework.security.config.annotation.web.socket.AbstractSecurityWebSocketMessageBrokerConfigurer;
+import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.authorization.AuthorizationEventPublisher;
+import org.springframework.security.authorization.SpringAuthorizationEventPublisher;
+import org.springframework.security.messaging.access.intercept.AuthorizationChannelInterceptor;
+import org.springframework.security.messaging.access.intercept.MessageMatcherDelegatingAuthorizationManager;
+import org.springframework.security.messaging.context.SecurityContextChannelInterceptor;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -29,7 +35,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig {
     @Configuration
-    public static class GeneralWebSocketConfig extends AbstractSecurityWebSocketMessageBrokerConfigurer implements WebSocketMessageBrokerConfigurer {
+    public static class GeneralWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         @Autowired
         private TaskScheduler messageBrokerTaskScheduler;
@@ -45,33 +51,44 @@ public class WebSocketConfig {
             registry.addEndpoint("/sock").setAllowedOriginPatterns("*").withSockJS().setSessionCookieNeeded(false).setClientLibraryUrl("https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js");
             registry.addEndpoint("/client").setAllowedOriginPatterns("*");
         }
+    }
 
-        @Override
-        protected void configureInbound(MessageSecurityMetadataSourceRegistry messages) {
+    @Configuration
+    @Order(Ordered.HIGHEST_PRECEDENCE + 100)
+    public static class WebSocketSecurityConfig implements WebSocketMessageBrokerConfigurer {
+
+        @Autowired
+        private ApplicationContext applicationContext;
+
+        @Autowired
+        private AuthorizationManager<Message<?>> messageAuthorizationManager;
+
+        @Bean
+        public MessageMatcherDelegatingAuthorizationManager.Builder messageMatcherAuthorizationManagerBuilder() {
+            return new MessageMatcherDelegatingAuthorizationManager.Builder();
+        }
+
+        @Bean
+        public AuthorizationManager<Message<?>> messageAuthorizationManager(MessageMatcherDelegatingAuthorizationManager.Builder messages) {
             messages
-                    //Allow messages without destination
                     .nullDestMatcher().permitAll()
-
-                    //Require client role for client topic and client messages
                     .simpSubscribeDestMatchers("/topic/client").hasRole("client")
                     .simpMessageDestMatchers("/musikbot/client").hasRole("client")
-
-                    //Admin only topics
                     .simpSubscribeDestMatchers("/topic/gapcloser").hasRole("admin")
-
-                    //Allow everyone
                     .simpSubscribeDestMatchers("/topic/*").permitAll()
                     .simpSubscribeDestMatchers("/user/queue/*").permitAll()
                     .simpSubscribeDestMatchers("/musikbot/*").permitAll()
                     .simpMessageDestMatchers("/musikbot/*").permitAll()
-
-                    //Deny all other messages
                     .anyMessage().denyAll();
+            return messages.build();
         }
 
         @Override
-        protected boolean sameOriginDisabled() {
-            return true;
+        public void configureClientInboundChannel(ChannelRegistration registration) {
+            AuthorizationChannelInterceptor authorizationChannelInterceptor = new AuthorizationChannelInterceptor(this.messageAuthorizationManager);
+            AuthorizationEventPublisher authorizationEventPublisher = new SpringAuthorizationEventPublisher(this.applicationContext);
+            authorizationChannelInterceptor.setAuthorizationEventPublisher(authorizationEventPublisher);
+            registration.interceptors(new SecurityContextChannelInterceptor(), authorizationChannelInterceptor);
         }
     }
 

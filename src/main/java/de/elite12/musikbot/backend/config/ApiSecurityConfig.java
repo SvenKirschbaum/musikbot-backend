@@ -5,6 +5,7 @@ import org.apache.catalina.filters.RemoteIpFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,17 +24,17 @@ public class ApiSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-                .cors().and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .oauth2ResourceServer().jwt().jwtAuthenticationConverter(jwtAuthenticationConverter).and().and()
-                .headers()
-                .xssProtection().disable()
-                .contentTypeOptions().disable()
-                .frameOptions().disable()
-                .and()
-                .authorizeHttpRequests()
-                .anyRequest().permitAll();
+        http
+                .csrf((csrf) -> csrf.disable())
+                .cors(Customizer.withDefaults())
+                .sessionManagement((sessionManagement) -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2ResourceServer((oauth2ResourceServer) -> oauth2ResourceServer
+                        .jwt((jwt) -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
+                .headers((headers) -> headers
+                        .xssProtection((xssProtection) -> xssProtection.disable())
+                        .contentTypeOptions((contentTypeOptions) -> contentTypeOptions.disable())
+                        .frameOptions((frameOptions) -> frameOptions.disable()))
+                .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests.anyRequest().permitAll());
         return http.build();
     }
 
