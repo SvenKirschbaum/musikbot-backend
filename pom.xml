@@ -44,7 +44,7 @@
 	<parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.4</version>
+        <version>4.0.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 	<dependencies>
@@ -125,7 +125,7 @@
 		<dependency>
 			<groupId>com.google.apis</groupId>
 			<artifactId>google-api-services-youtube</artifactId>
-            <version>v3-rev20260205-2.0.0</version>
+            <version>v3-rev20260323-2.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.http-client</groupId>
