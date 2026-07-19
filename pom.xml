@@ -56,7 +56,7 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>libmusikbot</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${musikbot-lib.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.mkammerer</groupId>
@@ -194,6 +194,8 @@
     <url>https://musikbot.elite12.de</url>
     <description>Musikbot</description>
     <properties>
+		<revision>dev</revision>
+		<musikbot-lib.version>0.0.6</musikbot-lib.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>25</java.version>
         <maven.compiler.target>25</maven.compiler.target>
