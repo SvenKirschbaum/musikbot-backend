@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.28@sha256:bb22d9815c728170f72750f4e5b0d672e06176142e1d602c7e66c050100b7e5b
 
-FROM maven:3.10.0-amazoncorretto-25@sha256:ccc394dd4226c146c2e81f68b3d95e68227e9ffaa88fe04b9f22fd6552190e0b as build
+FROM maven:3.10.0-amazoncorretto-25@sha256:91d93bc90cf6f488553502ffe494a12136aca91babd8ba4caa10a4e306c0d901 as build
 
 ARG VERSION=dev
 
@@ -12,7 +12,7 @@ COPY src src
 RUN --mount=type=secret,id=maven_settings,target=/root/.m2/settings.xml \
     mvn -s /root/.m2/settings.xml package -Drevision=$VERSION
 
-FROM amazoncorretto:25.0.5-alpine@sha256:e3ec06bdc025f54f1dbeeb92a8cc537665371badec999ce832c1cb6c00a2c828
+FROM amazoncorretto:25.0.5-alpine@sha256:abed4fe0730b802823f0cbc5c24ab8e3ba6023af99266f0e2ca3c08d9f6a20f9
 
 WORKDIR /usr/locale/musikbot-backend
 
